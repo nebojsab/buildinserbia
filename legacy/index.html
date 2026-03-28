@@ -1,0 +1,1997 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>KućaPlan — Planer gradnje i opremanja u Srbiji</title>
+<meta name="description" content="Planirajte izgradnju, renoviranje ili opremanje kuće u Srbiji. Korak-po-korak plan, procena troškova i preporuke za materijale."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+:root{
+  --ink:#18181B; --ink2:#3F3F46; --ink3:#71717A; --ink4:#A1A1AA;
+  --bg:#FAFAF9; --bgw:#F4F4F0; --card:#FFFFFF;
+  --bdr:#E4E4E7; --bdr2:#D4D4D8;
+  --acc:#C45C2E; --acc2:#A34A22; --accbg:#FEF3EE; --accmid:#F5C5AD;
+  --grn:#166534; --grnbg:#F0FDF4; --grnmid:#BBF7D0;
+  --blu:#1D4ED8; --blubg:#EFF6FF; --blumid:#BFDBFE;
+  --amb:#92400E; --ambbg:#FFFBEB; --ambmid:#FDE68A;
+  --serif:'Playfair Display',Georgia,serif;
+  --sans:'Inter',system-ui,sans-serif;
+  --r:10px; --rl:16px; --rxl:22px;
+  --sh0:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --sh1:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
+  --sh2:0 16px 48px rgba(0,0,0,.1),0 4px 16px rgba(0,0,0,.06);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;font-family:var(--sans);border:none;background:none}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.fu{animation:fadeUp .4s cubic-bezier(.22,1,.36,1) both}
+.fu2{animation:fadeUp .4s .08s cubic-bezier(.22,1,.36,1) both}
+.fu3{animation:fadeUp .4s .16s cubic-bezier(.22,1,.36,1) both}
+
+/* Responsive */
+@media(max-width:900px){
+  .hero-g{grid-template-columns:1fr!important}
+  .hero-vis{display:none!important}
+  .how-g{grid-template-columns:1fr 1fr!important}
+  .trust-g{grid-template-columns:1fr 1fr!important}
+  .res-g{grid-template-columns:1fr!important}
+  .footer-g{grid-template-columns:1fr 1fr!important}
+  .plan-g{grid-template-columns:1fr!important}
+}
+@media(max-width:560px){
+  .how-g{grid-template-columns:1fr!important}
+  .trust-g{grid-template-columns:1fr!important}
+  .footer-g{grid-template-columns:1fr!important}
+  .task-g{grid-template-columns:1fr 1fr!important}
+  .res-2col{grid-template-columns:1fr!important}
+  .hide-xs{display:none!important}
+  .next-g{grid-template-columns:1fr!important}
+  .aff-g{grid-template-columns:1fr 1fr!important}
+}
+
+/* Lang menu */
+.lang-wrap{position:relative}
+.lang-menu{position:absolute;top:calc(100%+8px);right:0;background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);box-shadow:var(--sh2);overflow:hidden;z-index:200;min-width:165px}
+.lang-btn{display:flex;align-items:center;gap:9px;width:100%;padding:11px 15px;font-size:13px;font-weight:500;color:var(--ink2);background:none;border:none;text-align:left;cursor:pointer;transition:background .12s}
+.lang-btn:hover{background:var(--bgw)}
+.lang-btn.active{color:var(--acc);background:var(--accbg)}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:var(--rl);box-shadow:var(--sh0);transition:border-color .2s,box-shadow .2s,transform .2s}
+.card-h:hover{border-color:var(--accmid);box-shadow:var(--sh1);transform:translateY(-2px)}
+
+/* Buttons */
+.btn-p{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--acc);color:#fff;font-size:14px;font-weight:600;font-family:var(--sans);padding:12px 24px;border-radius:var(--r);border:none;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(196,92,46,.28)}
+.btn-p:hover{background:var(--acc2);transform:translateY(-1px);box-shadow:0 4px 16px rgba(196,92,46,.32)}
+.btn-p:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.btn-g{display:inline-flex;align-items:center;gap:6px;background:none;border:1.5px solid var(--bdr2);color:var(--ink3);font-size:13px;font-weight:500;font-family:var(--sans);padding:8px 16px;border-radius:var(--r);cursor:pointer;transition:all .15s}
+.btn-g:hover{border-color:var(--ink3);color:var(--ink);background:var(--bgw)}
+.btn-save{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.22);color:rgba(255,255,255,.85);font-size:12.5px;font-weight:500;font-family:var(--sans);padding:8px 16px;border-radius:var(--r);cursor:pointer;transition:all .15s}
+.btn-save:hover{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.4);color:#fff}
+
+/* Nav */
+.nav-lnk{font-size:13px;font-weight:500;color:var(--ink3);background:none;border:none;padding:0;cursor:pointer;transition:color .15s;font-family:var(--sans)}
+.nav-lnk:hover{color:var(--ink)}
+
+/* Form */
+.flabel{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;font-family:var(--sans)}
+.finput,.fselect{width:100%;padding:10px 13px;border:1.5px solid var(--bdr);border-radius:var(--r);background:var(--bg);font-family:var(--sans);font-size:14px;color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s,background .15s;appearance:none}
+.finput:focus,.fselect:focus{border-color:var(--acc);background:var(--card);box-shadow:0 0 0 3px rgba(196,92,46,.1)}
+.finput::placeholder{color:var(--ink4)}
+.fselect{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23A1A1AA' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:34px}
+
+/* Checkbox task */
+.task-opt{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border:1.5px solid var(--bdr);border-radius:var(--r);cursor:pointer;transition:all .15s;background:var(--bg);user-select:none}
+.task-opt:hover{border-color:var(--bdr2);background:var(--card)}
+.task-opt.sel{border-color:var(--acc);background:var(--accbg)}
+.task-icon{font-size:18px;flex-shrink:0;line-height:1;margin-top:1px}
+.task-label{font-size:13px;font-weight:500;color:var(--ink);line-height:1.4}
+.task-opt.sel .task-label{color:var(--acc)}
+.task-chk{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--bdr2);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .15s;margin-left:auto}
+.task-opt.sel .task-chk{background:var(--acc);border-color:var(--acc)}
+
+/* Step indicator */
+.step-ind{display:flex;align-items:center;gap:0;margin-bottom:36px}
+.step-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:all .3s}
+.step-line{flex:1;height:1.5px;transition:background .3s}
+
+/* FAQ */
+.faq-item{border-bottom:1px solid var(--bdr)}
+.faq-item:first-child{border-top:1px solid var(--bdr)}
+.faq-q{display:flex;align-items:center;justify-content:space-between;padding:18px 0;cursor:pointer;gap:16px}
+.faq-qt{font-size:14.5px;font-weight:500;color:var(--ink);transition:color .15s;line-height:1.4}
+.faq-q:hover .faq-qt{color:var(--acc)}
+.faq-ico{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--bdr2);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink3);flex-shrink:0;transition:all .2s}
+.faq-item.open .faq-ico{border-color:var(--acc);color:var(--acc);background:var(--accbg)}
+.faq-a{padding:0 0 18px;font-size:13.5px;color:var(--ink3);line-height:1.7}
+
+/* Eyebrow */
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--acc);font-family:var(--sans)}
+
+/* Modal */
+.modal-back{position:fixed;inset:0;background:rgba(24,24,27,.5);backdrop-filter:blur(4px);z-index:900;display:flex;align-items:center;justify-content:center;padding:24px}
+.modal-box{background:var(--card);border-radius:var(--rl);box-shadow:var(--sh2);padding:34px 30px;width:100%;max-width:430px;position:relative;animation:scaleIn .28s cubic-bezier(.22,1,.36,1)}
+
+/* Loc chip */
+.lchip{font-size:12px;padding:4px 11px;border-radius:18px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--ink3);cursor:pointer;transition:all .15s;white-space:nowrap;font-family:var(--sans)}
+.lchip:hover{border-color:var(--acc);color:var(--acc);background:var(--accbg)}
+.lchip.act{border-color:var(--acc);color:var(--acc);background:var(--accbg);font-weight:600}
+
+/* Rec card (inline results) */
+.irec{display:flex;align-items:center;gap:12px;padding:12px 15px;border:1px solid var(--bdr);border-radius:var(--r);background:var(--card);transition:all .15s;cursor:pointer;text-decoration:none}
+.irec:hover{border-color:var(--accmid);background:var(--accbg);box-shadow:var(--sh0)}
+.irec-name{font-size:13px;font-weight:600;color:var(--ink);font-family:var(--sans)}
+.irec-desc{font-size:11.5px;color:var(--ink4);font-family:var(--sans);line-height:1.4;margin-top:1px}
+.irec-cta{font-size:11.5px;font-weight:600;color:var(--acc);flex-shrink:0;font-family:var(--sans)}
+
+/* Result step */
+.rstep{display:flex;gap:13px}
+.rstep-dot{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;margin-top:1px}
+
+/* Divider */
+.div{height:1px;background:var(--bdr);border:none;margin:0}
+
+/* Infra badge */
+.inf-warn{display:flex;align-items:flex-start;gap:10px;background:var(--ambbg);border:1px solid var(--ambmid);border-radius:var(--r);padding:13px 15px;margin-top:12px}
+
+/* Progress bar */
+.pbar{height:3px;background:var(--bdr);border-radius:3px;overflow:hidden;margin-bottom:32px}
+.pfill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--acc),#E87A4E);transition:width .4s}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+/* ════════════════════════════════════════════════════════
+   AFFILIATE CATALOG
+════════════════════════════════════════════════════════ */
+const AFF = {
+  insulation: { icon:"🧱", href:"https://example.com/affiliate/insulation" },
+  windows:    { icon:"🪟", href:"https://example.com/affiliate/windows" },
+  flooring:   { icon:"🪵", href:"https://example.com/affiliate/flooring" },
+  lighting:   { icon:"💡", href:"https://example.com/affiliate/lighting" },
+  bathroom:   { icon:"🛁", href:"https://example.com/affiliate/bathroom" },
+  kitchen:    { icon:"🍳", href:"https://example.com/affiliate/kitchen" },
+  furniture:  { icon:"🛋️", href:"https://example.com/affiliate/furniture" },
+  tools:      { icon:"🔧", href:"https://example.com/affiliate/tools" },
+  roofing:    { icon:"🏚️", href:"https://example.com/affiliate/roofing" },
+  garden:     { icon:"🌿", href:"https://example.com/affiliate/garden" },
+  solar:      { icon:"☀️", href:"https://example.com/affiliate/solar" },
+  heating:    { icon:"🔥", href:"https://example.com/affiliate/heating" },
+  septic:     { icon:"💧", href:"https://example.com/affiliate/septic" },
+  fence:      { icon:"🚧", href:"https://example.com/affiliate/fence" },
+};
+
+/* Task→affiliate mapping */
+const TASK_AFF = {
+  foundations:   ["tools","insulation"],
+  walls:         ["insulation","tools"],
+  roof:          ["roofing","tools"],
+  installations: ["heating","lighting"],
+  finishing:     ["flooring","lighting","paint"],
+  fullbuild:     ["insulation","windows","roofing","flooring","heating"],
+  ufh:           ["heating","flooring"],
+  winreplace:    ["windows"],
+  flooring:      ["flooring"],
+  bathreno:      ["bathroom"],
+  electrical:    ["lighting"],
+  plumbing:      ["bathroom"],
+  insulation:    ["insulation"],
+  fullreno:      ["insulation","windows","flooring","bathroom","lighting"],
+  furniture:     ["furniture"],
+  kitchen:       ["kitchen"],
+  bathequip:     ["bathroom"],
+  lighting:      ["lighting"],
+  decor:         ["furniture","lighting"],
+  leveling:      ["tools"],
+  lawn:          ["garden"],
+  irrigation:    ["garden"],
+  fence:         ["fence"],
+  gate:          ["fence"],
+  paths:         ["tools","garden"],
+  outdoorlight:  ["lighting","garden"],
+};
+
+/* ════════════════════════════════════════════════════════
+   CONTENT MODEL
+════════════════════════════════════════════════════════ */
+const T = {
+/* ─────────────────── SERBIAN ─────────────────── */
+sr:{
+  lang:"sr",
+  nav:{logo:"KućaPlan",sub:"Srbija",links:["Kako funkcioniše","Planer","Resursi","FAQ"],cta:"Kreiraj plan"},
+  hero:{
+    eyebrow:"Besplatan alat za planiranje gradnje u Srbiji",
+    title:"Znajte tačno šta radite pre nego što potrošite",
+    accent:"€50.000 ili više.",
+    sub:"Dobijte konkretan plan, procenu troškova i listu grešaka koje treba izbegavati — pre nego što angažujete bilo koga ili kupite ijedan materijal.",
+    cta:"Kreiraj plan",ctaNote:"Besplatno · Bez registracije · Bez obaveza",
+    trustBar:{
+      label:"Koriste:",
+      items:["Vlasnici nekretnina","Strani investitori","Novodoseljeni u Srbiji","Renovatori"],
+    },
+    preview:"Primer: kuća 120 m² → €72.000 – €144.000",
+  },
+  mistakes:{
+    eyebrow:"Česte greške",
+    title:"Greške koje koštaju hiljade eura",
+    sub:"Većina problema na gradilištu nije slučajna — može se predvideti i izbeći.",
+    items:[
+      {icon:"⚠️",t:"Pogrešan redosled radova",d:"Pokretanje unutrašnje obrade pre završetka instalacija dovodi do raskopavanja i ponovnog rada. Troškovi se dupliraju."},
+      {icon:"💸",t:"Potcenjivanje troškova",d:"Budžet 'za svaki slučaj' od 10% nije dovoljan. Na srpskom tržištu preporučujemo rezervu od 20–30%."},
+      {icon:"🧱",t:"Pogrešan izbor materijala",d:"Jeftiniji materijal u ranoj fazi (fasada, prozori, izolacija) povećava troškove grejanja za decenije."},
+      {icon:"🔨",t:"Angažovanje pogrešnog izvođača",d:"Bez pisanog ugovora i dinamike plaćanja rizikujete avansno plaćanje bez garancije za kvalitet."},
+      {icon:"📋",t:"Ignorisanje lokalne regulative",d:"Gradnja bez dozvola ili van regulacionog plana može rezultovati rušenjem objekta i pravnim problemima."},
+    ],
+  },
+  how:{
+    eyebrow:"Kako funkcioniše",title:"Četiri koraka do konkretnog plana.",
+    steps:[
+      {n:"01",t:"Odaberite tip projekta",d:"Nova gradnja, renoviranje, enterijer ili dvorište."},
+      {n:"02",t:"Izaberite konkretne zadatke",d:"Selektujte šta tačno treba da se uradi — od temelja do nameštaja."},
+      {n:"03",t:"Unesite detalje",d:"Kvadratura, budžet, lokacija, faza i infrastruktura."},
+      {n:"04",t:"Dobijte prilagođeni plan",d:"Koraci, troškovi, materijali i preporuke za vašu situaciju."},
+    ],
+  },
+  planner:{
+    eyebrow:"Planer",title:"Opišite vaš projekat",
+    stepLabels:["Tip","Zadaci","Detalji","Infrastruktura"],
+    projectTypes:[
+      {k:"newbuild",icon:"🏗️",label:"Nova gradnja"},
+      {k:"reno",    icon:"🔧",label:"Renoviranje"},
+      {k:"interior",icon:"🛋️",label:"Enterijer"},
+      {k:"yard",    icon:"🌿",label:"Dvorište"},
+    ],
+    tasks:{
+      newbuild:[
+        {k:"foundations",icon:"⚒️",label:"Temelji"},
+        {k:"walls",      icon:"🧱",label:"Zidovi"},
+        {k:"roof",       icon:"🏚️",label:"Krov"},
+        {k:"installations",icon:"⚡",label:"Instalacije"},
+        {k:"finishing",  icon:"🪵",label:"Završni radovi"},
+        {k:"fullbuild",  icon:"🏠",label:"Kompletan objekat"},
+      ],
+      reno:[
+        {k:"ufh",        icon:"🔥",label:"Podno grejanje"},
+        {k:"winreplace", icon:"🪟",label:"Zamena prozora"},
+        {k:"flooring",   icon:"🪵",label:"Podne obloge"},
+        {k:"bathreno",   icon:"🛁",label:"Renovacija kupatila"},
+        {k:"electrical", icon:"💡",label:"Elektroinstalacije"},
+        {k:"plumbing",   icon:"💧",label:"Vodoinstalacije"},
+        {k:"insulation", icon:"🧱",label:"Izolacija"},
+        {k:"fullreno",   icon:"🔧",label:"Kompletno renoviranje"},
+      ],
+      interior:[
+        {k:"furniture",  icon:"🛋️",label:"Nameštaj"},
+        {k:"kitchen",    icon:"🍳",label:"Kuhinja"},
+        {k:"bathequip",  icon:"🛁",label:"Kupatilska oprema"},
+        {k:"lighting",   icon:"💡",label:"Osvetljenje"},
+        {k:"decor",      icon:"🎨",label:"Dekoracija"},
+      ],
+      yard:[
+        {k:"leveling",   icon:"⛏️",label:"Nivelisanje terena"},
+        {k:"lawn",       icon:"🌿",label:"Travnjak"},
+        {k:"irrigation", icon:"💧",label:"Navodnjavanje"},
+        {k:"fence",      icon:"🚧",label:"Ograda"},
+        {k:"gate",       icon:"🚪",label:"Kapija"},
+        {k:"paths",      icon:"🧱",label:"Staze i popločavanje"},
+        {k:"outdoorlight",icon:"💡",label:"Spoljašnje osvetljenje"},
+      ],
+    },
+    fields:{
+      size:{label:"Površina (m²)",ph:"npr. 120"},
+      budget:{label:"Okvirni budžet",opts:["Do 15.000 €","15.000 – 40.000 €","40.000 – 80.000 €","80.000 – 150.000 €","Više od 150.000 €"]},
+      location:{label:"Lokacija u Srbiji",ph:"npr. Beograd, Novi Sad, Niš, okolina..."},
+      stage:{label:"Trenutna faza",opts:["Samo istražujem","Kupljeno zemljište","Dozvole u toku","Gradnja počela","Završni radovi"]},
+      userType:{label:"Vaš profil",opts:["Lokalni vlasnik","Strani kupac / investitor / novodoseljeni"]},
+      infra:{
+        label:"Pristup infrastrukturi",
+        opts:["Puna (voda, kanalizacija, struja)","Delimična","Bez priključaka / ruralno"],
+      },
+    },
+    locChips:["Beograd","Novi Sad","Niš","Subotica","Zlatibor","Kopaonik","Kragujevac","Šabac"],
+    back:"← Nazad",next:"Dalje →",submit:"Generiši plan",submitting:"Priprema se plan…",
+    selectHint:"Izaberite jednu ili više stavki:",
+  },
+  results:{
+    title:"Vaš plan",restart:"Novi plan",savePlan:"Sačuvaj plan",
+    planLabel:"Koraci",costsLabel:"Procena troškova",
+    notesLabel:"Napomene",nextLabel:"Sledeći koraci",
+    startHereLabel:"Počnite ovde",startHereSub:"Ovo su vaša prva tri konkretna koraka:",
+    stageRecsLabel:"Šta vam treba sledeće",
+    stageRecsContext:"Za vaš sledeći korak će vam verovatno trebati:",
+    stageRecsNote:"Relevantne kategorije za vaš projekat. Neke veze su partnerske.",
+    microTag:"Fokusirani plan",multiTag:"Kombinovani plan",
+    costsNote:"Procene su orijentacione i mogu varirati u zavisnosti od lokacije, izvođača i tržišnih uslova.",
+    infraNote:"Napomena o infrastrukturi",
+    forPhase:"Za ovu fazu će vam verovatno trebati:",
+    recommended:"Preporučujemo",
+    affilNote:"Neke veze su partnerske. Preporučujemo samo relevantne kategorije.",
+  },
+  stageRecs:{
+    insulation:{name:"Izolacija i fasada",    desc:"Toplotna i zvučna zaštita objekta."},
+    windows:   {name:"Prozori i vrata",       desc:"Energetski efikasni sistemi."},
+    flooring:  {name:"Podne obloge",          desc:"Laminat, parket, keramika, vinil."},
+    lighting:  {name:"Osvetljenje",           desc:"Unutrašnja i spoljašnja rasveta."},
+    bathroom:  {name:"Kupatilska oprema",     desc:"Sanitarija, tuševi, kade, nameštaj."},
+    kitchen:   {name:"Kuhinja",               desc:"Elementi, radne površine, uređaji."},
+    furniture: {name:"Nameštaj",              desc:"Dnevna, spavaća, trpezarija."},
+    tools:     {name:"Alati i oprema",        desc:"Ručni i električni alati."},
+    roofing:   {name:"Krov i hidroizolacija", desc:"Sistemi, crep, folije."},
+    garden:    {name:"Dvorište i bašta",      desc:"Terasa, zelenilo, oprema."},
+    solar:     {name:"Solarne ploče",         desc:"Fotonaponski sistemi i baterije."},
+    heating:   {name:"Grejanje i klima",      desc:"Toplotne pumpe, podni grijači."},
+    septic:    {name:"Septička jama / BIO",   desc:"Sistemi za prečišćavanje otpadnih voda."},
+    fence:     {name:"Ograda i kapija",       desc:"Metalne, betonske, drvene ograde."},
+  },
+  trust:{
+    eyebrow:"Važna napomena",title:"Za koga je ovaj alat",
+    items:[
+      {icon:"🏠",t:"Lokalni vlasnici",d:"Srbi koji grade, renoviraju ili uređuju nekretninu."},
+      {icon:"🌍",t:"Strani kupci",d:"Investitori i novodoseljeni koji planiraju gradnju u Srbiji."},
+      {icon:"📋",t:"Šta alat radi",d:"Pomaže vam da razumete tok, troškove i korake. Orijentacioni je."},
+      {icon:"⚠️",t:"Šta ne zamenjuje",d:"Ne zamenjuje arhitektu, inženjera ni pravnog savetnika."},
+    ],
+  },
+  faq:{
+    eyebrow:"Česta pitanja",title:"Često postavljana pitanja",
+    items:[
+      {q:"Da li je alat samo za Srbiju?",a:"Da. Cene, procesi i saveti su prilagođeni srpskom tržištu i propisima."},
+      {q:"Da li su procene troškova tačne?",a:"Procene su orijentacione i baziraju se na opštim tržišnim podacima. Mogu varirati 20–40%."},
+      {q:"Mogu li stranci da grade u Srbiji?",a:"Da, stranci mogu posedovati nekretnine i graditi u Srbiji uz određene procedure. Preporučujemo lokalnog pravnika."},
+      {q:"Da li ovaj alat zamenjuje arhitektu?",a:"Ne. Alat je za planiranje i orijentaciju. Arhitekta, inženjer i pravnik su neophodni za pravu gradnju."},
+      {q:"Mogu li ga koristiti samo za renoviranje?",a:"Da. Podržani su: renoviranje, uređenje enterijera, dvorišta, kao i nova gradnja."},
+      {q:"Da li su preporučene veze sponzorisane?",a:"Neke veze su partnerske. Uvek preporučujemo samo relevantne kategorije."},
+    ],
+  },
+  save:{
+    title:"Sačuvajte vaš plan",sub:"Unesite email — sažetak plana ćemo vam poslati besplatno.",
+    contractorTip:"💡 Koristite ovaj plan kada razgovarate sa izvođačima — pomoći će vam da dobijete precizne i uporedive ponude.",
+    emailLabel:"Email adresa",emailPh:"vaš@email.com",
+    submit:"Sačuvaj plan",submitting:"Čuvanje…",
+    copySummary:"Kopiraj sažetak",copied:"Kopirano!",
+    okTitle:"Sačuvano!",okSub:"Sažetak ćemo poslati na vaš email. (Demo prikaz — nema stvarnog slanja)",
+    close:"Zatvori",
+  },
+  footer:{
+    tagline:"Alat za planiranje gradnje, renoviranja i opremanja u Srbiji.",
+    disclaimer:"Neke veze su partnerske. Procene troškova su orijentacione.",
+    legal:"Alat ne zamenjuje stručni savet arhitekte, inženjera ni pravnog savetnika.",
+    contact:"kontakt@kucaplan.rs",copy:"© 2025 KućaPlan",
+  },
+  infra:{
+    partial:"Napomena: Sa delimičnom infrastrukturom, planirajte dodatne troškove za priključke i sistemska rešenja.",
+    none:"Ruralna lokacija bez priključaka zahteva posebna rešenja: septička jama, solarne ploče ili agregat, čuvanje kišnice. Ovi troškovi mogu biti značajni.",
+    solar:"Preporučujemo razmatranje solarnih panela i baterijskog sistema za struju.",
+    septic:"Za kanalizaciju biće potrebna septička jama ili BIO sistem za prečišćavanje otpadnih voda.",
+  },
+},
+
+/* ─────────────────── ENGLISH ─────────────────── */
+en:{
+  lang:"en",
+  nav:{logo:"SerbiaHome",sub:"Planner",links:["How it works","Planner","Resources","FAQ"],cta:"Generate plan"},
+  hero:{
+    eyebrow:"Free planning tool for building in Serbia",
+    title:"Know exactly what you're doing before you spend",
+    accent:"€50,000 or more.",
+    sub:"Get a concrete plan, cost estimate, and a list of mistakes to avoid — before you hire anyone or buy a single material.",
+    cta:"Generate plan",ctaNote:"Free · No registration · No commitment",
+    trustBar:{
+      label:"Used by:",
+      items:["Homeowners","Foreign investors","Newcomers to Serbia","Renovators"],
+    },
+    preview:"Example: 120 m² house → €72,000 – €144,000",
+  },
+  mistakes:{
+    eyebrow:"Common mistakes",
+    title:"Mistakes that cost thousands",
+    sub:"Most problems on a build site are predictable — and preventable.",
+    items:[
+      {icon:"⚠️",t:"Wrong order of works",d:"Starting interior finishes before utilities are complete means breaking things open again. Costs can double."},
+      {icon:"💸",t:"Underestimating costs",d:"A 10% contingency is not enough. In Serbia, budget a 20–30% buffer above your estimates."},
+      {icon:"🧱",t:"Choosing the wrong materials",d:"Cheaper choices on facade, windows and insulation will increase heating costs for decades."},
+      {icon:"🔨",t:"Hiring the wrong contractor",d:"No written contract and no payment schedule means you can pay in full upfront with no quality guarantee."},
+      {icon:"📋",t:"Ignoring local regulations",d:"Building without permits or outside the regulatory plan can result in demolition orders and legal liability."},
+    ],
+  },
+  how:{
+    eyebrow:"How it works",title:"Four steps to a concrete plan.",
+    steps:[
+      {n:"01",t:"Choose your project type",d:"New build, renovation, interior or yard setup."},
+      {n:"02",t:"Select specific tasks",d:"Pick exactly what needs to be done — from foundations to furniture."},
+      {n:"03",t:"Enter your details",d:"Size, budget, location, stage and infrastructure access."},
+      {n:"04",t:"Get a tailored plan",d:"Steps, costs, materials and recommendations for your situation."},
+    ],
+  },
+  planner:{
+    eyebrow:"Planner",title:"Tell us about your project",
+    stepLabels:["Type","Tasks","Details","Infrastructure"],
+    projectTypes:[
+      {k:"newbuild",icon:"🏗️",label:"New build"},
+      {k:"reno",    icon:"🔧",label:"Renovation"},
+      {k:"interior",icon:"🛋️",label:"Interior"},
+      {k:"yard",    icon:"🌿",label:"Yard / outdoor"},
+    ],
+    tasks:{
+      newbuild:[
+        {k:"foundations",icon:"⚒️",label:"Foundations"},
+        {k:"walls",      icon:"🧱",label:"Walls & structure"},
+        {k:"roof",       icon:"🏚️",label:"Roof"},
+        {k:"installations",icon:"⚡",label:"Utilities & services"},
+        {k:"finishing",  icon:"🪵",label:"Finishing works"},
+        {k:"fullbuild",  icon:"🏠",label:"Full build"},
+      ],
+      reno:[
+        {k:"ufh",        icon:"🔥",label:"Underfloor heating"},
+        {k:"winreplace", icon:"🪟",label:"Window replacement"},
+        {k:"flooring",   icon:"🪵",label:"Flooring"},
+        {k:"bathreno",   icon:"🛁",label:"Bathroom renovation"},
+        {k:"electrical", icon:"💡",label:"Electrical works"},
+        {k:"plumbing",   icon:"💧",label:"Plumbing works"},
+        {k:"insulation", icon:"🧱",label:"Insulation"},
+        {k:"fullreno",   icon:"🔧",label:"Full renovation"},
+      ],
+      interior:[
+        {k:"furniture",  icon:"🛋️",label:"Furniture"},
+        {k:"kitchen",    icon:"🍳",label:"Kitchen"},
+        {k:"bathequip",  icon:"🛁",label:"Bathroom equipment"},
+        {k:"lighting",   icon:"💡",label:"Lighting"},
+        {k:"decor",      icon:"🎨",label:"Decoration"},
+      ],
+      yard:[
+        {k:"leveling",   icon:"⛏️",label:"Ground levelling"},
+        {k:"lawn",       icon:"🌿",label:"Lawn"},
+        {k:"irrigation", icon:"💧",label:"Irrigation system"},
+        {k:"fence",      icon:"🚧",label:"Fencing"},
+        {k:"gate",       icon:"🚪",label:"Gate"},
+        {k:"paths",      icon:"🧱",label:"Paths & paving"},
+        {k:"outdoorlight",icon:"💡",label:"Outdoor lighting"},
+      ],
+    },
+    fields:{
+      size:{label:"Size (m²)",ph:"e.g. 120"},
+      budget:{label:"Approximate budget",opts:["Under €15,000","€15,000 – €40,000","€40,000 – €80,000","€80,000 – €150,000","Over €150,000"]},
+      location:{label:"Location in Serbia",ph:"e.g. Belgrade, Novi Sad, countryside…"},
+      stage:{label:"Current stage",opts:["Just exploring","Land purchased","Permits in progress","Construction started","Finishing works"]},
+      userType:{label:"Your profile",opts:["Local owner","Foreign buyer / investor / newcomer"]},
+      infra:{label:"Infrastructure access",opts:["Full (water, sewage, electricity)","Partial","None / rural location"]},
+    },
+    locChips:["Belgrade","Novi Sad","Niš","Subotica","Zlatibor","Kopaonik"],
+    back:"← Back",next:"Next →",submit:"Generate plan",submitting:"Preparing plan…",
+    selectHint:"Select one or more items:",
+  },
+  results:{
+    title:"Your plan",restart:"New plan",savePlan:"Save plan",
+    planLabel:"Steps",costsLabel:"Cost estimate",
+    notesLabel:"Notes",nextLabel:"Next steps",
+    startHereLabel:"Start here",startHereSub:"These are your first three concrete steps:",
+    stageRecsLabel:"What you'll need next",
+    stageRecsContext:"For your next step, you'll likely need:",
+    stageRecsNote:"Relevant categories for your project. Some links are referral-based.",
+    microTag:"Focused plan",multiTag:"Combined plan",
+    costsNote:"These estimates are indicative and may vary depending on location, contractors and market conditions.",
+    infraNote:"Infrastructure note",
+    forPhase:"For this phase you'll likely need:",
+    recommended:"Recommended",
+    affilNote:"Some links may be referral-based. We only recommend relevant categories.",
+  },
+  stageRecs:{
+    insulation:{name:"Insulation & facade",  desc:"Thermal and acoustic protection."},
+    windows:   {name:"Windows & doors",      desc:"Energy-efficient systems."},
+    flooring:  {name:"Flooring",             desc:"Laminate, hardwood, tiles, vinyl."},
+    lighting:  {name:"Lighting",             desc:"Indoor and outdoor lighting."},
+    bathroom:  {name:"Bathroom equipment",   desc:"Sanitaryware, showers, baths."},
+    kitchen:   {name:"Kitchen",              desc:"Units, worktops, appliances."},
+    furniture: {name:"Furniture",            desc:"Living, bedroom, dining."},
+    tools:     {name:"Tools & equipment",    desc:"Hand and power tools."},
+    roofing:   {name:"Roofing",              desc:"Systems, tiles, membranes."},
+    garden:    {name:"Garden & outdoor",     desc:"Terrace, planting, equipment."},
+    solar:     {name:"Solar panels",         desc:"PV systems and battery storage."},
+    heating:   {name:"Heating & cooling",    desc:"Heat pumps, underfloor heating."},
+    septic:    {name:"Septic / bio system",  desc:"Wastewater treatment systems."},
+    fence:     {name:"Fencing & gates",      desc:"Metal, concrete, timber fencing."},
+  },
+  trust:{
+    eyebrow:"Important note",title:"Who this tool is for",
+    items:[
+      {icon:"🌍",t:"Foreign buyers & newcomers",d:"Anyone planning to build or invest in property in Serbia."},
+      {icon:"🏠",t:"Local owners",d:"Serbian residents planning a build, renovation or interior project."},
+      {icon:"📋",t:"What it does",d:"Helps you understand the process, estimate costs and plan steps."},
+      {icon:"⚠️",t:"What it doesn't replace",d:"Not a substitute for an architect, engineer or legal adviser."},
+    ],
+  },
+  foreignerBlock:{
+    eyebrow:"Building as a foreigner",title:"Building in Serbia as a foreigner",
+    sub:"Key things to understand before you start.",
+    items:[
+      {icon:"📋",t:"Permits",d:"You'll need a building permit (građevinska dozvola). A licensed architect and approved project documents are required. Allow 1–4 months."},
+      {icon:"🏠",t:"Ownership",d:"EU and non-EU citizens can own property in Serbia. Verify ownership in the cadastre (katastar) before purchase. A local solicitor is strongly recommended."},
+      {icon:"🔨",t:"Local contractors",d:"Always obtain 3+ written quotes. Agree milestones in a signed contract. Advance payments are common — never pay in full upfront."},
+      {icon:"📅",t:"Typical timeline",d:"A standard new build takes 12–24 months from permit to completion. Renovation timelines vary from 2 weeks (single room) to 6+ months (full renovation)."},
+    ],
+  },
+  faq:{
+    eyebrow:"Questions",title:"Frequently asked questions",
+    items:[
+      {q:"Is this tool only for Serbia?",a:"Yes. Costs, processes and advice are adapted to the Serbian market and regulations."},
+      {q:"Are cost estimates accurate?",a:"Estimates are indicative based on general market data. They may vary 20–40% depending on region and contractors."},
+      {q:"Can foreigners build in Serbia?",a:"Yes, foreigners can own property and build in Serbia. We recommend engaging a local legal professional for specific procedures."},
+      {q:"Does this replace an architect?",a:"No. This tool is for planning and orientation. A licensed architect, engineer and solicitor are required for actual construction."},
+      {q:"Can I use it for renovation only?",a:"Yes. The planner supports renovations, interior setups, yard projects and new builds."},
+      {q:"Are product links sponsored?",a:"Some links may be referral-based. We only recommend categories that are genuinely relevant to your project."},
+    ],
+  },
+  save:{
+    title:"Save your plan",sub:"Enter your email and we'll send you a summary — free of charge.",
+    contractorTip:"💡 Use this plan when talking to contractors — it will help you get precise, comparable quotes.",
+    emailLabel:"Email address",emailPh:"your@email.com",
+    submit:"Save plan",submitting:"Saving…",
+    copySummary:"Copy summary",copied:"Copied!",
+    okTitle:"Saved!",okSub:"We'll send your plan summary to your inbox. (Demo — no actual email sent)",
+    close:"Close",
+  },
+  footer:{
+    tagline:"A free planning tool for building and furnishing in Serbia.",
+    disclaimer:"Some links are referral-based. Cost estimates are indicative only.",
+    legal:"This tool does not replace professional advice from an architect, engineer or solicitor.",
+    contact:"hello@serbiahome.com",copy:"© 2025 SerbiaHome Planner",
+  },
+  infra:{
+    partial:"Note: With partial infrastructure, budget for connection works and system-level solutions.",
+    none:"A rural location without connections requires: septic tank, solar or generator power, and water storage. These costs can be significant.",
+    solar:"We recommend exploring solar panels and battery storage for off-grid electricity.",
+    septic:"For sewage you'll need a septic tank or a bio-wastewater treatment system.",
+  },
+},
+
+/* ─────────────────── RUSSIAN ─────────────────── */
+ru:{
+  lang:"ru",
+  nav:{logo:"ДомСербия",sub:"Планировщик",links:["Как это работает","Планировщик","Ресурсы","FAQ"],cta:"Создать план"},
+  hero:{
+    eyebrow:"Бесплатный инструмент планирования строительства в Сербии",
+    title:"Знайте точно, что делаете, прежде чем потратить",
+    accent:"€50 000 и больше.",
+    sub:"Получите конкретный план, оценку расходов и список ошибок, которых следует избегать — до того как нанять подрядчика или купить первый материал.",
+    cta:"Создать план",ctaNote:"Бесплатно · Без регистрации · Без обязательств",
+    trustBar:{
+      label:"Используют:",
+      items:["Владельцы недвижимости","Иностранные инвесторы","Переехавшие в Сербию","Те, кто делает ремонт"],
+    },
+    preview:"Пример: дом 120 м² → €72 000 – €144 000",
+  },
+  mistakes:{
+    eyebrow:"Частые ошибки",
+    title:"Ошибки, которые стоят тысячи евро",
+    sub:"Большинство проблем на стройке предсказуемы — и их можно избежать.",
+    items:[
+      {icon:"⚠️",t:"Неверная очерёдность работ",d:"Начинать внутреннюю отделку до завершения коммуникаций — значит потом всё вскрывать заново. Расходы удваиваются."},
+      {icon:"💸",t:"Недооценка расходов",d:"10% резерва недостаточно. На сербском рынке рекомендуем закладывать 20–30% сверх сметы."},
+      {icon:"🧱",t:"Неправильный выбор материалов",d:"Экономия на фасаде, окнах и утеплении обернётся повышенными расходами на отопление на десятилетия вперёд."},
+      {icon:"🔨",t:"Неверный выбор подрядчика",d:"Без письменного договора и графика платежей вы рискуете заплатить аванс без гарантии качества."},
+      {icon:"📋",t:"Игнорирование местных норм",d:"Строительство без разрешений или вне регуляционного плана может привести к сносу объекта и судебным проблемам."},
+    ],
+  },
+  how:{
+    eyebrow:"Как это работает",title:"Четыре шага к конкретному плану.",
+    steps:[
+      {n:"01",t:"Выберите тип проекта",d:"Новое строительство, ремонт, интерьер или обустройство двора."},
+      {n:"02",t:"Укажите конкретные задачи",d:"Выберите, что именно нужно сделать — от фундамента до мебели."},
+      {n:"03",t:"Введите данные",d:"Площадь, бюджет, местоположение, этап и доступ к коммуникациям."},
+      {n:"04",t:"Получите индивидуальный план",d:"Шаги, расходы, материалы и рекомендации для вашей ситуации."},
+    ],
+  },
+  planner:{
+    eyebrow:"Планировщик",title:"Расскажите о вашем проекте",
+    stepLabels:["Тип","Задачи","Детали","Инфраструктура"],
+    projectTypes:[
+      {k:"newbuild",icon:"🏗️",label:"Новое строительство"},
+      {k:"reno",    icon:"🔧",label:"Ремонт"},
+      {k:"interior",icon:"🛋️",label:"Интерьер"},
+      {k:"yard",    icon:"🌿",label:"Двор / экстерьер"},
+    ],
+    tasks:{
+      newbuild:[
+        {k:"foundations",icon:"⚒️",label:"Фундамент"},
+        {k:"walls",      icon:"🧱",label:"Стены и конструкция"},
+        {k:"roof",       icon:"🏚️",label:"Крыша"},
+        {k:"installations",icon:"⚡",label:"Коммуникации"},
+        {k:"finishing",  icon:"🪵",label:"Отделочные работы"},
+        {k:"fullbuild",  icon:"🏠",label:"Строительство под ключ"},
+      ],
+      reno:[
+        {k:"ufh",        icon:"🔥",label:"Тёплый пол"},
+        {k:"winreplace", icon:"🪟",label:"Замена окон"},
+        {k:"flooring",   icon:"🪵",label:"Напольные покрытия"},
+        {k:"bathreno",   icon:"🛁",label:"Ремонт ванной"},
+        {k:"electrical", icon:"💡",label:"Электромонтаж"},
+        {k:"plumbing",   icon:"💧",label:"Сантехнические работы"},
+        {k:"insulation", icon:"🧱",label:"Утепление"},
+        {k:"fullreno",   icon:"🔧",label:"Полный ремонт"},
+      ],
+      interior:[
+        {k:"furniture",  icon:"🛋️",label:"Мебель"},
+        {k:"kitchen",    icon:"🍳",label:"Кухня"},
+        {k:"bathequip",  icon:"🛁",label:"Сантехника"},
+        {k:"lighting",   icon:"💡",label:"Освещение"},
+        {k:"decor",      icon:"🎨",label:"Декор"},
+      ],
+      yard:[
+        {k:"leveling",   icon:"⛏️",label:"Планировка участка"},
+        {k:"lawn",       icon:"🌿",label:"Газон"},
+        {k:"irrigation", icon:"💧",label:"Система полива"},
+        {k:"fence",      icon:"🚧",label:"Забор"},
+        {k:"gate",       icon:"🚪",label:"Ворота"},
+        {k:"paths",      icon:"🧱",label:"Дорожки и мощение"},
+        {k:"outdoorlight",icon:"💡",label:"Наружное освещение"},
+      ],
+    },
+    fields:{
+      size:{label:"Площадь (м²)",ph:"напр. 120"},
+      budget:{label:"Примерный бюджет",opts:["До 15 000 €","15 000 – 40 000 €","40 000 – 80 000 €","80 000 – 150 000 €","Более 150 000 €"]},
+      location:{label:"Местоположение в Сербии",ph:"напр. Белград, Нови-Сад, пригород…"},
+      stage:{label:"Текущий этап",opts:["Только изучаю","Участок куплен","Разрешения оформляются","Строительство начато","Финишные работы"]},
+      userType:{label:"Ваш профиль",opts:["Местный владелец","Иностранный покупатель / инвестор / переехавший"]},
+      infra:{label:"Доступ к коммуникациям",opts:["Полный (вода, канализация, электричество)","Частичный","Отсутствует / сельская местность"]},
+    },
+    locChips:["Белград","Нови-Сад","Ниш","Субботица","Златибор","Копаоник"],
+    back:"← Назад",next:"Далее →",submit:"Создать план",submitting:"Готовим план…",
+    selectHint:"Выберите один или несколько пунктов:",
+  },
+  results:{
+    title:"Ваш план",restart:"Новый план",savePlan:"Сохранить план",
+    planLabel:"Шаги",costsLabel:"Оценка расходов",
+    notesLabel:"Примечания",nextLabel:"Следующие шаги",
+    startHereLabel:"Начните отсюда",startHereSub:"Вот ваши первые три конкретных шага:",
+    stageRecsLabel:"Что понадобится дальше",
+    stageRecsContext:"Для следующего этапа вам, вероятно, понадобится:",
+    stageRecsNote:"Релевантные категории для вашего проекта. Некоторые ссылки партнёрские.",
+    microTag:"Целевой план",multiTag:"Комбинированный план",
+    costsNote:"Оценки носят ориентировочный характер и могут варьироваться в зависимости от местоположения и подрядчиков.",
+    infraNote:"Примечание об инфраструктуре",
+    forPhase:"Для этого этапа вам, вероятно, понадобится:",
+    recommended:"Рекомендуем",
+    affilNote:"Некоторые ссылки партнёрские. Рекомендуем только релевантные категории.",
+  },
+  stageRecs:{
+    insulation:{name:"Утепление и фасад",    desc:"Тепло- и звукоизоляция."},
+    windows:   {name:"Окна и двери",         desc:"Энергоэффективные системы."},
+    flooring:  {name:"Напольные покрытия",   desc:"Ламинат, паркет, плитка, винил."},
+    lighting:  {name:"Освещение",            desc:"Внутреннее и наружное освещение."},
+    bathroom:  {name:"Сантехника",           desc:"Душевые кабины, ванны, мебель."},
+    kitchen:   {name:"Кухня",                desc:"Гарнитуры, столешницы, техника."},
+    furniture: {name:"Мебель",               desc:"Гостиная, спальня, столовая."},
+    tools:     {name:"Инструменты",          desc:"Ручной и электрический инструмент."},
+    roofing:   {name:"Кровля",               desc:"Системы, черепица, мембраны."},
+    garden:    {name:"Сад и двор",           desc:"Терраса, озеленение, оборудование."},
+    solar:     {name:"Солнечные панели",     desc:"Фотовольтаика и аккумуляторы."},
+    heating:   {name:"Отопление и климат",   desc:"Тепловые насосы, тёплый пол."},
+    septic:    {name:"Септик / BIO система", desc:"Системы очистки сточных вод."},
+    fence:     {name:"Забор и ворота",       desc:"Металлический, бетонный, деревянный."},
+  },
+  trust:{
+    eyebrow:"Важное примечание",title:"Для кого этот инструмент",
+    items:[
+      {icon:"🌍",t:"Иностранцы и переехавшие",d:"Те, кто планирует строить или инвестировать в недвижимость в Сербии."},
+      {icon:"🏠",t:"Местные владельцы",d:"Жители Сербии, планирующие строительство, ремонт или интерьер."},
+      {icon:"📋",t:"Что делает инструмент",d:"Помогает понять процесс, оценить расходы и спланировать шаги."},
+      {icon:"⚠️",t:"Что не заменяет",d:"Не заменяет архитектора, инженера и юриста."},
+    ],
+  },
+  foreignerBlock:{
+    eyebrow:"Строительство для иностранцев",title:"Строительство в Сербии для иностранцев",
+    sub:"Ключевые моменты, которые нужно знать до начала.",
+    items:[
+      {icon:"📋",t:"Разрешения",d:"Для строительства необходимо разрешение (građevinska dozvola). Потребуется лицензированный архитектор и утверждённая документация. Срок — от 1 до 4 месяцев."},
+      {icon:"🏠",t:"Право собственности",d:"Иностранцы могут владеть недвижимостью в Сербии. Проверьте документы в кадастре (katastar) перед покупкой. Рекомендуем местного юриста."},
+      {icon:"🔨",t:"Местные подрядчики",d:"Запрашивайте минимум 3 письменных предложения. Фиксируйте условия в договоре. Авансы распространены — не платите всю сумму сразу."},
+      {icon:"📅",t:"Типичные сроки",d:"Новое строительство — 12–24 месяца. Ремонт — от 2 недель (одна комната) до 6+ месяцев (полная реновация)."},
+    ],
+  },
+  faq:{
+    eyebrow:"Вопросы",title:"Часто задаваемые вопросы",
+    items:[
+      {q:"Этот инструмент только для Сербии?",a:"Да. Цены, процессы и советы адаптированы к сербскому рынку и законодательству."},
+      {q:"Точны ли оценки стоимости?",a:"Оценки ориентировочные и основаны на общих рыночных данных. Могут отличаться на 20–40%."},
+      {q:"Могут ли иностранцы строить в Сербии?",a:"Да, иностранцы могут владеть недвижимостью и строить в Сербии. Рекомендуем местного юриста для конкретных процедур."},
+      {q:"Заменяет ли это архитектора?",a:"Нет. Инструмент — для планирования и ориентации. Для реального строительства нужны лицензированный архитектор, инженер и юрист."},
+      {q:"Можно использовать только для ремонта?",a:"Да. Поддерживаются: ремонт, обустройство интерьера, двора и новое строительство."},
+      {q:"Ссылки на продукты спонсированы?",a:"Некоторые ссылки партнёрские. Мы рекомендуем только релевантные для вашего проекта категории."},
+    ],
+  },
+  save:{
+    title:"Сохранить план",sub:"Укажите email — мы пришлём сводку плана бесплатно.",
+    contractorTip:"💡 Используйте этот план при общении с подрядчиками — он поможет получить точные и сопоставимые коммерческие предложения.",
+    emailLabel:"Email адрес",emailPh:"ваш@email.com",
+    submit:"Сохранить план",submitting:"Сохранение…",
+    copySummary:"Скопировать сводку",copied:"Скопировано!",
+    okTitle:"Сохранено!",okSub:"Скоро пришлём сводку на вашу почту. (Демо — реального письма нет)",
+    close:"Закрыть",
+  },
+  footer:{
+    tagline:"Бесплатный инструмент планирования строительства в Сербии.",
+    disclaimer:"Некоторые ссылки партнёрские. Оценки носят ориентировочный характер.",
+    legal:"Инструмент не заменяет профессиональную консультацию архитектора, инженера или юриста.",
+    contact:"info@domserbia.com",copy:"© 2025 ДомСербия",
+  },
+  infra:{
+    partial:"Примечание: При частичном доступе к коммуникациям закладывайте дополнительные расходы на подключение.",
+    none:"Сельская местность без коммуникаций требует: септик, солнечные панели или генератор, резервуар для воды. Это существенные расходы.",
+    solar:"Рекомендуем рассмотреть солнечные панели и систему накопления энергии.",
+    septic:"Для канализации потребуется септик или BIO-система очистки сточных вод.",
+  },
+},
+};
+
+/* ════════════════════════════════════════════════════════
+   PLAN GENERATOR
+════════════════════════════════════════════════════════ */
+function generatePlan(form, lang){
+  const { projectType, tasks, size, budget, stage, userType, infra } = form;
+  const sz = parseInt(size) || 100;
+  const isForeigner = userType === 1;
+  const isMicro = tasks.length === 1;
+  const infraPartial = infra === 1;
+  const infraNone    = infra === 2;
+
+  /* Cost bases per m² */
+  const BASE = {
+    newbuild:{ lo:600, hi:1200 },
+    reno:    { lo:200, hi:550  },
+    interior:{ lo:120, hi:350  },
+    yard:    { lo:60,  hi:180  },
+  };
+
+  /* Per-task costs (flat, not per m²) */
+  const TASK_COST = {
+    foundations:{ lo:sz*80,  hi:sz*160  },
+    walls:      { lo:sz*90,  hi:sz*180  },
+    roof:       { lo:sz*70,  hi:sz*140  },
+    installations:{ lo:sz*60,hi:sz*120  },
+    finishing:  { lo:sz*80,  hi:sz*160  },
+    fullbuild:  { lo:sz*600, hi:sz*1200 },
+    ufh:        { lo:sz*40,  hi:sz*90   },
+    winreplace: { lo:800,    hi:2000    },  // per window × ~10
+    flooring:   { lo:sz*25,  hi:sz*70   },
+    bathreno:   { lo:3000,   hi:9000    },
+    electrical: { lo:sz*20,  hi:sz*50   },
+    plumbing:   { lo:sz*15,  hi:sz*40   },
+    insulation: { lo:sz*30,  hi:sz*75   },
+    fullreno:   { lo:sz*200, hi:sz*550  },
+    furniture:  { lo:sz*80,  hi:sz*250  },
+    kitchen:    { lo:2500,   hi:8000    },
+    bathequip:  { lo:1500,   hi:5000    },
+    lighting:   { lo:sz*8,   hi:sz*25   },
+    decor:      { lo:sz*15,  hi:sz*50   },
+    leveling:   { lo:sz*5,   hi:sz*20   },
+    lawn:       { lo:sz*8,   hi:sz*25   },
+    irrigation: { lo:1000,   hi:3500    },
+    fence:      { lo:800,    hi:2500    },
+    gate:       { lo:600,    hi:2000    },
+    paths:      { lo:sz*15,  hi:sz*40   },
+    outdoorlight:{ lo:500,   hi:2000    },
+  };
+
+  /* Compute cost */
+  let lo = 0, hi = 0;
+  if(isMicro){
+    const tk = tasks[0];
+    const c = TASK_COST[tk];
+    if(c){ lo = c.lo; hi = c.hi; }
+    else { lo = sz*(BASE[projectType]?.lo||200); hi = sz*(BASE[projectType]?.hi||600); }
+  } else {
+    if(tasks.includes("fullbuild") || tasks.includes("fullreno")){
+      lo = sz*(BASE[projectType]?.lo||200);
+      hi = sz*(BASE[projectType]?.hi||600);
+    } else {
+      tasks.forEach(tk => {
+        const c = TASK_COST[tk];
+        if(c){ lo += c.lo; hi += c.hi; }
+      });
+    }
+  }
+  if(infraNone){ lo = Math.round(lo*1.15); hi = Math.round(hi*1.25); }
+
+  /* Steps per task */
+  const STEPS = {
+    sr:{
+      foundations:["Geotehnički elaborat i priprema terena","Iskop za temelje prema projektu","Betoniranje temeljne ploče ili trake","Hidroizolacija i zaštita temelja","Zasipanje i nabijanje terena oko temelja"],
+      walls:["Postavljanje zidnih blokova (porobeton, cigla, beton)","Horizontalni serklaži na svakom spratu","Vertikalni serklaži i armatura","Fasadna termoizolacija i malterisanje"],
+      roof:["Montaža krovne konstrukcije (drvena ili čelična)","Postavljanje hidroizolacione folije","Montaža crepa ili ravnog krovnog sistema","Opšivke, olučni sistem i odvodnjavanje"],
+      installations:["Razrada projekta instalacija (elektro, VIK, grejanje)","Uvođenje priključaka","Razvod cevi i kablova u zidovima","Montaža razvodnih tabli i spojnica","Priključenje trošila i testiranje"],
+      finishing:["Gletovanje i izravnavanje zidova","Postavljanje podnih obloga","Montaža unutrašnjih vrata i prozorskih okvira","Farbanje i finalne dekorativne obrade","Montaža sanitarija i opreme"],
+      fullbuild:["Pribavljanje građevinske dozvole","Priprema terena i temelji","Grubi građevinski radovi — zidovi i krov","Instalacije: struja, voda, grejanje","Fasada i spoljašnja stolarija","Unutrašnji završni radovi","Opremanje i nameštanje","Tehnički prijem i upotrebna dozvola"],
+      ufh:["Demontaža postojećih podova (ako je potrebno)","Polaganje izolacione ploče","Postavljanje sistema podnog grejanja","Zalijevanje estrihom ili aneksom","Povezivanje sa grejnim sistemom i testiranje"],
+      winreplace:["Snimanje tačnih dimenzija otvora","Nabavka prozora prema energetskim standardima","Demontaža starih prozora","Montaža novih prozora sa kitovanjem i zaptivanjem","Unutrašnje i spoljašnje dorade oko prozora"],
+      flooring:["Priprema podloge — izravnavanje i sušenje","Postavljanje izolacione podloge","Polaganje podnih obloga (laminat, parket, keramika…)","Montaža lajsni i završnica","Čišćenje i zaštita"],
+      bathreno:["Demolacija pločica i sanitarija","Hidroizolacija zidova i poda","Postavljanje novih pločica","Montaža sanitarija: tus/kada, WC, lavabo","Montaža armatura i finalni radovi"],
+      electrical:["Projektovanje nove elektroinstalacije","Demontaža stare instalacije","Razvod kablova u zidovima","Montaža utičnica, prekidača i rasvete","Priključenje na mrežu i testiranje"],
+      plumbing:["Projektovanje novih instalacija","Demontaža starih cevi","Postavljanje novih PP ili bakarne instalacije","Priključenje na vodovodnu mrežu","Testiranje pritiska i zaptivnosti"],
+      insulation:["Priprema fasadne podloge","Postavljanje termoizolacionih ploča","Armaturni sloj i osnovna masa","Završni fasadni sistem ili obrada","Termoizolacija krova (ako je potrebno)"],
+      fullreno:["Snimanje stanja i izrada plana renoviranja","Pribavljanje dozvola (ako su potrebne)","Demolacija i uklanjanje materijala","Grubi građevinski radovi i ojačanja","Obnova instalacija","Izravnavanje i gletovanje","Postavljanje podnih obloga","Montaža prozora i vrata","Farbanje i dekoracija","Sanitarije i oprema","Nameštanje"],
+      furniture:["Merenje prostora i izrada plana nameštanja","Naručivanje ili nabavka nameštaja","Montaža nameštaja","Postavljanje dekorativnih elemenata","Finalni raspored i detalji"],
+      kitchen:["Merenje i projektovanje kuhinjskog rešenja","Naručivanje kuhinjskih elemenata","Montaža donje i gornje kuhinje","Ugradnja radnih površina i perilice","Priključenje ugrađenih uređaja"],
+      bathequip:["Odabir sanitarnih elemenata","Montaža WC šolje i lavabo","Montaža tus kabine ili kade","Montaža sušača za veš i ogledala","Priključenje armatura"],
+      lighting:["Plan rasvetnih tačaka po prostorijama","Nabavka rasvete i materijala","Razvod instalacije (u saradnji sa elektricherom)","Montaža rasvete","Testiranje i podešavanje"],
+      decor:["Odabir dekorativnih elemenata","Postavljanje zavesa i roleta","Montaža polica i dekorativnih panela","Uređenje biljkama i elementima","Fotografisanje finalnog enterijera"],
+      leveling:["Geodetsko snimanje terena","Mašinsko nivelisanje i uklanjanje viška zemlje","Nasipanje i nabijanje šljunka ili drobljenca","Drenaža i odvodnjavanje terena","Priprema za naredne radove"],
+      lawn:["Priprema tla — rahljenje i đubrenje","Nivelisanje površine","Sejetva ili postavljanje busena","Navodnjavanje u periodu nicanja","Košenje i nega u prvoj sezoni"],
+      irrigation:["Projektovanje sistema za navodnjavanje","Iskop rova za razvod cevi","Postavljanje kapajućih ili sprinkler sistema","Priključenje na vodovod ili pumpu","Testiranje i podešavanje tajmera"],
+      fence:["Geodetsko obeležavanje granice parcele","Iskop za temelje stubova","Betoniranje stubova","Montaža platna ili panela","Zaštitna obrada (boja, pocinčavanje)"],
+      gate:["Merenje otvora kapije","Nabavka kapije ili naručivanje po meri","Montaža stubova i kapije","Elektromotor (opcija za automatska vrata)","Testiranje i podešavanje"],
+      paths:["Planiranje trase staza","Iskop i priprema podloge","Postavljanje drobljenca ili betona","Polaganje betonskih ploča, kaldrme ili dekinga","Ivičnjaci i ivičenje"],
+      outdoorlight:["Plan tačaka osvetljenja","Iskop rova za podzemne kablove","Postavljanje instalacije","Montaža armatuda i rasvete","Testiranje i noćno podešavanje"],
+    },
+    en:{
+      foundations:["Geotechnical survey and site preparation","Excavation to design depth","Concrete strip/slab foundation pour","Waterproofing and damp-proof membrane","Backfill and compaction"],
+      walls:["Lay blockwork or brickwork to floor levels","Horizontal ring beams at each floor","Vertical reinforced concrete columns","External insulation and render system"],
+      roof:["Erect roof structure (timber or steel)","Install waterproof underlay membrane","Fix roof tiles or flat-roof system","Flashings, guttering and drainage"],
+      installations:["Design services layout (electrical, plumbing, heating)","Connect to main supplies","First-fix pipe and cable runs","Install distribution boards and junctions","Second-fix and testing"],
+      finishing:["Skim coat and plaster walls and ceilings","Lay floor finishes","Fix internal doors and window boards","Paint and decorative finishes","Install sanitaryware and fittings"],
+      fullbuild:["Obtain building permit (građevinska dozvola)","Site preparation and foundations","Shell structure — walls and roof","Utilities: electrical, plumbing, heating","External facade and windows","Interior finishing works","Furnishing and fit-out","Technical inspection and occupancy permit"],
+      ufh:["Remove existing floor (if needed)","Lay insulation board","Install underfloor heating pipes/cable","Pour screed over system","Connect to heat source and commission"],
+      winreplace:["Measure all openings precisely","Order windows to energy standards","Remove existing windows","Fit new windows with seals and trims","Internal and external finishing around reveals"],
+      flooring:["Prepare subfloor — level and dry","Lay underlay","Install floor finish (laminate, hardwood, tile…)","Fit skirting boards and trims","Clean and protect"],
+      bathreno:["Strip existing tiles and fittings","Waterproof walls and floor","Tile walls and floor","Install sanitaryware: shower/bath, WC, basin","Fit brassware and finish"],
+      electrical:["Design new electrical layout","Strip old wiring","First-fix cable routes","Install sockets, switches and lighting points","Connect to supply and commission"],
+      plumbing:["Design new pipe layout","Strip old pipes","Install new water supply and waste pipes","Connect to mains","Pressure test and commission"],
+      insulation:["Prepare facade substrate","Fix insulation boards","Apply reinforcement mesh and base coat","Apply finish coat or cladding system","Roof insulation if required"],
+      fullreno:["Survey existing condition and plan works","Obtain permits if structural changes planned","Strip-out and demolition","Structural repairs and reinforcement","Renew utilities","Plastering and levelling","Floor finishes","Windows and doors","Painting and decoration","Sanitaryware and fittings","Furnishing"],
+      furniture:["Measure rooms and create furniture plan","Order or source furniture","Assemble and install","Arrange decorative items","Final styling"],
+      kitchen:["Measure and design kitchen layout","Order units and worktops","Install base and wall units","Fit worktops and appliances","Connect built-in appliances"],
+      bathequip:["Select sanitaryware","Install WC and basin","Install shower enclosure or bath","Fit towel rails and mirrors","Connect brassware"],
+      lighting:["Plan lighting points per room","Source fittings and materials","First-fix wiring (with electrician)","Install light fittings","Test and adjust"],
+      decor:["Select soft furnishings and décor","Hang curtains and blinds","Install shelving and panels","Style with plants and accessories","Final photography"],
+      leveling:["Topographic survey","Machine-level site and remove excess","Import and compact hardcore/gravel","Install drainage","Prepare for subsequent works"],
+      lawn:["Prepare topsoil — loosen and fertilise","Level surface","Seed or lay turf","Water through germination period","Cut and maintain through first season"],
+      irrigation:["Design irrigation layout","Trench for pipe runs","Install drip or sprinkler system","Connect to mains or pump","Test and programme timer"],
+      fence:["Survey and peg boundary","Dig post holes","Concrete posts in","Fix panels or mesh","Apply protective finish"],
+      gate:["Measure gate opening","Source or fabricate gate","Fix posts and hang gate","Electric opener (optional)","Test and adjust"],
+      paths:["Plan routes","Excavate and prepare sub-base","Hardcore or concrete base","Lay flags, cobbles or decking","Edge restraints and finishing"],
+      outdoorlight:["Plan lighting positions","Trench for underground cables","Install conduit and wiring","Fit luminaires","Test and night-time adjustment"],
+    },
+    ru:{
+      foundations:["Геотехническое исследование и подготовка площадки","Экскавация под фундамент по проекту","Заливка монолитной плиты или ленточного фундамента","Гидроизоляция и защита фундамента","Обратная засыпка и трамбовка"],
+      walls:["Кладка блоков или кирпича по этажам","Горизонтальные пояса жёсткости на каждом уровне","Вертикальные армированные колонны","Наружное утепление и штукатурка фасада"],
+      roof:["Монтаж кровельной конструкции (дерево или сталь)","Укладка гидроизоляционной мембраны","Монтаж черепицы или плоской кровельной системы","Примыкания, водосточная система и дренаж"],
+      installations:["Разработка проекта коммуникаций (электрика, водопровод, отопление)","Подключение к основным сетям","Прокладка труб и кабелей","Монтаж распределительных щитов","Подключение потребителей и тестирование"],
+      finishing:["Шпатлёвка и выравнивание стен и потолков","Укладка напольных покрытий","Монтаж внутренних дверей и подоконников","Покраска и декоративная отделка","Установка сантехники и оборудования"],
+      fullbuild:["Получение разрешения на строительство","Подготовка площадки и фундамент","Коробка здания — стены и крыша","Коммуникации: электрика, водопровод, отопление","Фасад и наружные оконные блоки","Внутренняя отделка","Меблировка и оснащение","Технический приём и разрешение на ввод в эксплуатацию"],
+      ufh:["Демонтаж существующего пола (при необходимости)","Укладка теплоизоляционной подложки","Монтаж системы тёплого пола","Заливка стяжки","Подключение к источнику тепла и наладка"],
+      winreplace:["Точный замер проёмов","Заказ окон по энергетическим стандартам","Демонтаж старых окон","Монтаж новых окон с уплотнением и отделкой","Внутренние и наружные откосы"],
+      flooring:["Подготовка основания — выравнивание и сушка","Укладка подложки","Монтаж напольного покрытия (ламинат, паркет, плитка…)","Установка плинтусов и порожков","Очистка и защитная обработка"],
+      bathreno:["Демонтаж плитки и сантехники","Гидроизоляция стен и пола","Укладка новой плитки","Монтаж сантехники: душ/ванна, унитаз, раковина","Установка смесителей и финальная отделка"],
+      electrical:["Проектирование новой электросети","Демонтаж старой проводки","Прокладка новых кабелей","Монтаж розеток, выключателей и светильников","Подключение и тестирование"],
+      plumbing:["Проектирование новых трубопроводов","Демонтаж старых труб","Монтаж водопроводных и канализационных труб","Подключение к сети","Испытание давлением"],
+      insulation:["Подготовка фасадного основания","Монтаж теплоизоляционных плит","Армирующий слой и базовая штукатурка","Декоративная штукатурка или облицовка","Утепление кровли при необходимости"],
+      fullreno:["Обследование и составление плана ремонта","Получение разрешений при перепланировке","Демонтажные работы","Конструктивные усиления","Обновление коммуникаций","Штукатурка и выравнивание","Напольные покрытия","Окна и двери","Покраска и декор","Сантехника и оборудование","Меблировка"],
+      furniture:["Обмер помещений и составление плана расстановки","Заказ или покупка мебели","Сборка и установка","Расстановка декоративных элементов","Финальный стайлинг"],
+      kitchen:["Замер и проектирование кухни","Заказ гарнитура и столешниц","Монтаж нижних и верхних шкафов","Установка столешниц и встраиваемой техники","Подключение техники"],
+      bathequip:["Выбор сантехники","Монтаж унитаза и раковины","Монтаж душевой кабины или ванны","Установка полотенцесушителя и зеркала","Подключение смесителей"],
+      lighting:["Планирование точек освещения","Закупка светильников","Прокладка проводки (с электриком)","Монтаж светильников","Тестирование и настройка"],
+      decor:["Выбор декоративных элементов","Установка штор и жалюзи","Монтаж полок и декоративных панелей","Расстановка растений и аксессуаров","Финальная фотосессия"],
+      leveling:["Топографическая съёмка","Машинная планировка и вывоз грунта","Отсыпка и уплотнение щебня","Устройство дренажа","Подготовка к дальнейшим работам"],
+      lawn:["Подготовка почвы — рыхление и удобрение","Выравнивание поверхности","Посев или укладка рулонного газона","Полив в период прорастания","Кошение и уход в первый сезон"],
+      irrigation:["Проектирование системы полива","Прокладка траншей для труб","Монтаж капельного или спринклерного орошения","Подключение к водопроводу или насосу","Тестирование и настройка таймера"],
+      fence:["Геодезическая разметка границ участка","Бурение/копка ям для столбов","Установка столбов на бетон","Монтаж секций или сетки","Защитная обработка"],
+      gate:["Замер проёма ворот","Заказ или изготовление ворот","Монтаж столбов и навеска","Электропривод (по желанию)","Тестирование и регулировка"],
+      paths:["Планирование трасс дорожек","Земляные работы и подготовка основания","Отсыпка щебнем или бетонное основание","Укладка плитки, брусчатки или декинга","Бордюры и обрамление"],
+      outdoorlight:["Планирование точек освещения","Прокладка траншей для кабелей","Монтаж кабелей","Установка светильников","Тестирование и ночная настройка"],
+    },
+  };
+
+  /* Notes per task + general */
+  const NOTES = {
+    sr:{
+      general:[
+        "Uvek pribavite minimum 3 pisane ponude od izvođača pre angažovanja.",
+        "Cene materijala u Srbiji mogu varirati 20–40% između regiona.",
+        "Proverite uknjižbu parcele/objekta u katastru pre početka radova.",
+      ],
+      newbuild:"Građevinska dozvola u Srbiji obično traje 1–4 meseca. Angažujte ovlašćenog arhitektu na vreme.",
+      reno:"Za strukturalne promene možda su potrebne dozvole. Konsultujte opštinu.",
+      interior:"Koordinišite nabavku nameštaja unapred — rokovi isporuke mogu biti 6–12 nedelja.",
+      yard:"Proverite katastar za granicu parcele pre postavljanja ograde.",
+      foreigner:"Kao strani kupac: angažujte lokalnog advokata za proveru vlasništva i procedure kupovine.",
+    },
+    en:{
+      general:[
+        "Always obtain at least 3 written quotes from contractors before committing.",
+        "Material costs in Serbia can vary 20–40% by region.",
+        "Verify property registration in the cadastre (katastar) before starting works.",
+      ],
+      newbuild:"Building permits in Serbia typically take 1–4 months. Engage a licensed architect well in advance.",
+      reno:"Structural changes may require planning permission. Check with your local municipality (opština).",
+      interior:"Co-ordinate furniture orders early — lead times can be 6–12 weeks.",
+      yard:"Check the cadastre for your exact boundary before erecting fencing.",
+      foreigner:"As a foreign buyer: engage a local solicitor to verify ownership and navigate the purchase process.",
+    },
+    ru:{
+      general:[
+        "Всегда запрашивайте минимум 3 письменных предложения от подрядчиков.",
+        "Цены на материалы в Сербии могут отличаться на 20–40% в зависимости от региона.",
+        "Проверьте регистрацию в кадастре перед началом работ.",
+      ],
+      newbuild:"Разрешение на строительство в Сербии оформляется 1–4 месяца. Заблаговременно привлеките архитектора.",
+      reno:"Перепланировка может требовать разрешений. Уточните в местной управе (opština).",
+      interior:"Заказывайте мебель заблаговременно — сроки поставки могут составлять 6–12 недель.",
+      yard:"Перед установкой забора уточните точные границы участка в кадастре.",
+      foreigner:"Как иностранному покупателю: привлеките местного юриста для проверки права собственности.",
+    },
+  };
+
+  /* Next steps */
+  const NEXT = {
+    sr:{
+      newbuild:["Kontaktirajte ovlašćenog arhitektu u vašem regionu","Pribavite minimum 3 ponude za grube radove","Proverite lokalne uslove u vašoj opštini"],
+      reno:["Angažujte iskusnog izvođača za snimanje stanja","Zatražite ponude od minimum 3 izvođača","Proverite da li su potrebne dozvole"],
+      interior:["Izradite plan nameštanja sa arhitektom enterijera","Naručite nameštaj sa dovoljnim predrokom","Koordinišite sa elektricharom za rasvetu"],
+      yard:["Proverite katastarski plan parcele","Angažujte pejzažnog arhitektu za plan dvorišta","Pribavite ponude za zemljane radove"],
+    },
+    en:{
+      newbuild:["Engage a licensed architect in your region","Obtain 3+ quotes for structural works","Check local planning conditions with your municipality"],
+      reno:["Hire an experienced contractor to survey existing condition","Request 3+ quotes","Check if permits are required"],
+      interior:["Create a furniture layout plan with an interior designer","Order furniture with sufficient lead time","Coordinate with an electrician for lighting"],
+      yard:["Check your cadastre boundary plan","Engage a landscape designer for a yard plan","Obtain quotes for groundworks"],
+    },
+    ru:{
+      newbuild:["Найдите лицензированного архитектора в вашем регионе","Запросите минимум 3 предложения на строительные работы","Уточните местные требования в общине"],
+      reno:["Привлеките опытного подрядчика для обследования","Запросите минимум 3 коммерческих предложения","Проверьте необходимость разрешений"],
+      interior:["Составьте план расстановки мебели с дизайнером интерьера","Заказывайте мебель с запасом по срокам","Согласуйте с электриком расположение освещения"],
+      yard:["Проверьте кадастровый план участка","Привлеките ландшафтного дизайнера","Запросите сметы на земляные работы"],
+    },
+  };
+
+  /* Build step list */
+  const allSteps = [];
+  const seen = new Set();
+  const effectiveTasks = tasks.includes("fullbuild") ? ["fullbuild"] :
+                         tasks.includes("fullreno")  ? ["fullreno"]  : tasks;
+
+  effectiveTasks.forEach(tk => {
+    const taskSteps = STEPS[lang]?.[tk] || [];
+    taskSteps.forEach(s => { if(!seen.has(s)){ seen.add(s); allSteps.push({step:s,task:tk}); }});
+  });
+
+  /* Affiliate keys */
+  const affKeysRaw = new Set();
+  effectiveTasks.forEach(tk => {
+    (TASK_AFF[tk]||[]).forEach(k => affKeysRaw.add(k));
+  });
+  if(infraNone){ affKeysRaw.add("solar"); affKeysRaw.add("septic"); }
+  if(infraPartial){ affKeysRaw.add("heating"); }
+  const affKeys = [...affKeysRaw].slice(0,6);
+
+  /* Infra extras */
+  const infraExtras = [];
+  if(infraNone){
+    infraExtras.push({key:"solar",note:NOTES[lang].solar||""});
+    infraExtras.push({key:"septic",note:NOTES[lang].septic||""});
+  }
+
+  /* Notes */
+  const notes = [
+    ...NOTES[lang].general,
+    ...(NOTES[lang][projectType] ? [NOTES[lang][projectType]] : []),
+    ...(isForeigner && NOTES[lang].foreigner ? [NOTES[lang].foreigner] : []),
+  ];
+
+  return {
+    isMicro, projectType, tasks: effectiveTasks,
+    steps: allSteps,
+    costs: { lo: Math.round(lo), hi: Math.round(hi) },
+    affKeys, notes, infraExtras,
+    next: NEXT[lang]?.[projectType] || [],
+    infraPartial, infraNone,
+  };
+}
+
+/* ════════════════════════════════════════════════════════
+   SMALL HELPERS
+════════════════════════════════════════════════════════ */
+function fmt(n){ return "€"+n.toLocaleString("de-DE"); }
+function HR(){ return <hr className="div" style={{margin:"0"}}/>; }
+function Ey({children}){ return <p className="eyebrow" style={{marginBottom:12}}>{children}</p>; }
+
+/* ════════════════════════════════════════════════════════
+   SAVE MODAL
+════════════════════════════════════════════════════════ */
+function SaveModal({t, onClose, plan}){
+  const s = t.save;
+  const [email,setEmail] = useState("");
+  const [saving,setSaving] = useState(false);
+  const [done,setDone] = useState(false);
+  const [copied,setCopied] = useState(false);
+
+  const doSave = ()=>{
+    if(!email.trim()) return;
+    setSaving(true);
+    setTimeout(()=>{ setSaving(false); setDone(true); }, 1200);
+  };
+
+  const doCopy = ()=>{
+    const lines = plan?.steps?.map((s,i)=>`${i+1}. ${s.step||s}`)||[];
+    const summary = lines.join("\n");
+    navigator.clipboard?.writeText(summary).catch(()=>{});
+    setCopied(true);
+    setTimeout(()=>setCopied(false), 2000);
+  };
+
+  return(
+    <div className="modal-back" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal-box">
+        <button onClick={onClose} style={{position:"absolute",top:14,right:14,background:"none",border:"none",fontSize:20,color:"var(--ink4)",cursor:"pointer",lineHeight:1}}>✕</button>
+        {!done?(
+          <>
+            <p style={{fontFamily:"var(--serif)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:8,lineHeight:1.3}}>{s.title}</p>
+            {/* Contractor tip */}
+            <div style={{background:"var(--grnbg)",border:"1px solid var(--grnmid)",borderRadius:"var(--r)",padding:"11px 14px",marginBottom:18}}>
+              <p style={{fontSize:12.5,color:"var(--grn)",lineHeight:1.6,fontFamily:"var(--sans)"}}>{s.contractorTip}</p>
+            </div>
+            <p style={{fontSize:13.5,color:"var(--ink3)",marginBottom:18,lineHeight:1.6}}>{s.sub}</p>
+            <div style={{marginBottom:16}}>
+              <label className="flabel">{s.emailLabel}</label>
+              <input className="finput" type="email" value={email} onChange={e=>setEmail(e.target.value)}
+                placeholder={s.emailPh} onKeyDown={e=>e.key==="Enter"&&doSave()}/>
+            </div>
+            <button className="btn-p" onClick={doSave} disabled={saving||!email.trim()} style={{width:"100%",fontSize:14,marginBottom:10}}>
+              {saving?(<span style={{display:"flex",alignItems:"center",gap:8}}>
+                <span style={{width:14,height:14,border:"2px solid rgba(255,255,255,.35)",borderTopColor:"#fff",borderRadius:"50%",animation:"spin .8s linear infinite",display:"inline-block"}}/>
+                {s.submitting}
+              </span>):s.submit}
+            </button>
+            <button onClick={doCopy} className="btn-g" style={{width:"100%",justifyContent:"center",fontSize:13}}>
+              {copied ? `✓ ${s.copied}` : `📋 ${s.copySummary}`}
+            </button>
+          </>
+        ):(
+          <div style={{textAlign:"center",padding:"8px 0"}}>
+            <span style={{fontSize:44,display:"block",marginBottom:14}}>✅</span>
+            <p style={{fontFamily:"var(--serif)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:8}}>{s.okTitle}</p>
+            <p style={{fontSize:13.5,color:"var(--ink3)",marginBottom:16,lineHeight:1.6}}>{s.okSub}</p>
+            <div style={{background:"var(--grnbg)",border:"1px solid var(--grnmid)",borderRadius:"var(--r)",padding:"11px 14px",marginBottom:20}}>
+              <p style={{fontSize:12.5,color:"var(--grn)",lineHeight:1.6,fontFamily:"var(--sans)"}}>{s.contractorTip}</p>
+            </div>
+            <button onClick={doCopy} className="btn-g" style={{width:"100%",justifyContent:"center",fontSize:13,marginBottom:10}}>
+              {copied ? `✓ ${s.copied}` : `📋 ${s.copySummary}`}
+            </button>
+            <button onClick={onClose} className="btn-g" style={{width:"100%",justifyContent:"center"}}>{s.close}</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════
+   LANG SWITCHER
+════════════════════════════════════════════════════════ */
+function LangSwitch({lang,setLang}){
+  const [open,setOpen]=useState(false);
+  const ref=useRef(null);
+  const flags={sr:"🇷🇸",en:"🇬🇧",ru:"🇷🇺"};
+  const labels={sr:"SR — Srpski",en:"EN — English",ru:"RU — Русский"};
+  useEffect(()=>{
+    const h=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);};
+    document.addEventListener("mousedown",h);
+    return()=>document.removeEventListener("mousedown",h);
+  },[]);
+  return(
+    <div ref={ref} className="lang-wrap">
+      <button onClick={()=>setOpen(!open)}
+        style={{display:"flex",alignItems:"center",gap:7,padding:"7px 12px",border:"1.5px solid var(--bdr)",borderRadius:"var(--r)",background:"var(--card)",fontSize:13,fontWeight:600,color:"var(--ink2)",cursor:"pointer",transition:"border-color .15s",fontFamily:"var(--sans)"}}
+        onMouseEnter={e=>e.currentTarget.style.borderColor="var(--bdr2)"}
+        onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bdr)"}>
+        <span>{flags[lang]}</span><span>{lang.toUpperCase()}</span><span style={{fontSize:10,opacity:.45,marginLeft:2}}>▾</span>
+      </button>
+      {open&&(
+        <div className="lang-menu">
+          {["sr","en","ru"].map(l=>(
+            <button key={l} className={`lang-btn${l===lang?" active":""}`} onClick={()=>{setLang(l);setOpen(false);}}>
+              <span style={{fontSize:15}}>{flags[l]}</span><span>{labels[l]}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════
+   FAQ
+════════════════════════════════════════════════════════ */
+function FAQ({items}){
+  const [open,setOpen]=useState(null);
+  return(
+    <div>{items.map((it,i)=>(
+      <div key={i} className={`faq-item${open===i?" open":""}`}>
+        <div className="faq-q" onClick={()=>setOpen(open===i?null:i)}>
+          <span className="faq-qt">{it.q}</span>
+          <span className="faq-ico">{open===i?"−":"+"}</span>
+        </div>
+        {open===i&&<div className="faq-a">{it.a}</div>}
+      </div>
+    ))}</div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════
+   RESULTS VIEW
+════════════════════════════════════════════════════════ */
+function Results({plan,t,form,onRestart,onSave}){
+  const r  = t.results;
+  const sr = t.stageRecs;
+  const pw = t.planner;
+  const pt = pw.projectTypes.find(p=>p.k===form.projectType);
+  const ctaLabel = t.lang==="sr"?"Istraži":t.lang==="en"?"Explore":"Перейти";
+
+  return(
+    <div className="fu">
+      {/* Header bar */}
+      <div style={{background:"var(--ink)",borderRadius:"var(--rl)",padding:"20px 26px",marginBottom:20,display:"flex",flexWrap:"wrap",gap:14,alignItems:"center"}}>
+        <div style={{flex:1,minWidth:200}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
+            <p style={{fontSize:11,color:"rgba(255,255,255,.45)",fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",fontFamily:"var(--sans)"}}>
+              {r.title}
+            </p>
+            <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:4,background:plan.isMicro?"rgba(196,92,46,.35)":"rgba(29,78,216,.35)",color:plan.isMicro?"#FECBAB":"#BFDBFE",fontFamily:"var(--sans)",letterSpacing:".06em"}}>
+              {plan.isMicro?r.microTag:r.multiTag}
+            </span>
+          </div>
+          <p style={{fontSize:16,fontWeight:500,color:"#fff",fontFamily:"var(--serif)",marginBottom:3}}>
+            {pt?.icon} {pt?.label}{form.size?` · ${form.size} m²`:""}
+          </p>
+          <p style={{fontSize:12,color:"rgba(255,255,255,.42)",fontFamily:"var(--sans)"}}>
+            {form.location||""}{form.location&&form.stage!==undefined?" · ":""}{form.stage!==undefined?pw.fields.stage.opts[form.stage]:""}
+          </p>
+        </div>
+        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          <button className="btn-save" onClick={onSave}><span>💾</span>{r.savePlan}</button>
+          <button className="btn-g" onClick={onRestart}
+            style={{borderColor:"rgba(255,255,255,.2)",color:"rgba(255,255,255,.6)"}}
+            onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.08)";e.currentTarget.style.color="#fff";}}
+            onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.color="rgba(255,255,255,.6)";}}>
+            ← {r.restart}
+          </button>
+        </div>
+      </div>
+
+      {/* ── START HERE BLOCK ── */}
+      {plan.steps.length>0&&(
+        <div style={{background:"linear-gradient(135deg,var(--accbg),#FFF8F5)",border:"2px solid var(--accmid)",borderRadius:"var(--rl)",padding:"22px 24px",marginBottom:20}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
+            <span style={{fontSize:16}}>🚀</span>
+            <p style={{fontSize:12,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--acc)",fontFamily:"var(--sans)"}}>{r.startHereLabel}</p>
+          </div>
+          <p style={{fontSize:13,color:"var(--ink3)",marginBottom:18,fontFamily:"var(--sans)"}}>{r.startHereSub}</p>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {plan.steps.slice(0,3).map(({step},i)=>(
+              <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start",background:"rgba(255,255,255,.75)",borderRadius:"var(--r)",padding:"12px 16px",border:"1px solid var(--accmid)"}}>
+                <div style={{width:26,height:26,borderRadius:"50%",background:"var(--acc)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#fff",flexShrink:0}}>{i+1}</div>
+                <p style={{fontSize:13.5,fontWeight:500,color:"var(--ink)",fontFamily:"var(--sans)",lineHeight:1.5,paddingTop:3}}>{step}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}} className="res-2col">
+
+        {/* Cost card */}
+        <div className="card" style={{background:"linear-gradient(135deg,#FEF3EE,#FFFAF8)",borderColor:"var(--accmid)"}}>
+          <div style={{padding:"20px 22px"}}>
+            <p style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--acc)",marginBottom:10,fontFamily:"var(--sans)"}}>{r.costsLabel}</p>
+            <p style={{fontSize:32,fontWeight:400,color:"var(--ink)",fontFamily:"var(--serif)",lineHeight:1.05,marginBottom:4}}>
+              {fmt(plan.costs.lo)}<span style={{color:"var(--ink3)",fontSize:22}}> – </span>{fmt(plan.costs.hi)}
+            </p>
+            <p style={{fontSize:12,color:"var(--ink3)",marginBottom:14,fontFamily:"var(--sans)"}}>{t.planner.fields.size.label}: {form.size||"100"} m²</p>
+            <HR/>
+            <p style={{fontSize:11.5,color:"var(--ink4)",marginTop:12,lineHeight:1.6,fontFamily:"var(--sans)"}}>{r.costsNote}</p>
+            {plan.infraPartial&&(
+              <div className="inf-warn" style={{marginTop:14}}>
+                <span style={{fontSize:16,flexShrink:0}}>⚠️</span>
+                <p style={{fontSize:12,color:"var(--amb)",lineHeight:1.6,fontFamily:"var(--sans)"}}>{t.infra.partial}</p>
+              </div>
+            )}
+            {plan.infraNone&&(
+              <div className="inf-warn" style={{marginTop:14}}>
+                <span style={{fontSize:16,flexShrink:0}}>🏡</span>
+                <p style={{fontSize:12,color:"var(--amb)",lineHeight:1.6,fontFamily:"var(--sans)"}}>{t.infra.none}</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Notes card */}
+        <div className="card">
+          <div style={{padding:"20px 22px"}}>
+            <p style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--ink3)",marginBottom:14,fontFamily:"var(--sans)"}}>{r.notesLabel}</p>
+            <div style={{display:"flex",flexDirection:"column",gap:13}}>
+              {plan.notes.map((n,i)=>(
+                <div key={i} style={{display:"flex",gap:9,alignItems:"flex-start"}}>
+                  <span style={{color:"var(--acc)",fontSize:13,lineHeight:"20px",flexShrink:0}}>→</span>
+                  <span style={{fontSize:13,color:"var(--ink2)",lineHeight:1.6,fontFamily:"var(--sans)"}}>{n}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Full steps list */}
+      <div className="card" style={{overflow:"hidden",marginBottom:16}}>
+        <div style={{padding:"13px 22px",borderBottom:"1px solid var(--bdr)",background:"var(--bgw)"}}>
+          <p style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--ink3)",fontFamily:"var(--sans)"}}>{r.planLabel}</p>
+        </div>
+        <div style={{padding:"22px 22px 18px"}}>
+          {plan.steps.map(({step,task},i)=>(
+            <div key={i} className="rstep">
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",flexShrink:0}}>
+                <div className="rstep-dot" style={{
+                  background:i<3?"var(--acc)":i<5?"var(--ambbg)":"var(--bgw)",
+                  border:`1.5px solid ${i<3?"var(--acc)":i<5?"var(--ambmid)":"var(--bdr)"}`,
+                  color:i<3?"#fff":i<5?"var(--amb)":"var(--ink3)",
+                }}>{i+1}</div>
+                {i<plan.steps.length-1&&<div style={{width:1.5,height:i<3?32:24,background:i<3?"rgba(196,92,46,.25)":"var(--bdr)",marginTop:3,marginBottom:3}}/>}
+              </div>
+              <div style={{paddingTop:3,paddingBottom:i<plan.steps.length-1?20:0,flex:1}}>
+                <p style={{fontSize:i<3?14:13.5,fontWeight:i<3?500:400,color:i<3?"var(--ink)":"var(--ink2)",lineHeight:1.55,fontFamily:"var(--sans)"}}>{step}</p>
+                {/* Inline rec — highlighted block after step index 2 */}
+                {i===2&&plan.affKeys.length>0&&(()=>{
+                  const k=plan.affKeys[0];
+                  const a=AFF[k]; const s=sr[k];
+                  if(!a||!s) return null;
+                  return(
+                    <div style={{marginTop:12,marginBottom:4,background:"var(--blubg)",border:"1px solid var(--blumid)",borderRadius:"var(--r)",padding:"12px 14px"}}>
+                      <p style={{fontSize:11,fontWeight:600,color:"var(--blu)",fontFamily:"var(--sans)",marginBottom:8,letterSpacing:".04em",textTransform:"uppercase"}}>{r.forPhase}</p>
+                      <a href={a.href} target="_blank" rel="noopener noreferrer" className="irec" style={{background:"white",borderColor:"var(--blumid)"}}>
+                        <span style={{fontSize:18}}>{a.icon}</span>
+                        <div style={{flex:1,minWidth:0}}>
+                          <span className="irec-name">{s.name}</span>
+                          <p className="irec-desc">{s.desc}</p>
+                        </div>
+                        <span className="irec-cta">{ctaLabel} →</span>
+                      </a>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Next steps */}
+      <div className="card" style={{background:"var(--grnbg)",borderColor:"var(--grnmid)",marginBottom:16}}>
+        <div style={{padding:"20px 22px"}}>
+          <p style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--grn)",marginBottom:16,fontFamily:"var(--sans)"}}>{r.nextLabel}</p>
+          <div className="next-g" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+            {plan.next.map((n,i)=>(
+              <div key={i} style={{display:"flex",gap:11,background:"rgba(255,255,255,.7)",borderRadius:8,padding:"11px 14px",border:"1px solid var(--grnmid)"}}>
+                <span style={{fontWeight:700,color:"var(--grn)",fontSize:12.5,flexShrink:0,minWidth:18,fontFamily:"var(--sans)"}}>{i+1}.</span>
+                <span style={{fontSize:13,color:"var(--grn)",fontFamily:"var(--sans)",lineHeight:1.5}}>{n}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── AFFILIATE: What you'll need next ── */}
+      <div className="card" style={{overflow:"hidden"}}>
+        <div style={{padding:"18px 22px 10px",borderBottom:"1px solid var(--bdr)"}}>
+          <p style={{fontSize:12,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--acc)",marginBottom:4,fontFamily:"var(--sans)"}}>{r.stageRecsLabel}</p>
+          <p style={{fontSize:13,color:"var(--ink3)",fontFamily:"var(--sans)",paddingBottom:4,lineHeight:1.5}}>{r.stageRecsContext}</p>
+        </div>
+        <div style={{padding:"16px 22px 20px"}}>
+          {/* First 2 items — large featured cards */}
+          {plan.affKeys.length>0&&(
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}} className="res-2col">
+              {plan.affKeys.slice(0,2).map(key=>{
+                const a=AFF[key]; const s=sr[key];
+                if(!a||!s) return null;
+                return(
+                  <a key={key} href={a.href} target="_blank" rel="noopener noreferrer"
+                    style={{display:"flex",flexDirection:"column",gap:10,padding:"18px 18px",border:"1.5px solid var(--accmid)",borderRadius:"var(--r)",background:"var(--accbg)",transition:"all .15s",cursor:"pointer",textDecoration:"none"}}
+                    onMouseEnter={e=>{e.currentTarget.style.background="#FEE9DD";e.currentTarget.style.boxShadow="var(--sh1)";}}
+                    onMouseLeave={e=>{e.currentTarget.style.background="var(--accbg)";e.currentTarget.style.boxShadow="none";}}>
+                    <div style={{display:"flex",alignItems:"center",gap:10}}>
+                      <span style={{fontSize:24}}>{a.icon}</span>
+                      <div style={{flex:1}}>
+                        <p style={{fontSize:14,fontWeight:600,color:"var(--ink)",fontFamily:"var(--sans)",marginBottom:3}}>{s.name}</p>
+                        <p style={{fontSize:12,color:"var(--ink3)",fontFamily:"var(--sans)",lineHeight:1.4}}>{s.desc}</p>
+                      </div>
+                    </div>
+                    <span style={{fontSize:12.5,fontWeight:600,color:"var(--acc)",fontFamily:"var(--sans)"}}>{ctaLabel} →</span>
+                  </a>
+                );
+              })}
+            </div>
+          )}
+          {/* Remaining items — compact rows */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:8}} className="aff-g">
+            {plan.affKeys.slice(2).map(key=>{
+              const a=AFF[key]; const s=sr[key];
+              if(!a||!s) return null;
+              return(
+                <a key={key} href={a.href} target="_blank" rel="noopener noreferrer" className="irec">
+                  <span style={{fontSize:18,flexShrink:0}}>{a.icon}</span>
+                  <div style={{flex:1,minWidth:0}}>
+                    <p className="irec-name">{s.name}</p>
+                    <p className="irec-desc">{s.desc}</p>
+                  </div>
+                  <span className="irec-cta">→</span>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+        <div style={{padding:"0 22px 14px",borderTop:"1px solid var(--bdr)"}}>
+          <p style={{fontSize:11,color:"var(--ink4)",fontFamily:"var(--sans)",paddingTop:12}}>{r.affilNote}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════
+   PLANNER — multi-step form
+════════════════════════════════════════════════════════ */
+function Planner({t, onResult}){
+  const pw = t.planner;
+  const [step,setStep] = useState(0); // 0=type, 1=tasks, 2=details, 3=infra
+  const [pType,setPType] = useState(null);
+  const [selTasks,setSelTasks] = useState([]);
+  const [size,setSize] = useState("");
+  const [budget,setBudget] = useState(2);
+  const [location,setLocation] = useState("");
+  const [stage,setStage] = useState(0);
+  const [userType,setUserType] = useState(0);
+  const [infra,setInfra] = useState(0);
+  const [submitting,setSub] = useState(false);
+
+  const pct = ((step+1)/4)*100;
+
+  const toggleTask = k =>{
+    setSelTasks(p=>p.includes(k)?p.filter(x=>x!==k):[...p,k]);
+  };
+
+  const canNext0 = !!pType;
+  const canNext1 = selTasks.length>0;
+  const canNext2 = true;
+
+  const doSubmit = ()=>{
+    setSub(true);
+    const form = {projectType:pType,tasks:selTasks,size,budget,stage,userType,infra,location};
+    setTimeout(()=>{
+      setSub(false);
+      onResult(generatePlan(form,t.lang));
+    },1000);
+  };
+
+  const taskList = pType ? (pw.tasks[pType]||[]) : [];
+
+  const S = (children,delay=0)=>(
+    <div className="fu" style={{animationDelay:`${delay}s`}}>{children}</div>
+  );
+
+  return(
+    <div>
+      {/* Step indicator */}
+      <div className="step-ind">
+        {pw.stepLabels.map((lbl,i)=>(
+          <React.Fragment key={i}>
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+              <div className="step-dot" style={{
+                background:step>i?"var(--acc)":step===i?"var(--ink)":"var(--bgw)",
+                border:`2px solid ${step>=i?"var(--acc)":"var(--bdr2)"}`,
+                color:step>i||step===i?"#fff":"var(--ink4)",
+                width:26,height:26,fontSize:10,fontWeight:700,
+              }}>{step>i?"✓":i+1}</div>
+              <span style={{fontSize:10,fontWeight:500,color:step===i?"var(--acc)":step>i?"var(--ink3)":"var(--ink4)",fontFamily:"var(--sans)",whiteSpace:"nowrap"}}>{lbl}</span>
+            </div>
+            {i<pw.stepLabels.length-1&&(
+              <div className="step-line" style={{background:step>i?"var(--acc)":"var(--bdr)",marginBottom:14}}/>
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+
+      {/* Progress bar */}
+      <div className="pbar"><div className="pfill" style={{width:`${pct}%`}}/></div>
+
+      {/* STEP 0: Project type */}
+      {step===0&&S(
+        <div>
+          <p style={{fontFamily:"var(--serif)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:22,lineHeight:1.3}}>{pw.title}</p>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}} className="task-g">
+            {pw.projectTypes.map(pt=>(
+              <button key={pt.k}
+                onClick={()=>{setPType(pt.k);setSelTasks([]);}}
+                style={{display:"flex",alignItems:"center",gap:12,padding:"16px 18px",border:`2px solid ${pType===pt.k?"var(--acc)":"var(--bdr)"}`,borderRadius:"var(--rl)",background:pType===pt.k?"var(--accbg)":"var(--bg)",cursor:"pointer",transition:"all .15s",textAlign:"left"}}>
+                <span style={{fontSize:28}}>{pt.icon}</span>
+                <span style={{fontSize:14,fontWeight:600,color:pType===pt.k?"var(--acc)":"var(--ink)",fontFamily:"var(--sans)"}}>{pt.label}</span>
+              </button>
+            ))}
+          </div>
+          <div style={{marginTop:28,display:"flex",justifyContent:"flex-end"}}>
+            <button className="btn-p" onClick={()=>setStep(1)} disabled={!canNext0} style={{fontSize:14}}>{pw.next}</button>
+          </div>
+        </div>
+      )}
+
+      {/* STEP 1: Task selection */}
+      {step===1&&S(
+        <div>
+          <p style={{fontFamily:"var(--serif)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:6,lineHeight:1.3}}>
+            {pw.projectTypes.find(p=>p.k===pType)?.icon} {pw.projectTypes.find(p=>p.k===pType)?.label}
+          </p>
+          <p style={{fontSize:13.5,color:"var(--ink3)",marginBottom:22,fontFamily:"var(--sans)"}}>{pw.selectHint}</p>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}} className="task-g">
+            {taskList.map(tk=>(
+              <div key={tk.k} className={`task-opt${selTasks.includes(tk.k)?" sel":""}`} onClick={()=>toggleTask(tk.k)}>
+                <span className="task-icon">{tk.icon}</span>
+                <span className="task-label">{tk.label}</span>
+                <div className="task-chk">
+                  {selTasks.includes(tk.k)&&<span style={{fontSize:10,color:"#fff"}}>✓</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{marginTop:28,display:"flex",justifyContent:"space-between"}}>
+            <button className="btn-g" onClick={()=>setStep(0)}>{pw.back}</button>
+            <button className="btn-p" onClick={()=>setStep(2)} disabled={!canNext1} style={{fontSize:14}}>{pw.next}</button>
+          </div>
+        </div>
+      )}
+
+      {/* STEP 2: Details */}
+      {step===2&&S(
+        <div>
+          <p style={{fontFamily:"var(--serif)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:22,lineHeight:1.3}}>
+            {t.lang==="sr"?"Detalji projekta":t.lang==="en"?"Project details":"Детали проекта"}
+          </p>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:4}} className="res-2col">
+            <div>
+              <label className="flabel">{pw.fields.size.label}</label>
+              <input className="finput" type="number" value={size} onChange={e=>setSize(e.target.value)} placeholder={pw.fields.size.ph}/>
+            </div>
+            <div>
+              <label className="flabel">{pw.fields.budget.label}</label>
+              <select className="fselect" value={budget} onChange={e=>setBudget(Number(e.target.value))}>
+                {pw.fields.budget.opts.map((o,i)=><option key={i} value={i}>{o}</option>)}
+              </select>
+            </div>
+          </div>
+          <div style={{marginBottom:16}}>
+            <label className="flabel">{pw.fields.location.label}</label>
+            <input className="finput" value={location} onChange={e=>setLocation(e.target.value)} placeholder={pw.fields.location.ph}/>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:8}}>
+              {pw.locChips.map(lc=>(
+                <button key={lc} className={`lchip${location===lc?" act":""}`} onClick={()=>setLocation(lc)}>{lc}</button>
+              ))}
+            </div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}} className="res-2col">
+            <div>
+              <label className="flabel">{pw.fields.stage.label}</label>
+              <select className="fselect" value={stage} onChange={e=>setStage(Number(e.target.value))}>
+                {pw.fields.stage.opts.map((o,i)=><option key={i} value={i}>{o}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="flabel">{pw.fields.userType.label}</label>
+              <select className="fselect" value={userType} onChange={e=>setUserType(Number(e.target.value))}>
+                {pw.fields.userType.opts.map((o,i)=><option key={i} value={i}>{o}</option>)}
+              </select>
+            </div>
+          </div>
+          <div style={{marginTop:28,display:"flex",justifyContent:"space-between"}}>
+            <button className="btn-g" onClick={()=>setStep(1)}>{pw.back}</button>
+            <button className="btn-p" onClick={()=>setStep(3)} style={{fontSize:14}}>{pw.next}</button>
+          </div>
+        </div>
+      )}
+
+      {/* STEP 3: Infrastructure */}
+      {step===3&&S(
+        <div>
+          <p style={{fontFamily:"var(--serif)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:8,lineHeight:1.3}}>
+            {pw.fields.infra.label}
+          </p>
+          <p style={{fontSize:13.5,color:"var(--ink3)",marginBottom:22,fontFamily:"var(--sans)"}}>
+            {t.lang==="sr"?"Ovo pomaže alatu da predloži prava rešenja za vašu situaciju.":t.lang==="en"?"This helps the tool suggest the right solutions for your situation.":"Это помогает инструменту предложить правильные решения для вашей ситуации."}
+          </p>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {pw.fields.infra.opts.map((opt,i)=>(
+              <div key={i} onClick={()=>setInfra(i)}
+                style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",border:`2px solid ${infra===i?"var(--acc)":"var(--bdr)"}`,borderRadius:"var(--r)",background:infra===i?"var(--accbg)":"var(--bg)",cursor:"pointer",transition:"all .15s"}}>
+                <span style={{fontSize:18}}>{i===0?"🏙️":i===1?"⚡":"🏡"}</span>
+                <span style={{fontSize:13.5,fontWeight:500,color:infra===i?"var(--acc)":"var(--ink)",fontFamily:"var(--sans)"}}>{opt}</span>
+                <div style={{marginLeft:"auto",width:18,height:18,borderRadius:"50%",border:`2px solid ${infra===i?"var(--acc)":"var(--bdr2)"}`,background:infra===i?"var(--acc)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  {infra===i&&<span style={{fontSize:9,color:"#fff"}}>●</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {infra===2&&(
+            <div className="inf-warn" style={{marginTop:16}}>
+              <span style={{fontSize:16,flexShrink:0}}>🏡</span>
+              <p style={{fontSize:12.5,color:"var(--amb)",lineHeight:1.65,fontFamily:"var(--sans)"}}>{t.infra.none}</p>
+            </div>
+          )}
+
+          <div style={{marginTop:28,display:"flex",justifyContent:"space-between"}}>
+            <button className="btn-g" onClick={()=>setStep(2)}>{pw.back}</button>
+            <button className="btn-p" onClick={doSubmit} disabled={submitting} style={{fontSize:14,padding:"12px 28px"}}>
+              {submitting?(<span style={{display:"flex",alignItems:"center",gap:8}}>
+                <span style={{width:14,height:14,border:"2px solid rgba(255,255,255,.35)",borderTopColor:"#fff",borderRadius:"50%",animation:"spin .8s linear infinite",display:"inline-block"}}/>
+                {pw.submitting}
+              </span>):pw.submit}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════
+   MAIN APP
+════════════════════════════════════════════════════════ */
+function App(){
+  const [lang,setLang]       = useState("sr");
+  const [result,setResult]   = useState(null);
+  const [showSave,setShowSave]= useState(false);
+  const plannerRef = useRef(null);
+  const resultRef  = useRef(null);
+  const t = T[lang];
+
+  const scrollTo = id => document.getElementById(id)?.scrollIntoView({behavior:"smooth",block:"start"});
+
+  const handleResult = plan =>{
+    setResult(plan);
+    setTimeout(()=>resultRef.current?.scrollIntoView({behavior:"smooth",block:"start"}),80);
+  };
+  const handleRestart = ()=>{
+    setResult(null);
+    setTimeout(()=>plannerRef.current?.scrollIntoView({behavior:"smooth",block:"start"}),50);
+  };
+
+  const PY="96px 24px";
+  const MX={maxWidth:1100,margin:"0 auto"};
+
+  return(
+    <div style={{background:"var(--bg)",minHeight:"100vh"}}>
+      {showSave&&<SaveModal t={t} plan={result} onClose={()=>setShowSave(false)}/>}
+
+      {/* ── NAV ── */}
+      <header style={{position:"sticky",top:0,zIndex:100,background:"rgba(250,250,249,.94)",backdropFilter:"blur(14px)",borderBottom:"1px solid var(--bdr)"}}>
+        <div style={{...MX,padding:"0 24px",height:62,display:"flex",alignItems:"center",justifyContent:"space-between",gap:14}}>
+          <div style={{display:"flex",alignItems:"baseline",gap:5,flexShrink:0}}>
+            <span style={{fontSize:19,fontFamily:"var(--serif)",color:"var(--ink)",fontWeight:500}}>{t.nav.logo}</span>
+            <span style={{fontSize:10,fontWeight:700,letterSpacing:".09em",textTransform:"uppercase",color:"var(--acc)",fontFamily:"var(--sans)"}}>{t.nav.sub}</span>
+          </div>
+          <nav className="hide-xs" style={{display:"flex",gap:24,alignItems:"center"}}>
+            {[["how","0"],["planner","1"],["faq","3"]].map(([id,li])=>(
+              <button key={id} className="nav-lnk" onClick={()=>scrollTo(id)}>{t.nav.links[li]}</button>
+            ))}
+          </nav>
+          <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+            <LangSwitch lang={lang} setLang={setLang}/>
+            <button className="btn-p hide-xs" onClick={()=>scrollTo("planner")} style={{fontSize:13,padding:"9px 18px"}}>{t.nav.cta}</button>
+          </div>
+        </div>
+      </header>
+
+      {/* ── HERO ── */}
+      <section style={{padding:"80px 24px 64px",background:"linear-gradient(175deg,#FDFBF8 0%,var(--bg) 100%)",borderBottom:"1px solid var(--bdr)"}}>
+        <div style={{...MX}}>
+          <div className="hero-g" style={{display:"grid",gridTemplateColumns:"1.05fr .95fr",gap:68,alignItems:"center"}}>
+            <div className="fu">
+              <p className="eyebrow" style={{marginBottom:16}}>{t.hero.eyebrow}</p>
+              <h1 style={{fontFamily:"var(--serif)",fontSize:"clamp(30px,4.2vw,50px)",fontWeight:500,color:"var(--ink)",lineHeight:1.13,letterSpacing:"-.02em",marginBottom:6}}>
+                {t.hero.title}
+              </h1>
+              <h1 style={{fontFamily:"var(--serif)",fontSize:"clamp(30px,4.2vw,50px)",fontWeight:400,fontStyle:"italic",color:"var(--acc)",lineHeight:1.13,letterSpacing:"-.02em",marginBottom:22}}>
+                {t.hero.accent}
+              </h1>
+              <p style={{fontSize:16,color:"var(--ink3)",lineHeight:1.72,maxWidth:490,marginBottom:24,fontFamily:"var(--sans)"}}>{t.hero.sub}</p>
+              {/* Cost preview */}
+              <div style={{display:"inline-flex",alignItems:"center",gap:9,background:"var(--ambbg)",border:"1px solid var(--ambmid)",borderRadius:8,padding:"8px 15px",marginBottom:26}}>
+                <span style={{fontSize:14}}>💡</span>
+                <span style={{fontSize:13,fontWeight:500,color:"var(--amb)",fontFamily:"var(--sans)"}}>{t.hero.preview}</span>
+              </div>
+              {/* CTA */}
+              <div style={{display:"flex",flexWrap:"wrap",gap:12,alignItems:"center",marginBottom:12}}>
+                <button className="btn-p" onClick={()=>scrollTo("planner")} style={{fontSize:15,padding:"13px 28px"}}>{t.hero.cta} →</button>
+              </div>
+              <p style={{fontSize:12,color:"var(--ink4)",fontFamily:"var(--sans)",marginBottom:24}}>{t.hero.ctaNote}</p>
+              {/* Trust bar */}
+              <div style={{display:"flex",alignItems:"center",flexWrap:"wrap",gap:10}}>
+                <span style={{fontSize:12,fontWeight:600,color:"var(--ink3)",fontFamily:"var(--sans)"}}>{t.hero.trustBar.label}</span>
+                {t.hero.trustBar.items.map((item,i)=>(
+                  <span key={i} style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:12,fontWeight:500,color:"var(--ink2)",background:"var(--bgw)",border:"1px solid var(--bdr)",borderRadius:20,padding:"3px 11px",fontFamily:"var(--sans)"}}>
+                    <span style={{color:"var(--grn)",fontSize:10}}>●</span> {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Visual */}
+            <div className="hero-vis fu2" style={{position:"relative"}}>
+              <div className="card" style={{padding:26,boxShadow:"var(--sh2)"}}>
+                <p style={{fontSize:10,fontWeight:700,color:"var(--acc)",letterSpacing:".12em",textTransform:"uppercase",marginBottom:14,fontFamily:"var(--sans)"}}>
+                  {lang==="sr"?"Vaš plan":lang==="en"?"Your plan":"Ваш план"}
+                </p>
+                {[1,2,3,4,5].map(i=>(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+                    <div style={{width:21,height:21,borderRadius:"50%",background:i<=2?"var(--acc)":"var(--bgw)",border:`1.5px solid ${i<=2?"var(--acc)":"var(--bdr)"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:i<=2?"#fff":"var(--ink4)",flexShrink:0}}>{i}</div>
+                    <div style={{height:7,background:i<=2?"var(--accmid)":"var(--bgw)",borderRadius:4,flex:1,maxWidth:[210,170,185,145,125][i-1],opacity:i<=2?1:.55}}/>
+                  </div>
+                ))}
+                <HR/>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:16}}>
+                  <div style={{background:"var(--accbg)",border:"1px solid var(--accmid)",borderRadius:8,padding:"13px 14px"}}>
+                    <span style={{fontSize:16,display:"block",marginBottom:7}}>💰</span>
+                    <div style={{height:6,background:"var(--accmid)",borderRadius:3,width:"75%",marginBottom:4}}/>
+                    <div style={{height:6,background:"var(--accmid)",borderRadius:3,width:"50%",opacity:.5}}/>
+                  </div>
+                  <div style={{background:"var(--grnbg)",border:"1px solid var(--grnmid)",borderRadius:8,padding:"13px 14px"}}>
+                    <span style={{fontSize:16,display:"block",marginBottom:7}}>✅</span>
+                    <div style={{height:6,background:"var(--grnmid)",borderRadius:3,width:"65%",marginBottom:4}}/>
+                    <div style={{height:6,background:"var(--grnmid)",borderRadius:3,width:"40%",opacity:.5}}/>
+                  </div>
+                </div>
+              </div>
+              <div style={{position:"absolute",bottom:-16,right:-16,background:"var(--card)",border:"1px solid var(--bdr)",borderRadius:11,padding:"9px 14px",boxShadow:"var(--sh1)",display:"flex",alignItems:"center",gap:9}}>
+                <span style={{fontSize:18}}>✅</span>
+                <div>
+                  <p style={{fontSize:11.5,fontWeight:600,color:"var(--grn)",fontFamily:"var(--sans)",marginBottom:2}}>
+                    {lang==="sr"?"Plan spreman":lang==="en"?"Plan ready":"План готов"}
+                  </p>
+                  <p style={{fontSize:10.5,color:"var(--ink4)",fontFamily:"var(--sans)"}}>
+                    {lang==="sr"?"11 koraka · ~€72.000":lang==="en"?"11 steps · ~€72,000":"11 шагов · ~€72 000"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── COMMON MISTAKES ── */}
+      {t.mistakes&&(
+        <section style={{padding:"72px 24px",background:"var(--bgw)",borderBottom:"1px solid var(--bdr)"}}>
+          <div style={{...MX}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:52,alignItems:"start"}} className="plan-g">
+              <div>
+                <Ey>{t.mistakes.eyebrow}</Ey>
+                <h2 style={{fontFamily:"var(--serif)",fontSize:"clamp(24px,3vw,36px)",fontWeight:500,color:"var(--ink)",lineHeight:1.25,letterSpacing:"-.01em",marginBottom:14}}>
+                  {t.mistakes.title}
+                </h2>
+                <p style={{fontSize:14.5,color:"var(--ink3)",lineHeight:1.7,fontFamily:"var(--sans)"}}>{t.mistakes.sub}</p>
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:0}}>
+                {t.mistakes.items.map((it,i)=>(
+                  <div key={i} style={{display:"flex",gap:14,alignItems:"flex-start",padding:"16px 0",borderBottom:i<t.mistakes.items.length-1?"1px solid var(--bdr)":"none"}}>
+                    <span style={{fontSize:20,flexShrink:0,marginTop:1}}>{it.icon}</span>
+                    <div>
+                      <p style={{fontSize:14,fontWeight:600,color:"var(--ink)",marginBottom:4,fontFamily:"var(--sans)"}}>{it.t}</p>
+                      <p style={{fontSize:13,color:"var(--ink3)",lineHeight:1.65,fontFamily:"var(--sans)"}}>{it.d}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Bottom CTA */}
+            <div style={{marginTop:36,padding:"20px 24px",background:"var(--accbg)",border:"1px solid var(--accmid)",borderRadius:"var(--r)",display:"flex",flexWrap:"wrap",alignItems:"center",justifyContent:"space-between",gap:16}}>
+              <p style={{fontSize:14.5,fontWeight:500,color:"var(--ink)",fontFamily:"var(--sans)",lineHeight:1.5,maxWidth:520}}>
+                {lang==="sr"?"Kreirajte plan i saznajte šta vas tačno čeka — pre nego što počnete.":lang==="en"?"Create your plan and know exactly what to expect — before you start.":"Создайте план и узнайте, что именно вас ждёт — до начала работ."}
+              </p>
+              <button className="btn-p" onClick={()=>scrollTo("planner")} style={{fontSize:14,flexShrink:0}}>
+                {t.hero.cta} →
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── HOW IT WORKS ── */}
+      <section id="how" style={{padding:PY}}>
+        <div style={{...MX}}>
+          <Ey>{t.how.eyebrow}</Ey>
+          <h2 style={{fontFamily:"var(--serif)",fontSize:"clamp(24px,3vw,36px)",fontWeight:500,color:"var(--ink)",lineHeight:1.25,letterSpacing:"-.01em",marginBottom:48}}>
+            {t.how.title}
+          </h2>
+          <div className="how-g" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:18}}>
+            {t.how.steps.map((s,i)=>(
+              <div key={i} className="card card-h" style={{padding:"24px 20px"}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
+                  <span style={{fontSize:12,fontWeight:700,color:"var(--acc)",fontFamily:"var(--sans)",letterSpacing:".04em"}}>{s.n}</span>
+                  <div style={{flex:1,height:1,background:"var(--bdr)"}}/>
+                </div>
+                <h3 style={{fontFamily:"var(--serif)",fontSize:17,fontWeight:500,color:"var(--ink)",marginBottom:10,lineHeight:1.35}}>{s.t}</h3>
+                <p style={{fontSize:13.5,color:"var(--ink3)",lineHeight:1.6,fontFamily:"var(--sans)"}}>{s.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <HR/>
+
+      {/* ── PLANNER ── */}
+      <section id="planner" ref={plannerRef} style={{padding:PY,background:"linear-gradient(180deg,#F8F5F2 0%,var(--bg) 100%)"}}>
+        <div style={{...MX}}>
+          <Ey>{t.planner.eyebrow}</Ey>
+          <div className="plan-g" style={{display:"grid",gridTemplateColumns:"1fr 360px",gap:26,alignItems:"start"}}>
+            <div className="card" style={{padding:34}}>
+              {!result?(
+                <Planner t={t} onResult={handleResult}/>
+              ):(
+                <div ref={resultRef}>
+                  <Results plan={result} t={t} form={{}} onRestart={handleRestart} onSave={()=>setShowSave(true)}/>
+                </div>
+              )}
+            </div>
+
+            {/* Sidebar */}
+            <div style={{display:"flex",flexDirection:"column",gap:14}}>
+              <div className="card" style={{padding:"22px 24px",background:"var(--accbg)",borderColor:"var(--accmid)"}}>
+                <p style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--acc)",marginBottom:14,fontFamily:"var(--sans)"}}>
+                  {t.lang==="sr"?"Šta ćete dobiti":t.lang==="en"?"What you'll receive":"Что вы получите"}
+                </p>
+                {[
+                  t.lang==="sr"?"Konkretan plan za vaše zadatke":t.lang==="en"?"A concrete plan for your tasks":"Конкретный план для ваших задач",
+                  t.lang==="sr"?"Procena troškova u evrima":t.lang==="en"?"Cost estimate in euros":"Оценка расходов в евро",
+                  t.lang==="sr"?"Saveti za infrastrukturu":t.lang==="en"?"Infrastructure guidance":"Советы по инфраструктуре",
+                  t.lang==="sr"?"Preporuke za materijale":t.lang==="en"?"Material recommendations":"Рекомендации по материалам",
+                ].map((g,i)=>(
+                  <div key={i} style={{display:"flex",gap:9,marginBottom:11,alignItems:"flex-start"}}>
+                    <span style={{color:"var(--acc)",fontWeight:700,lineHeight:"20px",flexShrink:0}}>✓</span>
+                    <span style={{fontSize:13.5,color:"var(--ink2)",lineHeight:1.55,fontFamily:"var(--sans)"}}>{g}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="card" style={{padding:"20px 24px",background:"var(--blubg)",borderColor:"var(--blumid)"}}>
+                <p style={{fontSize:12.5,color:"var(--blu)",lineHeight:1.65,fontFamily:"var(--sans)"}}>
+                  <strong style={{display:"block",marginBottom:4,fontSize:11,letterSpacing:".08em",textTransform:"uppercase",fontWeight:700}}>
+                    {t.lang==="sr"?"Napomena":t.lang==="en"?"Note":"Примечание"}
+                  </strong>
+                  {t.planner.note||t.trust.items[3]?.d}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <HR/>
+
+      {/* ── FOREIGNER BLOCK (EN + RU only) ── */}
+      {lang!=="sr"&&t.foreignerBlock&&(
+        <>
+          <section style={{padding:PY}}>
+            <div style={{...MX}}>
+              <div style={{background:"var(--blubg)",border:"1px solid var(--blumid)",borderRadius:"var(--rxl)",padding:"34px 38px"}}>
+                <Ey>{t.foreignerBlock.eyebrow}</Ey>
+                <h2 style={{fontFamily:"var(--serif)",fontSize:"clamp(22px,2.8vw,32px)",fontWeight:500,color:"var(--blu)",lineHeight:1.3,letterSpacing:"-.01em",marginBottom:8}}>
+                  {t.foreignerBlock.title}
+                </h2>
+                <p style={{fontSize:14,color:"var(--blu)",opacity:.7,marginBottom:26,fontFamily:"var(--sans)",lineHeight:1.6}}>{t.foreignerBlock.sub}</p>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}} className="res-2col">
+                  {t.foreignerBlock.items.map((it,i)=>(
+                    <div key={i} style={{display:"flex",gap:13,alignItems:"flex-start"}}>
+                      <span style={{fontSize:20,flexShrink:0,marginTop:1}}>{it.icon}</span>
+                      <div>
+                        <p style={{fontSize:13.5,fontWeight:600,color:"var(--blu)",marginBottom:5,fontFamily:"var(--sans)"}}>{it.t}</p>
+                        <p style={{fontSize:13,color:"var(--blu)",opacity:.7,lineHeight:1.65,fontFamily:"var(--sans)"}}>{it.d}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+          <HR/>
+        </>
+      )}
+
+      {/* ── RESOURCES SECTION ── */}
+      {(()=>{
+        const REC_GROUPS = {
+          sr:[
+            {label:"Materijali i konstrukcija", keys:["insulation","windows","heating"],     recommended:["windows","insulation"]},
+            {label:"Enterijer i oprema",         keys:["flooring","lighting","bathroom","kitchen","furniture"], recommended:["flooring","kitchen"]},
+            {label:"Eksterijer i dvorište",      keys:["garden","tools"],                   recommended:[]},
+          ],
+          en:[
+            {label:"Materials & structure",     keys:["insulation","windows","heating"],     recommended:["windows","insulation"]},
+            {label:"Interior & equipment",      keys:["flooring","lighting","bathroom","kitchen","furniture"], recommended:["flooring","kitchen"]},
+            {label:"Exterior & garden",         keys:["garden","tools"],                    recommended:[]},
+          ],
+          ru:[
+            {label:"Материалы и конструкция",   keys:["insulation","windows","heating"],     recommended:["windows","insulation"]},
+            {label:"Интерьер и оборудование",   keys:["flooring","lighting","bathroom","kitchen","furniture"], recommended:["flooring","kitchen"]},
+            {label:"Экстерьер и сад",           keys:["garden","tools"],                    recommended:[]},
+          ],
+        };
+        const groups = REC_GROUPS[lang]||REC_GROUPS.sr;
+        const ctaLabel = lang==="sr"?"Istraži":lang==="en"?"Explore":"Перейти";
+        const recLabel = lang==="sr"?"Preporučeno":lang==="en"?"Recommended":"Рекомендуем";
+        const heading  = lang==="sr"?"Korisne kategorije za vaš projekat":lang==="en"?"Useful categories for your project":"Полезные категории для вашего проекта";
+        const sub      = lang==="sr"?"Pažljivo odabrane kategorije materijala, opreme i usluga. Neke veze su partnerske — to jasno označavamo.":lang==="en"?"Carefully selected material, equipment and service categories. Where links are referral-based, we say so clearly.":"Тщательно подобранные категории материалов и оборудования. Партнёрские ссылки всегда отмечаются.";
+        const eyebrow  = lang==="sr"?"Resursi":lang==="en"?"Resources":"Ресурсы";
+
+        /* Left group (first group) shown in left column, rest in right */
+        const leftGroup  = groups[0];
+        const rightGroups = groups.slice(1);
+
+        const RecRow = ({k, recommended})=>{
+          const a=AFF[k]; const sr=t.stageRecs[k];
+          if(!a||!sr) return null;
+          const isRec = recommended.includes(k);
+          return(
+            <a href={a.href} target="_blank" rel="noopener noreferrer"
+              style={{display:"flex",alignItems:"center",gap:14,padding:"17px 20px",borderBottom:"1px solid var(--bdr)",transition:"background .15s",cursor:"pointer",textDecoration:"none"}}
+              onMouseEnter={e=>e.currentTarget.style.background="var(--bgw)"}
+              onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+              <span style={{fontSize:20,flexShrink:0,lineHeight:1}}>{a.icon}</span>
+              <div style={{flex:1,minWidth:0}}>
+                <span style={{fontSize:13.5,fontWeight:600,color:"var(--ink)",fontFamily:"var(--sans)"}}>{sr.name}</span>
+                {isRec&&(
+                  <span style={{display:"inline-flex",alignItems:"center",fontSize:9,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"var(--grn)",background:"var(--grnbg)",border:"1px solid var(--grnmid)",borderRadius:4,padding:"2px 7px",marginLeft:8,verticalAlign:"middle"}}>
+                    {recLabel}
+                  </span>
+                )}
+                <p style={{fontSize:12,color:"var(--ink4)",fontFamily:"var(--sans)",lineHeight:1.45,marginTop:3}}>{sr.desc}</p>
+              </div>
+              <span style={{fontSize:12,fontWeight:600,color:"var(--acc)",flexShrink:0,fontFamily:"var(--sans)"}}>{ctaLabel} →</span>
+            </a>
+          );
+        };
+
+        const GroupBox = ({group, style={}})=>(
+          <div className="card" style={{overflow:"hidden",...style}}>
+            <div style={{padding:"13px 20px",borderBottom:"1px solid var(--bdr)",background:"var(--bgw)"}}>
+              <p style={{fontSize:10.5,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--ink3)",fontFamily:"var(--sans)"}}>{group.label}</p>
+            </div>
+            {group.keys.map(k=><RecRow key={k} k={k} recommended={group.recommended}/>)}
+          </div>
+        );
+
+        return(
+          <section id="recs" style={{padding:PY}}>
+            <div style={{...MX}}>
+              <Ey>{eyebrow}</Ey>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:52,alignItems:"start",marginBottom:48}} className="plan-g">
+                <div>
+                  <h2 style={{fontFamily:"var(--serif)",fontSize:"clamp(24px,3vw,36px)",fontWeight:500,color:"var(--ink)",lineHeight:1.25,letterSpacing:"-.01em",marginBottom:16}}>
+                    {heading}
+                  </h2>
+                  <p style={{fontSize:14,color:"var(--ink3)",lineHeight:1.7,fontFamily:"var(--sans)",marginBottom:0}}>{sub}</p>
+                </div>
+                <GroupBox group={leftGroup}/>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}} className="res-2col">
+                {rightGroups.map((g,i)=><GroupBox key={i} group={g}/>)}
+              </div>
+              <p style={{fontSize:11.5,color:"var(--ink4)",marginTop:18,fontFamily:"var(--sans)"}}>{t.results.affilNote}</p>
+            </div>
+          </section>
+        );
+      })()}
+
+      {/* ── TRUST ── */}
+      <section style={{padding:PY,background:"var(--ink)"}}>
+        <div style={{...MX}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+            <div style={{width:22,height:1.5,background:"rgba(196,92,46,.7)",borderRadius:2}}/>
+            <p style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(196,92,46,.85)",fontFamily:"var(--sans)"}}>{t.trust.eyebrow}</p>
+          </div>
+          <h2 style={{fontFamily:"var(--serif)",fontSize:"clamp(22px,2.8vw,32px)",fontWeight:500,color:"#FAFAF9",lineHeight:1.3,letterSpacing:"-.01em",marginBottom:40}}>
+            {t.trust.title}
+          </h2>
+          <div className="trust-g" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:18}}>
+            {t.trust.items.map((it,i)=>(
+              <div key={i} style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.07)",borderRadius:"var(--rl)",padding:"24px 20px"}}>
+                <span style={{fontSize:24,display:"block",marginBottom:14}}>{it.icon}</span>
+                <h3 style={{fontFamily:"var(--serif)",fontSize:16,fontWeight:500,color:"#FAFAF8",marginBottom:8,lineHeight:1.35}}>{it.t}</h3>
+                <p style={{fontSize:12.5,color:"rgba(250,250,248,.5)",lineHeight:1.65,fontFamily:"var(--sans)"}}>{it.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section id="faq" style={{padding:PY}}>
+        <div style={{maxWidth:700,margin:"0 auto",padding:"0 24px"}}>
+          <Ey>{t.faq.eyebrow}</Ey>
+          <h2 style={{fontFamily:"var(--serif)",fontSize:"clamp(24px,3vw,36px)",fontWeight:500,color:"var(--ink)",lineHeight:1.25,letterSpacing:"-.01em",marginBottom:36}}>
+            {t.faq.title}
+          </h2>
+          <FAQ items={t.faq.items}/>
+        </div>
+      </section>
+
+      {/* ── FOOTER ── */}
+      <footer style={{background:"var(--bgw)",borderTop:"1px solid var(--bdr)",padding:"52px 24px 32px"}}>
+        <div style={{...MX}}>
+          <div className="how-g footer-g" style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr",gap:44,marginBottom:44}}>
+            <div>
+              <div style={{display:"flex",alignItems:"baseline",gap:5,marginBottom:12}}>
+                <span style={{fontSize:18,fontFamily:"var(--serif)",color:"var(--ink)",fontWeight:500}}>{t.nav.logo}</span>
+                <span style={{fontSize:10,fontWeight:700,letterSpacing:".09em",textTransform:"uppercase",color:"var(--acc)",fontFamily:"var(--sans)"}}>{t.nav.sub}</span>
+              </div>
+              <p style={{fontSize:13,color:"var(--ink3)",lineHeight:1.7,maxWidth:270,marginBottom:12,fontFamily:"var(--sans)"}}>{t.footer.tagline}</p>
+              <p style={{fontSize:11,color:"var(--ink4)",lineHeight:1.6,maxWidth:290,fontFamily:"var(--sans)"}}>{t.footer.disclaimer}</p>
+            </div>
+            <div>
+              <p style={{fontSize:10.5,fontWeight:700,color:"var(--ink3)",letterSpacing:".09em",textTransform:"uppercase",marginBottom:14,fontFamily:"var(--sans)"}}>
+                {lang==="sr"?"Navigacija":lang==="en"?"Navigation":"Навигация"}
+              </p>
+              {[["how","0"],["planner","1"],["faq","3"]].map(([id,li])=>(
+                <button key={id} onClick={()=>scrollTo(id)}
+                  style={{display:"block",fontSize:13.5,color:"var(--ink3)",background:"none",border:"none",marginBottom:10,padding:0,fontFamily:"var(--sans)",cursor:"pointer",transition:"color .15s"}}
+                  onMouseEnter={e=>e.currentTarget.style.color="var(--ink)"}
+                  onMouseLeave={e=>e.currentTarget.style.color="var(--ink3)"}>
+                  {t.nav.links[li]}
+                </button>
+              ))}
+            </div>
+            <div>
+              <p style={{fontSize:10.5,fontWeight:700,color:"var(--ink3)",letterSpacing:".09em",textTransform:"uppercase",marginBottom:14,fontFamily:"var(--sans)"}}>
+                {lang==="sr"?"Kontakt":lang==="en"?"Contact":"Контакт"}
+              </p>
+              <a href={`mailto:${t.footer.contact}`} style={{fontSize:13.5,color:"var(--ink3)",fontFamily:"var(--sans)",transition:"color .15s"}}
+                onMouseEnter={e=>e.currentTarget.style.color="var(--acc)"}
+                onMouseLeave={e=>e.currentTarget.style.color="var(--ink3)"}>
+                {t.footer.contact}
+              </a>
+              <div style={{marginTop:18}}>
+                <p style={{fontSize:10.5,fontWeight:700,color:"var(--ink3)",letterSpacing:".09em",textTransform:"uppercase",marginBottom:8,fontFamily:"var(--sans)"}}>
+                  {lang==="sr"?"Jezik":lang==="en"?"Language":"Язык"}
+                </p>
+                <div style={{display:"flex",gap:6}}>
+                  {["sr","en","ru"].map(l=>(
+                    <button key={l} onClick={()=>setLang(l)}
+                      style={{fontSize:11,fontWeight:700,padding:"5px 10px",borderRadius:6,border:"1.5px solid",letterSpacing:".06em",textTransform:"uppercase",fontFamily:"var(--sans)",cursor:"pointer",transition:"all .15s",borderColor:lang===l?"var(--acc)":"var(--bdr)",background:lang===l?"var(--accbg)":"transparent",color:lang===l?"var(--acc)":"var(--ink4)"}}>
+                      {l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+          <HR/>
+          <div style={{paddingTop:18,display:"flex",flexWrap:"wrap",justifyContent:"space-between",gap:10,alignItems:"center"}}>
+            <p style={{fontSize:12,color:"var(--ink4)",fontFamily:"var(--sans)"}}>{t.footer.copy}</p>
+            <p style={{fontSize:11.5,color:"var(--ink4)",fontFamily:"var(--sans)",maxWidth:460,textAlign:"right"}}>{t.footer.legal}</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

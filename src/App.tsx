@@ -1,0 +1,475 @@
+import { useRef, useState } from "react";
+import type { CSSProperties } from "react";
+import { AFF } from "./constants/affiliate";
+import { FAQ } from "./components/FAQ";
+import { LangSwitch } from "./components/LangSwitch";
+import { Planner } from "./components/Planner";
+import { Results } from "./components/Results";
+import { SaveModal } from "./components/SaveModal";
+import { Ey, HR } from "./components/ui";
+import { translations, type Lang } from "./translations";
+import type { GeneratedPlan, PlanForm } from "./types/plan";
+
+const EMPTY_PLAN_FORM: PlanForm = {
+  projectType: null,
+  tasks: [],
+  size: "",
+  budget: 2,
+  stage: 0,
+  userType: 0,
+  infra: 0,
+  location: "",
+};
+
+export default function App() {
+  const [lang, setLang] = useState<Lang>("sr");
+  const [result, setResult] = useState<GeneratedPlan | null>(null);
+  const [planForm, setPlanForm] = useState<PlanForm>(EMPTY_PLAN_FORM);
+  const [showSave, setShowSave] = useState(false);
+  const plannerRef = useRef<HTMLElement | null>(null);
+  const resultRef = useRef<HTMLDivElement | null>(null);
+  const t = translations[lang];
+  const plannerNote = "note" in t.planner ? (t.planner as { note?: string }).note : undefined;
+  const foreignerBlock = "foreignerBlock" in t ? t.foreignerBlock : undefined;
+
+  const scrollTo = (id: string) =>
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  const handleResult = (plan: GeneratedPlan, form: PlanForm) => {
+    setResult(plan);
+    setPlanForm(form);
+    setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+  };
+  const handleRestart = () => {
+    setResult(null);
+    setPlanForm(EMPTY_PLAN_FORM);
+    setTimeout(() => plannerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+  };
+
+  const PY="96px 24px";
+  const MX={maxWidth:1100,margin:"0 auto"};
+
+  return(
+    <div style={{background:"var(--bg)",minHeight:"100vh"}}>
+      {showSave&&<SaveModal t={t} plan={result} onClose={()=>setShowSave(false)}/>}
+
+      {/* ── NAV ── */}
+      <header style={{position:"sticky",top:0,zIndex:100,background:"rgba(250,250,249,.94)",backdropFilter:"blur(14px)",borderBottom:"1px solid var(--bdr)"}}>
+        <div style={{...MX,padding:"0 24px",height:62,display:"flex",alignItems:"center",justifyContent:"space-between",gap:14}}>
+          <div style={{display:"flex",alignItems:"baseline",gap:5,flexShrink:0}}>
+            <span style={{fontSize:19,fontFamily:"var(--serif)",color:"var(--ink)",fontWeight:500}}>{t.nav.logo}</span>
+            <span style={{fontSize:10,fontWeight:700,letterSpacing:".09em",textTransform:"uppercase",color:"var(--acc)",fontFamily:"var(--sans)"}}>{t.nav.sub}</span>
+          </div>
+          <nav className="hide-xs" style={{display:"flex",gap:24,alignItems:"center"}}>
+            {[["how","0"],["planner","1"],["faq","3"]].map(([id,li])=>(
+              <button key={id} className="nav-lnk" onClick={()=>scrollTo(id)}>{t.nav.links[Number(li)]}</button>
+            ))}
+          </nav>
+          <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+            <LangSwitch lang={lang} setLang={setLang}/>
+            <button className="btn-p hide-xs" onClick={()=>scrollTo("planner")} style={{fontSize:13,padding:"9px 18px"}}>{t.nav.cta}</button>
+          </div>
+        </div>
+      </header>
+
+      {/* ── HERO ── */}
+      <section style={{padding:"80px 24px 64px",background:"linear-gradient(175deg,#FDFBF8 0%,var(--bg) 100%)",borderBottom:"1px solid var(--bdr)"}}>
+        <div style={{...MX}}>
+          <div className="hero-g" style={{display:"grid",gridTemplateColumns:"1.05fr .95fr",gap:68,alignItems:"center"}}>
+            <div className="fu">
+              <p className="eyebrow" style={{marginBottom:16}}>{t.hero.eyebrow}</p>
+              <h1 style={{fontFamily:"var(--serif)",fontSize:"clamp(30px,4.2vw,50px)",fontWeight:500,color:"var(--ink)",lineHeight:1.13,letterSpacing:"-.02em",marginBottom:6}}>
+                {t.hero.title}
+              </h1>
+              <h1 style={{fontFamily:"var(--serif)",fontSize:"clamp(30px,4.2vw,50px)",fontWeight:400,fontStyle:"italic",color:"var(--acc)",lineHeight:1.13,letterSpacing:"-.02em",marginBottom:22}}>
+                {t.hero.accent}
+              </h1>
+              <p style={{fontSize:16,color:"var(--ink3)",lineHeight:1.72,maxWidth:490,marginBottom:24,fontFamily:"var(--sans)"}}>{t.hero.sub}</p>
+              {/* Cost preview */}
+              <div style={{display:"inline-flex",alignItems:"center",gap:9,background:"var(--ambbg)",border:"1px solid var(--ambmid)",borderRadius:8,padding:"8px 15px",marginBottom:26}}>
+                <span style={{fontSize:14}}>💡</span>
+                <span style={{fontSize:13,fontWeight:500,color:"var(--amb)",fontFamily:"var(--sans)"}}>{t.hero.preview}</span>
+              </div>
+              {/* CTA */}
+              <div style={{display:"flex",flexWrap:"wrap",gap:12,alignItems:"center",marginBottom:12}}>
+                <button className="btn-p" onClick={()=>scrollTo("planner")} style={{fontSize:15,padding:"13px 28px"}}>{t.hero.cta} →</button>
+              </div>
+              <p style={{fontSize:12,color:"var(--ink4)",fontFamily:"var(--sans)",marginBottom:24}}>{t.hero.ctaNote}</p>
+              {/* Trust bar */}
+              <div style={{display:"flex",alignItems:"center",flexWrap:"wrap",gap:10}}>
+                <span style={{fontSize:12,fontWeight:600,color:"var(--ink3)",fontFamily:"var(--sans)"}}>{t.hero.trustBar.label}</span>
+                {t.hero.trustBar.items.map((item,i)=>(
+                  <span key={i} style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:12,fontWeight:500,color:"var(--ink2)",background:"var(--bgw)",border:"1px solid var(--bdr)",borderRadius:20,padding:"3px 11px",fontFamily:"var(--sans)"}}>
+                    <span style={{color:"var(--grn)",fontSize:10}}>●</span> {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Visual */}
+            <div className="hero-vis fu2" style={{position:"relative"}}>
+              <div className="card" style={{padding:26,boxShadow:"var(--sh2)"}}>
+                <p style={{fontSize:10,fontWeight:700,color:"var(--acc)",letterSpacing:".12em",textTransform:"uppercase",marginBottom:14,fontFamily:"var(--sans)"}}>
+                  {lang==="sr"?"Vaš plan":lang==="en"?"Your plan":"Ваш план"}
+                </p>
+                {[1,2,3,4,5].map(i=>(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+                    <div style={{width:21,height:21,borderRadius:"50%",background:i<=2?"var(--acc)":"var(--bgw)",border:`1.5px solid ${i<=2?"var(--acc)":"var(--bdr)"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:i<=2?"#fff":"var(--ink4)",flexShrink:0}}>{i}</div>
+                    <div style={{height:7,background:i<=2?"var(--accmid)":"var(--bgw)",borderRadius:4,flex:1,maxWidth:[210,170,185,145,125][i-1],opacity:i<=2?1:.55}}/>
+                  </div>
+                ))}
+                <HR/>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:16}}>
+                  <div style={{background:"var(--accbg)",border:"1px solid var(--accmid)",borderRadius:8,padding:"13px 14px"}}>
+                    <span style={{fontSize:16,display:"block",marginBottom:7}}>💰</span>
+                    <div style={{height:6,background:"var(--accmid)",borderRadius:3,width:"75%",marginBottom:4}}/>
+                    <div style={{height:6,background:"var(--accmid)",borderRadius:3,width:"50%",opacity:.5}}/>
+                  </div>
+                  <div style={{background:"var(--grnbg)",border:"1px solid var(--grnmid)",borderRadius:8,padding:"13px 14px"}}>
+                    <span style={{fontSize:16,display:"block",marginBottom:7}}>✅</span>
+                    <div style={{height:6,background:"var(--grnmid)",borderRadius:3,width:"65%",marginBottom:4}}/>
+                    <div style={{height:6,background:"var(--grnmid)",borderRadius:3,width:"40%",opacity:.5}}/>
+                  </div>
+                </div>
+              </div>
+              <div style={{position:"absolute",bottom:-16,right:-16,background:"var(--card)",border:"1px solid var(--bdr)",borderRadius:11,padding:"9px 14px",boxShadow:"var(--sh1)",display:"flex",alignItems:"center",gap:9}}>
+                <span style={{fontSize:18}}>✅</span>
+                <div>
+                  <p style={{fontSize:11.5,fontWeight:600,color:"var(--grn)",fontFamily:"var(--sans)",marginBottom:2}}>
+                    {lang==="sr"?"Plan spreman":lang==="en"?"Plan ready":"План готов"}
+                  </p>
+                  <p style={{fontSize:10.5,color:"var(--ink4)",fontFamily:"var(--sans)"}}>
+                    {lang==="sr"?"11 koraka · ~€72.000":lang==="en"?"11 steps · ~€72,000":"11 шагов · ~€72 000"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── COMMON MISTAKES ── */}
+      {t.mistakes&&(
+        <section style={{padding:"72px 24px",background:"var(--bgw)",borderBottom:"1px solid var(--bdr)"}}>
+          <div style={{...MX}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:52,alignItems:"start"}} className="plan-g">
+              <div>
+                <Ey>{t.mistakes.eyebrow}</Ey>
+                <h2 style={{fontFamily:"var(--serif)",fontSize:"clamp(24px,3vw,36px)",fontWeight:500,color:"var(--ink)",lineHeight:1.25,letterSpacing:"-.01em",marginBottom:14}}>
+                  {t.mistakes.title}
+                </h2>
+                <p style={{fontSize:14.5,color:"var(--ink3)",lineHeight:1.7,fontFamily:"var(--sans)"}}>{t.mistakes.sub}</p>
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:0}}>
+                {t.mistakes.items.map((it,i)=>(
+                  <div key={i} style={{display:"flex",gap:14,alignItems:"flex-start",padding:"16px 0",borderBottom:i<t.mistakes.items.length-1?"1px solid var(--bdr)":"none"}}>
+                    <span style={{fontSize:20,flexShrink:0,marginTop:1}}>{it.icon}</span>
+                    <div>
+                      <p style={{fontSize:14,fontWeight:600,color:"var(--ink)",marginBottom:4,fontFamily:"var(--sans)"}}>{it.t}</p>
+                      <p style={{fontSize:13,color:"var(--ink3)",lineHeight:1.65,fontFamily:"var(--sans)"}}>{it.d}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Bottom CTA */}
+            <div style={{marginTop:36,padding:"20px 24px",background:"var(--accbg)",border:"1px solid var(--accmid)",borderRadius:"var(--r)",display:"flex",flexWrap:"wrap",alignItems:"center",justifyContent:"space-between",gap:16}}>
+              <p style={{fontSize:14.5,fontWeight:500,color:"var(--ink)",fontFamily:"var(--sans)",lineHeight:1.5,maxWidth:520}}>
+                {lang==="sr"?"Kreirajte plan i saznajte šta vas tačno čeka — pre nego što počnete.":lang==="en"?"Create your plan and know exactly what to expect — before you start.":"Создайте план и узнайте, что именно вас ждёт — до начала работ."}
+              </p>
+              <button className="btn-p" onClick={()=>scrollTo("planner")} style={{fontSize:14,flexShrink:0}}>
+                {t.hero.cta} →
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── HOW IT WORKS ── */}
+      <section id="how" style={{padding:PY}}>
+        <div style={{...MX}}>
+          <Ey>{t.how.eyebrow}</Ey>
+          <h2 style={{fontFamily:"var(--serif)",fontSize:"clamp(24px,3vw,36px)",fontWeight:500,color:"var(--ink)",lineHeight:1.25,letterSpacing:"-.01em",marginBottom:48}}>
+            {t.how.title}
+          </h2>
+          <div className="how-g" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:18}}>
+            {t.how.steps.map((s,i)=>(
+              <div key={i} className="card card-h" style={{padding:"24px 20px"}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
+                  <span style={{fontSize:12,fontWeight:700,color:"var(--acc)",fontFamily:"var(--sans)",letterSpacing:".04em"}}>{s.n}</span>
+                  <div style={{flex:1,height:1,background:"var(--bdr)"}}/>
+                </div>
+                <h3 style={{fontFamily:"var(--serif)",fontSize:17,fontWeight:500,color:"var(--ink)",marginBottom:10,lineHeight:1.35}}>{s.t}</h3>
+                <p style={{fontSize:13.5,color:"var(--ink3)",lineHeight:1.6,fontFamily:"var(--sans)"}}>{s.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <HR/>
+
+      {/* ── PLANNER ── */}
+      <section id="planner" ref={plannerRef} style={{padding:PY,background:"linear-gradient(180deg,#F8F5F2 0%,var(--bg) 100%)"}}>
+        <div style={{...MX}}>
+          <Ey>{t.planner.eyebrow}</Ey>
+          <div className="plan-g" style={{display:"grid",gridTemplateColumns:"1fr 360px",gap:26,alignItems:"start"}}>
+            <div className="card" style={{padding:34}}>
+              {!result?(
+                <Planner t={t} onResult={handleResult}/>
+              ):(
+                <div ref={resultRef}>
+                  <Results plan={result} t={t} form={planForm} onRestart={handleRestart} onSave={()=>setShowSave(true)}/>
+                </div>
+              )}
+            </div>
+
+            {/* Sidebar */}
+            <div style={{display:"flex",flexDirection:"column",gap:14}}>
+              <div className="card" style={{padding:"22px 24px",background:"var(--accbg)",borderColor:"var(--accmid)"}}>
+                <p style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--acc)",marginBottom:14,fontFamily:"var(--sans)"}}>
+                  {t.lang==="sr"?"Šta ćete dobiti":t.lang==="en"?"What you'll receive":"Что вы получите"}
+                </p>
+                {[
+                  t.lang==="sr"?"Konkretan plan za vaše zadatke":t.lang==="en"?"A concrete plan for your tasks":"Конкретный план для ваших задач",
+                  t.lang==="sr"?"Procena troškova u evrima":t.lang==="en"?"Cost estimate in euros":"Оценка расходов в евро",
+                  t.lang==="sr"?"Saveti za infrastrukturu":t.lang==="en"?"Infrastructure guidance":"Советы по инфраструктуре",
+                  t.lang==="sr"?"Preporuke za materijale":t.lang==="en"?"Material recommendations":"Рекомендации по материалам",
+                ].map((g,i)=>(
+                  <div key={i} style={{display:"flex",gap:9,marginBottom:11,alignItems:"flex-start"}}>
+                    <span style={{color:"var(--acc)",fontWeight:700,lineHeight:"20px",flexShrink:0}}>✓</span>
+                    <span style={{fontSize:13.5,color:"var(--ink2)",lineHeight:1.55,fontFamily:"var(--sans)"}}>{g}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="card" style={{padding:"20px 24px",background:"var(--blubg)",borderColor:"var(--blumid)"}}>
+                <p style={{fontSize:12.5,color:"var(--blu)",lineHeight:1.65,fontFamily:"var(--sans)"}}>
+                  <strong style={{display:"block",marginBottom:4,fontSize:11,letterSpacing:".08em",textTransform:"uppercase",fontWeight:700}}>
+                    {t.lang==="sr"?"Napomena":t.lang==="en"?"Note":"Примечание"}
+                  </strong>
+                  {plannerNote || t.trust.items[3]?.d}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <HR/>
+
+      {/* ── FOREIGNER BLOCK (EN + RU only) ── */}
+      {lang !== "sr" && foreignerBlock && (
+        <>
+          <section style={{padding:PY}}>
+            <div style={{...MX}}>
+              <div style={{background:"var(--blubg)",border:"1px solid var(--blumid)",borderRadius:"var(--rxl)",padding:"34px 38px"}}>
+                <Ey>{foreignerBlock.eyebrow}</Ey>
+                <h2 style={{fontFamily:"var(--serif)",fontSize:"clamp(22px,2.8vw,32px)",fontWeight:500,color:"var(--blu)",lineHeight:1.3,letterSpacing:"-.01em",marginBottom:8}}>
+                  {foreignerBlock.title}
+                </h2>
+                <p style={{fontSize:14,color:"var(--blu)",opacity:.7,marginBottom:26,fontFamily:"var(--sans)",lineHeight:1.6}}>{foreignerBlock.sub}</p>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}} className="res-2col">
+                  {foreignerBlock.items.map((it: { icon: string; t: string; d: string }, i: number) => (
+                    <div key={i} style={{display:"flex",gap:13,alignItems:"flex-start"}}>
+                      <span style={{fontSize:20,flexShrink:0,marginTop:1}}>{it.icon}</span>
+                      <div>
+                        <p style={{fontSize:13.5,fontWeight:600,color:"var(--blu)",marginBottom:5,fontFamily:"var(--sans)"}}>{it.t}</p>
+                        <p style={{fontSize:13,color:"var(--blu)",opacity:.7,lineHeight:1.65,fontFamily:"var(--sans)"}}>{it.d}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+          <HR/>
+        </>
+      )}
+
+      {/* ── RESOURCES SECTION ── */}
+      {(()=>{
+        const REC_GROUPS: Record<
+          Lang,
+          { label: string; keys: string[]; recommended: string[] }[]
+        > = {
+          sr:[
+            {label:"Materijali i konstrukcija", keys:["insulation","windows","heating"],     recommended:["windows","insulation"]},
+            {label:"Enterijer i oprema",         keys:["flooring","lighting","bathroom","kitchen","furniture"], recommended:["flooring","kitchen"]},
+            {label:"Eksterijer i dvorište",      keys:["garden","tools"],                   recommended:[]},
+          ],
+          en:[
+            {label:"Materials & structure",     keys:["insulation","windows","heating"],     recommended:["windows","insulation"]},
+            {label:"Interior & equipment",      keys:["flooring","lighting","bathroom","kitchen","furniture"], recommended:["flooring","kitchen"]},
+            {label:"Exterior & garden",         keys:["garden","tools"],                    recommended:[]},
+          ],
+          ru:[
+            {label:"Материалы и конструкция",   keys:["insulation","windows","heating"],     recommended:["windows","insulation"]},
+            {label:"Интерьер и оборудование",   keys:["flooring","lighting","bathroom","kitchen","furniture"], recommended:["flooring","kitchen"]},
+            {label:"Экстерьер и сад",           keys:["garden","tools"],                    recommended:[]},
+          ],
+        };
+        const groups = REC_GROUPS[lang];
+        const ctaLabel = lang==="sr"?"Istraži":lang==="en"?"Explore":"Перейти";
+        const recLabel = lang==="sr"?"Preporučeno":lang==="en"?"Recommended":"Рекомендуем";
+        const heading  = lang==="sr"?"Korisne kategorije za vaš projekat":lang==="en"?"Useful categories for your project":"Полезные категории для вашего проекта";
+        const sub      = lang==="sr"?"Pažljivo odabrane kategorije materijala, opreme i usluga. Neke veze su partnerske — to jasno označavamo.":lang==="en"?"Carefully selected material, equipment and service categories. Where links are referral-based, we say so clearly.":"Тщательно подобранные категории материалов и оборудования. Партнёрские ссылки всегда отмечаются.";
+        const eyebrow  = lang==="sr"?"Resursi":lang==="en"?"Resources":"Ресурсы";
+
+        /* Left group (first group) shown in left column, rest in right */
+        const leftGroup  = groups[0];
+        const rightGroups = groups.slice(1);
+
+        const RecRow = ({ k, recommended }: { k: string; recommended: string[] }) => {
+          const a = AFF[k];
+          const sr = t.stageRecs[k as keyof typeof t.stageRecs];
+          if(!a||!sr) return null;
+          const isRec = recommended.includes(k);
+          return(
+            <a href={a.href} target="_blank" rel="noopener noreferrer"
+              style={{display:"flex",alignItems:"center",gap:14,padding:"17px 20px",borderBottom:"1px solid var(--bdr)",transition:"background .15s",cursor:"pointer",textDecoration:"none"}}
+              onMouseEnter={e=>e.currentTarget.style.background="var(--bgw)"}
+              onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+              <span style={{fontSize:20,flexShrink:0,lineHeight:1}}>{a.icon}</span>
+              <div style={{flex:1,minWidth:0}}>
+                <span style={{fontSize:13.5,fontWeight:600,color:"var(--ink)",fontFamily:"var(--sans)"}}>{sr.name}</span>
+                {isRec&&(
+                  <span style={{display:"inline-flex",alignItems:"center",fontSize:9,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"var(--grn)",background:"var(--grnbg)",border:"1px solid var(--grnmid)",borderRadius:4,padding:"2px 7px",marginLeft:8,verticalAlign:"middle"}}>
+                    {recLabel}
+                  </span>
+                )}
+                <p style={{fontSize:12,color:"var(--ink4)",fontFamily:"var(--sans)",lineHeight:1.45,marginTop:3}}>{sr.desc}</p>
+              </div>
+              <span style={{fontSize:12,fontWeight:600,color:"var(--acc)",flexShrink:0,fontFamily:"var(--sans)"}}>{ctaLabel} →</span>
+            </a>
+          );
+        };
+
+        const GroupBox = ({
+          group,
+          style = {},
+        }: {
+          group: { label: string; keys: string[]; recommended: string[] };
+          style?: CSSProperties;
+        }) => (
+          <div className="card" style={{overflow:"hidden",...style}}>
+            <div style={{padding:"13px 20px",borderBottom:"1px solid var(--bdr)",background:"var(--bgw)"}}>
+              <p style={{fontSize:10.5,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--ink3)",fontFamily:"var(--sans)"}}>{group.label}</p>
+            </div>
+            {group.keys.map(k=><RecRow key={k} k={k} recommended={group.recommended}/>)}
+          </div>
+        );
+
+        return(
+          <section id="recs" style={{padding:PY}}>
+            <div style={{...MX}}>
+              <Ey>{eyebrow}</Ey>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:52,alignItems:"start",marginBottom:48}} className="plan-g">
+                <div>
+                  <h2 style={{fontFamily:"var(--serif)",fontSize:"clamp(24px,3vw,36px)",fontWeight:500,color:"var(--ink)",lineHeight:1.25,letterSpacing:"-.01em",marginBottom:16}}>
+                    {heading}
+                  </h2>
+                  <p style={{fontSize:14,color:"var(--ink3)",lineHeight:1.7,fontFamily:"var(--sans)",marginBottom:0}}>{sub}</p>
+                </div>
+                <GroupBox group={leftGroup}/>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}} className="res-2col">
+                {rightGroups.map((g,i)=><GroupBox key={i} group={g}/>)}
+              </div>
+              <p style={{fontSize:11.5,color:"var(--ink4)",marginTop:18,fontFamily:"var(--sans)"}}>{t.results.affilNote}</p>
+            </div>
+          </section>
+        );
+      })()}
+
+      {/* ── TRUST ── */}
+      <section style={{padding:PY,background:"var(--ink)"}}>
+        <div style={{...MX}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+            <div style={{width:22,height:1.5,background:"rgba(196,92,46,.7)",borderRadius:2}}/>
+            <p style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(196,92,46,.85)",fontFamily:"var(--sans)"}}>{t.trust.eyebrow}</p>
+          </div>
+          <h2 style={{fontFamily:"var(--serif)",fontSize:"clamp(22px,2.8vw,32px)",fontWeight:500,color:"#FAFAF9",lineHeight:1.3,letterSpacing:"-.01em",marginBottom:40}}>
+            {t.trust.title}
+          </h2>
+          <div className="trust-g" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:18}}>
+            {t.trust.items.map((it,i)=>(
+              <div key={i} style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.07)",borderRadius:"var(--rl)",padding:"24px 20px"}}>
+                <span style={{fontSize:24,display:"block",marginBottom:14}}>{it.icon}</span>
+                <h3 style={{fontFamily:"var(--serif)",fontSize:16,fontWeight:500,color:"#FAFAF8",marginBottom:8,lineHeight:1.35}}>{it.t}</h3>
+                <p style={{fontSize:12.5,color:"rgba(250,250,248,.5)",lineHeight:1.65,fontFamily:"var(--sans)"}}>{it.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section id="faq" style={{padding:PY}}>
+        <div style={{maxWidth:700,margin:"0 auto",padding:"0 24px"}}>
+          <Ey>{t.faq.eyebrow}</Ey>
+          <h2 style={{fontFamily:"var(--serif)",fontSize:"clamp(24px,3vw,36px)",fontWeight:500,color:"var(--ink)",lineHeight:1.25,letterSpacing:"-.01em",marginBottom:36}}>
+            {t.faq.title}
+          </h2>
+          <FAQ items={t.faq.items}/>
+        </div>
+      </section>
+
+      {/* ── FOOTER ── */}
+      <footer style={{background:"var(--bgw)",borderTop:"1px solid var(--bdr)",padding:"52px 24px 32px"}}>
+        <div style={{...MX}}>
+          <div className="how-g footer-g" style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr",gap:44,marginBottom:44}}>
+            <div>
+              <div style={{display:"flex",alignItems:"baseline",gap:5,marginBottom:12}}>
+                <span style={{fontSize:18,fontFamily:"var(--serif)",color:"var(--ink)",fontWeight:500}}>{t.nav.logo}</span>
+                <span style={{fontSize:10,fontWeight:700,letterSpacing:".09em",textTransform:"uppercase",color:"var(--acc)",fontFamily:"var(--sans)"}}>{t.nav.sub}</span>
+              </div>
+              <p style={{fontSize:13,color:"var(--ink3)",lineHeight:1.7,maxWidth:270,marginBottom:12,fontFamily:"var(--sans)"}}>{t.footer.tagline}</p>
+              <p style={{fontSize:11,color:"var(--ink4)",lineHeight:1.6,maxWidth:290,fontFamily:"var(--sans)"}}>{t.footer.disclaimer}</p>
+            </div>
+            <div>
+              <p style={{fontSize:10.5,fontWeight:700,color:"var(--ink3)",letterSpacing:".09em",textTransform:"uppercase",marginBottom:14,fontFamily:"var(--sans)"}}>
+                {lang==="sr"?"Navigacija":lang==="en"?"Navigation":"Навигация"}
+              </p>
+              {[["how","0"],["planner","1"],["faq","3"]].map(([id,li])=>(
+                <button key={id} onClick={()=>scrollTo(id)}
+                  style={{display:"block",fontSize:13.5,color:"var(--ink3)",background:"none",border:"none",marginBottom:10,padding:0,fontFamily:"var(--sans)",cursor:"pointer",transition:"color .15s"}}
+                  onMouseEnter={e=>e.currentTarget.style.color="var(--ink)"}
+                  onMouseLeave={e=>e.currentTarget.style.color="var(--ink3)"}>
+                  {t.nav.links[Number(li)]}
+                </button>
+              ))}
+            </div>
+            <div>
+              <p style={{fontSize:10.5,fontWeight:700,color:"var(--ink3)",letterSpacing:".09em",textTransform:"uppercase",marginBottom:14,fontFamily:"var(--sans)"}}>
+                {lang==="sr"?"Kontakt":lang==="en"?"Contact":"Контакт"}
+              </p>
+              <a href={`mailto:${t.footer.contact}`} style={{fontSize:13.5,color:"var(--ink3)",fontFamily:"var(--sans)",transition:"color .15s"}}
+                onMouseEnter={e=>e.currentTarget.style.color="var(--acc)"}
+                onMouseLeave={e=>e.currentTarget.style.color="var(--ink3)"}>
+                {t.footer.contact}
+              </a>
+              <div style={{marginTop:18}}>
+                <p style={{fontSize:10.5,fontWeight:700,color:"var(--ink3)",letterSpacing:".09em",textTransform:"uppercase",marginBottom:8,fontFamily:"var(--sans)"}}>
+                  {lang==="sr"?"Jezik":lang==="en"?"Language":"Язык"}
+                </p>
+                <div style={{display:"flex",gap:6}}>
+                  {(["sr", "en", "ru"] as const).map((l) => (
+                    <button key={l} type="button" onClick={() => setLang(l)}
+                      style={{fontSize:11,fontWeight:700,padding:"5px 10px",borderRadius:6,border:"1.5px solid",letterSpacing:".06em",textTransform:"uppercase",fontFamily:"var(--sans)",cursor:"pointer",transition:"all .15s",borderColor:lang===l?"var(--acc)":"var(--bdr)",background:lang===l?"var(--accbg)":"transparent",color:lang===l?"var(--acc)":"var(--ink4)"}}>
+                      {l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+          <HR/>
+          <div style={{paddingTop:18,display:"flex",flexWrap:"wrap",justifyContent:"space-between",gap:10,alignItems:"center"}}>
+            <p style={{fontSize:12,color:"var(--ink4)",fontFamily:"var(--sans)"}}>{t.footer.copy}</p>
+            <p style={{fontSize:11.5,color:"var(--ink4)",fontFamily:"var(--sans)",maxWidth:460,textAlign:"right"}}>{t.footer.legal}</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
