@@ -146,14 +146,14 @@ export default function App() {
                       className="mistakes-glb fu3"
                       style={{
                         width: "100%",
-                        minHeight: 280,
-                        height: "min(40vh, 380px)",
-                        maxWidth: 520,
+                        minHeight: 252,
+                        height: "min(36vh, 340px)",
+                        maxWidth: 480,
                         borderRadius: "var(--rl)",
                         border: "1px solid var(--bdr)",
                         boxShadow: "var(--sh1)",
                         background:
-                          "linear-gradient(165deg, #FDFBF8 0%, #F4F0EB 55%, var(--card) 100%)",
+                          "linear-gradient(165deg, #FBF9F6 0%, #EFEBE5 55%, var(--card) 100%)",
                       }}
                       aria-hidden
                     />
@@ -163,6 +163,9 @@ export default function App() {
                 </Suspense>
               </div>
               <div style={{display:"flex",flexDirection:"column",gap:0}}>
+                <p style={{fontSize:13.5,color:"var(--ink2)",fontFamily:"var(--sans)",lineHeight:1.55,marginBottom:14,fontWeight:500}}>
+                  {t.mistakes.listIntro}
+                </p>
                 {t.mistakes.items.map((it,i)=>(
                   <div key={i} style={{display:"flex",gap:14,alignItems:"flex-start",padding:"16px 0",borderBottom:i<t.mistakes.items.length-1?"1px solid var(--bdr)":"none"}}>
                     <span style={{fontSize:20,flexShrink:0,marginTop:1}}>{it.icon}</span>
@@ -177,7 +180,7 @@ export default function App() {
             {/* Bottom CTA */}
             <div style={{marginTop:36,padding:"20px 24px",background:"var(--accbg)",border:"1px solid var(--accmid)",borderRadius:"var(--r)",display:"flex",flexWrap:"wrap",alignItems:"center",justifyContent:"space-between",gap:16}}>
               <p style={{fontSize:14.5,fontWeight:500,color:"var(--ink)",fontFamily:"var(--sans)",lineHeight:1.5,maxWidth:520}}>
-                {lang==="sr"?"Kreirajte plan i saznajte šta vas tačno čeka — pre nego što počnete.":lang==="en"?"Create your plan and know exactly what to expect — before you start.":"Создайте план и узнайте, что именно вас ждёт — до начала работ."}
+                {t.mistakes.bottomCta}
               </p>
               <button className="btn-p" onClick={()=>scrollTo("planner")} style={{fontSize:14,flexShrink:0}}>
                 {t.hero.cta} →

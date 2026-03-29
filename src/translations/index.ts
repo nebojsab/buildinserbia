@@ -19,6 +19,8 @@ sr:{
     eyebrow:"Česte greške",
     title:"Greške koje koštaju hiljade eura",
     sub:"Većina problema na gradilištu nije slučajna — može se predvideti i izbeći.",
+    listIntro:"Najčešće greške koje viđamo u Srbiji:",
+    bottomCta:"Izbegnite ove greške — napravite plan",
     items:[
       {icon:"⚠️",t:"Pogrešan redosled radova",d:"Pokretanje unutrašnje obrade pre završetka instalacija dovodi do raskopavanja i ponovnog rada. Troškovi se dupliraju."},
       {icon:"💸",t:"Potcenjivanje troškova",d:"Budžet 'za svaki slučaj' od 10% nije dovoljan. Na srpskom tržištu preporučujemo rezervu od 20–30%."},
@@ -135,6 +137,7 @@ sr:{
     stageRecsLabel:"Šta vam treba sledeće",
     stageRecsContext:"Za vaš sledeći korak će vam verovatno trebati:",
     stageRecsHelper:"Preporuke su filtrirane na osnovu vašeg plana.",
+    savePlanHint:"Sačuvajte plan i vratite mu se kasnije",
     stageRecsNote:"Relevantne kategorije za vaš projekat. Neke veze su partnerske.",
     microTag:"Fokusirani plan",multiTag:"Kombinovani plan",
     costsNote:"Procene su orijentacione i mogu varirati u zavisnosti od lokacije, izvođača i tržišnih uslova.",
@@ -142,7 +145,7 @@ sr:{
     finContextBox:"Ovo je okvirna procena kredita na osnovu tipičnih uslova u Srbiji.\nStvarna kamata i uslovi zavise od banke i vašeg profila.",
     finNbsHint:"Referentna kamatna stopa (NBS): ~7–7.5%",
     finScenarioTip:"Promenite kamatu ili rok da vidite različite scenarije",
-    finMonthlyAnchor:"Slični krediti u Srbiji trenutno se kreću od ~250€ do 400€ mesečno za ovaj opseg.",
+    finMonthlyAnchor:"Prikazana rata zavisi od iznosa, roka i kamate koje ste uneli — stvarne ponude banaka se razlikuju.",
     finTipBelowCta:"Tip: veće učešće može značajno smanjiti mesečnu ratu.",
     finBankCta:"Pogledaj ponude banaka",
     finCta:{
@@ -209,7 +212,7 @@ sr:{
     ],
   },
   save:{
-    title:"Sačuvajte vaš plan",sub:"Unesite email — sažetak plana ćemo vam poslati besplatno.",
+    title:"Sačuvajte vaš plan",sub:"Pošaljite plan na email ili ga sačuvajte za kasnije",
     contractorTip:"💡 Koristite ovaj plan kada razgovarate sa izvođačima — pomoći će vam da dobijete precizne i uporedive ponude.",
     emailLabel:"Email adresa",emailPh:"vaš@email.com",
     submit:"Sačuvaj plan",submitting:"Čuvanje…",
@@ -252,6 +255,8 @@ en:{
     eyebrow:"Common mistakes",
     title:"Mistakes that cost thousands",
     sub:"Most problems on a build site are predictable — and preventable.",
+    listIntro:"The most common mistakes we see in Serbia:",
+    bottomCta:"Avoid these mistakes — create a plan",
     items:[
       {icon:"⚠️",t:"Wrong order of works",d:"Starting interior finishes before utilities are complete means breaking things open again. Costs can double."},
       {icon:"💸",t:"Underestimating costs",d:"A 10% contingency is not enough. In Serbia, budget a 20–30% buffer above your estimates."},
@@ -365,6 +370,7 @@ en:{
     stageRecsLabel:"What you'll need next",
     stageRecsContext:"For your next step, you'll likely need:",
     stageRecsHelper:"Recommendations are filtered based on your plan.",
+    savePlanHint:"Save your plan and come back to it later",
     stageRecsNote:"Relevant categories for your project. Some links are referral-based.",
     microTag:"Focused plan",multiTag:"Combined plan",
     costsNote:"These estimates are indicative and may vary depending on location, contractors and market conditions.",
@@ -372,7 +378,7 @@ en:{
     finContextBox:"This is an estimated loan scenario based on typical conditions in Serbia.\nActual terms depend on the bank and your profile.",
     finNbsHint:"Reference interest rate (NBS): ~7–7.5%",
     finScenarioTip:"Adjust interest or duration to explore different scenarios",
-    finMonthlyAnchor:"Similar loans in Serbia typically range between ~250€ and 400€ per month for this range.",
+    finMonthlyAnchor:"The payment shown depends on the amount, term, and rate you entered — actual bank offers vary.",
     finTipBelowCta:"Tip: a larger down payment can significantly lower your monthly instalment.",
     finBankCta:"Explore bank offers",
     finCta:{
@@ -449,7 +455,7 @@ en:{
     ],
   },
   save:{
-    title:"Save your plan",sub:"Enter your email and we'll send you a summary — free of charge.",
+    title:"Save your plan",sub:"Send the plan to your email or save it for later",
     contractorTip:"💡 Use this plan when talking to contractors — it will help you get precise, comparable quotes.",
     emailLabel:"Email address",emailPh:"your@email.com",
     submit:"Save plan",submitting:"Saving…",
@@ -492,6 +498,8 @@ ru:{
     eyebrow:"Частые ошибки",
     title:"Ошибки, которые стоят тысячи евро",
     sub:"Большинство проблем на стройке предсказуемы — и их можно избежать.",
+    listIntro:"Самые частые ошибки, которые мы видим в Сербии:",
+    bottomCta:"Избегите этих ошибок — создайте план",
     items:[
       {icon:"⚠️",t:"Неверная очерёдность работ",d:"Начинать внутреннюю отделку до завершения коммуникаций — значит потом всё вскрывать заново. Расходы удваиваются."},
       {icon:"💸",t:"Недооценка расходов",d:"10% резерва недостаточно. На сербском рынке рекомендуем закладывать 20–30% сверх сметы."},
@@ -604,7 +612,8 @@ ru:{
     startHereLabel:"Начните отсюда",startHereSub:"Вот ваши первые три конкретных шага:",
     stageRecsLabel:"Что понадобится дальше",
     stageRecsContext:"Для следующего этапа вам, вероятно, понадобится:",
-    stageRecsHelper:"Рекомендации отфильтрованы по вашему плану.",
+    stageRecsHelper:"Рекомендации отфильтрованы на основе вашего плана.",
+    savePlanHint:"Сохраните план и вернитесь к нему позже",
     stageRecsNote:"Релевантные категории для вашего проекта. Некоторые ссылки партнёрские.",
     microTag:"Целевой план",multiTag:"Комбинированный план",
     costsNote:"Оценки носят ориентировочный характер и могут варьироваться в зависимости от местоположения и подрядчиков.",
@@ -612,7 +621,7 @@ ru:{
     finContextBox:"Это примерный расчет на основе типичных условий в Сербии.\nРеальные условия зависят от банка и вашей ситуации.",
     finNbsHint:"Референсная ставка (НБС): ~7–7.5%",
     finScenarioTip:"Измените ставку или срок, чтобы увидеть разные варианты",
-    finMonthlyAnchor:"Похожие кредиты в Сербии обычно составляют ~250–400€ в месяц для данного диапазона.",
+    finMonthlyAnchor:"Показанный платёж зависит от введённой суммы, срока и ставки — реальные предложения банков различаются.",
     finTipBelowCta:"Совет: больший первоначальный взнос может заметно снизить ежемесячный платёж.",
     finBankCta:"Посмотреть предложения банков",
     finCta:{
@@ -689,7 +698,7 @@ ru:{
     ],
   },
   save:{
-    title:"Сохранить план",sub:"Укажите email — мы пришлём сводку плана бесплатно.",
+    title:"Сохранить план",sub:"Отправьте план на email или сохраните его на потом",
     contractorTip:"💡 Используйте этот план при общении с подрядчиками — он поможет получить точные и сопоставимые коммерческие предложения.",
     emailLabel:"Email адрес",emailPh:"ваш@email.com",
     submit:"Сохранить план",submitting:"Сохранение…",

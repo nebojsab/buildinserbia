@@ -162,8 +162,11 @@ export function Results({
             {form.location||""}{form.location&&stageLabel?" · ":""}{stageLabel}
           </p>
         </div>
-        <div data-pdf-hide style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-          <button className="btn-save" onClick={onSave} disabled={planZipLoading}><span>💾</span>{r.savePlan}</button>
+        <div data-pdf-hide style={{display:"flex",gap:10,flexWrap:"wrap",alignItems:"flex-start"}}>
+          <div style={{display:"flex",flexDirection:"column",alignItems:"flex-start",gap:4}}>
+            <button className="btn-save" onClick={onSave} disabled={planZipLoading}><span>💾</span>{r.savePlan}</button>
+            <p style={{fontSize:11,color:"rgba(255,255,255,.48)",fontFamily:"var(--sans)",lineHeight:1.35,maxWidth:220,margin:0}}>{r.savePlanHint}</p>
+          </div>
           <button
             type="button"
             className="btn-p"
@@ -590,10 +593,13 @@ export function Results({
           borderTop: "1px solid var(--bdr)",
         }}
       >
-        <button type="button" className="btn-save btn-save--light" onClick={onSave} disabled={planZipLoading}>
-          <span>💾</span>
-          {r.savePlan}
-        </button>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
+          <button type="button" className="btn-save btn-save--light" onClick={onSave} disabled={planZipLoading}>
+            <span>💾</span>
+            {r.savePlan}
+          </button>
+          <p style={{fontSize:11,color:"var(--ink4)",fontFamily:"var(--sans)",lineHeight:1.35,maxWidth:220,margin:0,textAlign:"right"}}>{r.savePlanHint}</p>
+        </div>
         <button
           type="button"
           className="btn-p"

@@ -70,6 +70,7 @@ export function SaveModal({
             >
               {s.title}
             </p>
+            <p style={{ fontSize: 13.5, color: "var(--ink3)", marginBottom: 16, lineHeight: 1.6 }}>{s.sub}</p>
             <div
               style={{
                 background: "var(--grnbg)",
@@ -83,7 +84,6 @@ export function SaveModal({
                 {s.contractorTip}
               </p>
             </div>
-            <p style={{ fontSize: 13.5, color: "var(--ink3)", marginBottom: 18, lineHeight: 1.6 }}>{s.sub}</p>
             <div style={{ marginBottom: 16 }}>
               <label className="flabel" htmlFor="save-email">
                 {s.emailLabel}
