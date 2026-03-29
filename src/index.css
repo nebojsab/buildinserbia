@@ -8,7 +8,7 @@
   --grn:#166534; --grnbg:#F0FDF4; --grnmid:#BBF7D0;
   --blu:#1D4ED8; --blubg:#EFF6FF; --blumid:#BFDBFE;
   --amb:#92400E; --ambbg:#FFFBEB; --ambmid:#FDE68A;
-  --serif:'Playfair Display',Georgia,serif;
+  --heading:'Montserrat',system-ui,sans-serif;
   --sans:'Inter',system-ui,sans-serif;
   --r:10px; --rl:16px; --rxl:22px;
   --sh0:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
@@ -28,6 +28,17 @@ button{cursor:pointer;font-family:var(--sans);border:none;background:none}
 .fu2{animation:fadeUp .4s .08s cubic-bezier(.22,1,.36,1) both}
 .fu3{animation:fadeUp .4s .16s cubic-bezier(.22,1,.36,1) both}
 
+/* Planer: desna kolona prati visinu reda; unutrašnji blok je sticky */
+.planner-sidebar-host{
+  min-width:0;
+  align-self:stretch;
+}
+.planner-sidebar{
+  position:sticky;
+  top:78px;
+  z-index:2;
+}
+
 /* Responsive */
 @media(max-width:900px){
   .hero-g{grid-template-columns:1fr!important}
@@ -37,6 +48,7 @@ button{cursor:pointer;font-family:var(--sans);border:none;background:none}
   .res-g{grid-template-columns:1fr!important}
   .footer-g{grid-template-columns:1fr 1fr!important}
   .plan-g{grid-template-columns:1fr!important}
+  .planner-sidebar{position:static}
 }
 @media(max-width:560px){
   .how-g{grid-template-columns:1fr!important}
@@ -56,9 +68,111 @@ button{cursor:pointer;font-family:var(--sans);border:none;background:none}
 .lang-btn:hover{background:var(--bgw)}
 .lang-btn.active{color:var(--acc);background:var(--accbg)}
 
+/* Back to top — floating control, same card language as the rest of the site */
+.back-to-top-floater{
+  position:fixed;
+  right:24px;
+  bottom:28px;
+  z-index:90;
+  width:46px;
+  height:46px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:var(--rl);
+  background:var(--card);
+  border:1.5px solid var(--bdr);
+  box-shadow:var(--sh1);
+  color:var(--ink2);
+  cursor:pointer;
+  transition:background .15s,border-color .15s,color .15s,transform .15s,box-shadow .15s;
+}
+.back-to-top-floater:hover{
+  background:var(--accbg);
+  border-color:var(--accmid);
+  color:var(--acc);
+  transform:translateY(-2px);
+  box-shadow:var(--sh2);
+}
+.back-to-top-floater:focus-visible{
+  outline:2px solid var(--acc);
+  outline-offset:2px;
+}
+@media(max-width:560px){
+  .back-to-top-floater{right:16px;bottom:20px;width:44px;height:44px}
+}
+
+/* Hero plan visual — idle float + mini cards */
+@media(prefers-reduced-motion:no-preference){
+  .hero-vis-card-float{
+    animation:heroCardFloat 5.5s ease-in-out infinite;
+  }
+  .hero-vis-toast-bob{
+    animation:heroToastFloat 4.8s ease-in-out infinite .35s;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .hero-vis-card-float,.hero-vis-toast-bob{animation:none}
+}
+@keyframes heroCardFloat{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-7px)}
+}
+@keyframes heroToastFloat{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-5px)}
+}
+.hero-mini-card--live{
+  transform:scale(1.02);
+  box-shadow:var(--sh1);
+}
+
 /* Cards */
 .card{background:var(--card);border:1px solid var(--bdr);border-radius:var(--rl);box-shadow:var(--sh0);transition:border-color .2s,box-shadow .2s,transform .2s}
 .card-h:hover{border-color:var(--accmid);box-shadow:var(--sh1);transform:translateY(-2px)}
+
+/* Result view — section rhythm & titles (Results.tsx) */
+.result-view .card{box-shadow:0 2px 10px rgba(15,15,20,.05),0 1px 3px rgba(15,15,20,.06)}
+.result-view .res-sec-title{
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+  font-family:var(--heading);
+  color:var(--ink2);
+  margin:0 0 14px;
+  padding-bottom:10px;
+  border-bottom:2px solid var(--bdr);
+}
+.result-view .res-sec-title--acc{color:var(--acc);border-bottom-color:rgba(196,92,46,.38)}
+.result-view .res-sec-title--muted{color:var(--ink3);border-bottom-color:var(--bdr)}
+.result-view .res-sec-title--grn{color:var(--grn);border-bottom-color:rgba(22,101,52,.32)}
+.result-view .res-sec-title--inhead{
+  margin:0;
+  padding:0;
+  border:none;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+  font-family:var(--heading);
+}
+.result-view .res-sec-title--inhead.res-sec-title--acc{color:var(--acc)}
+.result-view .res-sec-title--inhead.res-sec-title--muted{color:var(--ink2)}
+.result-view .note-row{
+  padding:12px 14px;
+  border-radius:var(--r);
+  background:var(--bgw);
+  border:1px solid var(--bdr);
+}
+.result-view .start-here-title{
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+  font-family:var(--heading);
+  color:var(--acc);
+}
 
 /* Buttons */
 .btn-p{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--acc);color:#fff;font-size:14px;font-weight:600;font-family:var(--sans);padding:12px 24px;border-radius:var(--r);border:none;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(196,92,46,.28)}
@@ -68,6 +182,9 @@ button{cursor:pointer;font-family:var(--sans);border:none;background:none}
 .btn-g:hover{border-color:var(--ink3);color:var(--ink);background:var(--bgw)}
 .btn-save{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.22);color:rgba(255,255,255,.85);font-size:12.5px;font-weight:500;font-family:var(--sans);padding:8px 16px;border-radius:var(--r);cursor:pointer;transition:all .15s}
 .btn-save:hover{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.4);color:#fff}
+.btn-save--light{background:var(--accbg);border-color:var(--accmid);color:var(--acc)}
+.btn-save--light:hover{background:var(--accmid);border-color:var(--acc);color:#fff}
+.btn-save--light:disabled{opacity:.55;cursor:not-allowed}
 
 /* Nav */
 .nav-lnk{font-size:13px;font-weight:500;color:var(--ink3);background:none;border:none;padding:0;cursor:pointer;transition:color .15s;font-family:var(--sans)}
@@ -89,6 +206,9 @@ button{cursor:pointer;font-family:var(--sans);border:none;background:none}
 .task-opt.sel .task-label{color:var(--acc)}
 .task-chk{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--bdr2);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .15s;margin-left:auto}
 .task-opt.sel .task-chk{background:var(--acc);border-color:var(--acc)}
+.task-opt.muted{opacity:.48;transition:opacity .15s}
+.task-opt.muted:hover{opacity:.62}
+.task-opt.muted .task-label{color:var(--ink4)}
 
 /* Step indicator */
 .step-ind{display:flex;align-items:center;gap:0;margin-bottom:36px}

@@ -1,8 +1,13 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import {
+  FULL_RENOVATION_TASK_KEY,
+  resolveTasksForPlanSubmit,
+} from "../constants/renovation";
 import { generatePlan } from "../lib/generatePlan";
 import type { PlanForm, ProjectType } from "../types/plan";
 import { translations, type Lang } from "../translations";
+import { LocationAutocomplete } from "./LocationAutocomplete";
 
 type T = (typeof translations)["sr"];
 
@@ -20,15 +25,56 @@ export function Planner({
   const [size,setSize] = useState("");
   const [budget,setBudget] = useState(2);
   const [location,setLocation] = useState("");
-  const [stage,setStage] = useState(0);
-  const [userType,setUserType] = useState(0);
-  const [infra,setInfra] = useState(0);
-  const [submitting,setSub] = useState(false);
+  const [stage, setStage] = useState(0);
+  const [userType, setUserType] = useState(0);
+  const [infra, setInfra] = useState(0);
+  const [submitting, setSub] = useState(false);
 
-  const pct = ((step+1)/4)*100;
+  const stageOptions = pType ? pw.stagesByType[pType] : [];
+  const stageHelper = pType ? pw.stageHelperByType[pType] : "";
 
-  const toggleTask = (k: string) => {
-    setSelTasks((p) => (p.includes(k) ? p.filter((x) => x !== k) : [...p, k]));
+  useEffect(() => {
+    setStage(0);
+  }, [pType]);
+
+  useEffect(() => {
+    if (stageOptions.length === 0) return;
+    setStage((s) => Math.min(s, stageOptions.length - 1));
+  }, [t.lang, stageOptions.length]);
+
+  const pct = ((step + 1) / 4) * 100;
+
+  const taskList = pType ? pw.tasks[pType] || [] : [];
+  const renoGranularKeys = taskList
+    .map((x) => x.k)
+    .filter((k) => k !== FULL_RENOVATION_TASK_KEY);
+
+  const fullRenoShortcutActive =
+    pType === "reno" &&
+    selTasks.length === 1 &&
+    selTasks[0] === FULL_RENOVATION_TASK_KEY;
+
+  const handleTaskClick = (k: string) => {
+    if (pType !== "reno") {
+      setSelTasks((p) => (p.includes(k) ? p.filter((x) => x !== k) : [...p, k]));
+      return;
+    }
+    if (k === FULL_RENOVATION_TASK_KEY) {
+      if (fullRenoShortcutActive) {
+        setSelTasks([]);
+      } else {
+        setSelTasks([FULL_RENOVATION_TASK_KEY]);
+      }
+      return;
+    }
+    if (fullRenoShortcutActive) {
+      setSelTasks([k]);
+      return;
+    }
+    setSelTasks((p) => {
+      const base = p.filter((x) => x !== FULL_RENOVATION_TASK_KEY);
+      return base.includes(k) ? base.filter((x) => x !== k) : [...base, k];
+    });
   };
 
   const canNext0 = !!pType;
@@ -39,7 +85,7 @@ export function Planner({
     setSub(true);
     const form: PlanForm = {
       projectType: pType,
-      tasks: selTasks,
+      tasks: resolveTasksForPlanSubmit(pType, selTasks, renoGranularKeys),
       size,
       budget,
       stage,
@@ -52,8 +98,6 @@ export function Planner({
       onResult(generatePlan(form, t.lang as Lang), form);
     }, 1000);
   };
-
-  const taskList = pType ? (pw.tasks[pType]||[]) : [];
 
   const S = (children: ReactNode, delay = 0) => (
     <div className="fu" style={{ animationDelay: `${delay}s` }}>
@@ -89,7 +133,7 @@ export function Planner({
       {/* STEP 0: Project type */}
       {step===0&&S(
         <div>
-          <p style={{fontFamily:"var(--serif)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:22,lineHeight:1.3}}>{pw.title}</p>
+          <p style={{fontFamily:"var(--heading)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:22,lineHeight:1.3}}>{pw.title}</p>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}} className="task-g">
             {pw.projectTypes.map(pt=>(
               <button key={pt.k}
@@ -112,20 +156,62 @@ export function Planner({
       {/* STEP 1: Task selection */}
       {step===1&&S(
         <div>
-          <p style={{fontFamily:"var(--serif)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:6,lineHeight:1.3}}>
+          <p style={{fontFamily:"var(--heading)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:6,lineHeight:1.3}}>
             {pw.projectTypes.find(p=>p.k===pType)?.icon} {pw.projectTypes.find(p=>p.k===pType)?.label}
           </p>
           <p style={{fontSize:13.5,color:"var(--ink3)",marginBottom:22,fontFamily:"var(--sans)"}}>{pw.selectHint}</p>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}} className="task-g">
-            {taskList.map(tk=>(
-              <div key={tk.k} className={`task-opt${selTasks.includes(tk.k)?" sel":""}`} onClick={()=>toggleTask(tk.k)}>
-                <span className="task-icon">{tk.icon}</span>
-                <span className="task-label">{tk.label}</span>
-                <div className="task-chk">
-                  {selTasks.includes(tk.k)&&<span style={{fontSize:10,color:"#fff"}}>✓</span>}
+            {taskList.map((tk) => {
+              const selected =
+                pType === "reno" && fullRenoShortcutActive
+                  ? tk.k === FULL_RENOVATION_TASK_KEY
+                  : selTasks.includes(tk.k);
+              const muted =
+                pType === "reno" &&
+                fullRenoShortcutActive &&
+                tk.k !== FULL_RENOVATION_TASK_KEY;
+              return (
+                <div
+                  key={tk.k}
+                  className={`task-opt${selected ? " sel" : ""}${muted ? " muted" : ""}`}
+                  onClick={() => handleTaskClick(tk.k)}
+                  style={{ flexDirection: "column", alignItems: "stretch", gap: 8 }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 10,
+                      width: "100%",
+                    }}
+                  >
+                    <span className="task-icon">{tk.icon}</span>
+                    <span className="task-label" style={{ flex: 1, minWidth: 0 }}>
+                      {tk.label}
+                    </span>
+                    <div className="task-chk">
+                      {selected ? (
+                        <span style={{ fontSize: 10, color: "#fff" }}>✓</span>
+                      ) : null}
+                    </div>
+                  </div>
+                  {tk.k === FULL_RENOVATION_TASK_KEY ? (
+                    <p
+                      style={{
+                        fontSize: 11.5,
+                        color: "var(--ink3)",
+                        lineHeight: 1.45,
+                        fontFamily: "var(--sans)",
+                        margin: 0,
+                        paddingLeft: 28,
+                      }}
+                    >
+                      {pw.fullRenoHint}
+                    </p>
+                  ) : null}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <div style={{marginTop:28,display:"flex",justifyContent:"space-between"}}>
             <button className="btn-g" onClick={()=>setStep(0)}>{pw.back}</button>
@@ -137,7 +223,7 @@ export function Planner({
       {/* STEP 2: Details */}
       {step===2&&S(
         <div>
-          <p style={{fontFamily:"var(--serif)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:22,lineHeight:1.3}}>
+          <p style={{fontFamily:"var(--heading)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:22,lineHeight:1.3}}>
             {t.lang==="sr"?"Detalji projekta":t.lang==="en"?"Project details":"Детали проекта"}
           </p>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:4}} className="res-2col">
@@ -154,7 +240,13 @@ export function Planner({
           </div>
           <div style={{marginBottom:16}}>
             <label className="flabel">{pw.fields.location.label}</label>
-            <input className="finput" value={location} onChange={e=>setLocation(e.target.value)} placeholder={pw.fields.location.ph}/>
+            <LocationAutocomplete
+              value={location}
+              onChange={setLocation}
+              placeholder={pw.fields.location.ph}
+              labels={pw.locationSearch}
+              lang={t.lang as Lang}
+            />
             <div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:8}}>
               {pw.locChips.map(lc=>(
                 <button key={lc} className={`lchip${location===lc?" act":""}`} onClick={()=>setLocation(lc)}>{lc}</button>
@@ -164,9 +256,30 @@ export function Planner({
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}} className="res-2col">
             <div>
               <label className="flabel">{pw.fields.stage.label}</label>
-              <select className="fselect" value={stage} onChange={e=>setStage(Number(e.target.value))}>
-                {pw.fields.stage.opts.map((o,i)=><option key={i} value={i}>{o}</option>)}
+              <select
+                className="fselect"
+                value={stage}
+                onChange={(e) => setStage(Number(e.target.value))}
+              >
+                {stageOptions.map((o, i) => (
+                  <option key={i} value={i}>
+                    {o}
+                  </option>
+                ))}
               </select>
+              {stageHelper ? (
+                <p
+                  style={{
+                    fontSize: 12,
+                    color: "var(--ink3)",
+                    lineHeight: 1.55,
+                    fontFamily: "var(--sans)",
+                    marginTop: 8,
+                  }}
+                >
+                  {stageHelper}
+                </p>
+              ) : null}
             </div>
             <div>
               <label className="flabel">{pw.fields.userType.label}</label>
@@ -185,7 +298,7 @@ export function Planner({
       {/* STEP 3: Infrastructure */}
       {step===3&&S(
         <div>
-          <p style={{fontFamily:"var(--serif)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:8,lineHeight:1.3}}>
+          <p style={{fontFamily:"var(--heading)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:8,lineHeight:1.3}}>
             {pw.fields.infra.label}
           </p>
           <p style={{fontSize:13.5,color:"var(--ink3)",marginBottom:22,fontFamily:"var(--sans)"}}>

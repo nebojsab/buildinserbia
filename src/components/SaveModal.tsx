@@ -60,7 +60,7 @@ export function SaveModal({
           <>
             <p
               style={{
-                fontFamily: "var(--serif)",
+                fontFamily: "var(--heading)",
                 fontSize: 22,
                 fontWeight: 500,
                 color: "var(--ink)",
@@ -131,7 +131,7 @@ export function SaveModal({
         ) : (
           <div style={{ textAlign: "center", padding: "8px 0" }}>
             <span style={{ fontSize: 44, display: "block", marginBottom: 14 }}>✅</span>
-            <p style={{ fontFamily: "var(--serif)", fontSize: 22, fontWeight: 500, color: "var(--ink)", marginBottom: 8 }}>
+            <p style={{ fontFamily: "var(--heading)", fontSize: 22, fontWeight: 500, color: "var(--ink)", marginBottom: 8 }}>
               {s.okTitle}
             </p>
             <p style={{ fontSize: 13.5, color: "var(--ink3)", marginBottom: 16, lineHeight: 1.6 }}>{s.okSub}</p>

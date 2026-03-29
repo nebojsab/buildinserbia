@@ -1,4 +1,4 @@
-export type ProjectType = "newbuild" | "reno" | "interior" | "yard";
+export type ProjectType = "newbuild" | "reno" | "extension" | "interior" | "yard";
 
 export interface PlanForm {
   projectType: ProjectType | null;

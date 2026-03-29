@@ -1,12 +1,22 @@
-import { useRef, useState } from "react";
+import { lazy, Suspense, useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { AFF } from "./constants/affiliate";
 import { FAQ } from "./components/FAQ";
 import { LangSwitch } from "./components/LangSwitch";
 import { Planner } from "./components/Planner";
+import { BackToTop } from "./components/BackToTop";
+import { FooterLocalTime } from "./components/FooterLocalTime";
+import { HeroPlanVisual } from "./components/HeroPlanVisual";
+const ProjectBuildGlbViewer = lazy(() =>
+  import("./components/ProjectBuildGlbViewer").then((m) => ({
+    default: m.ProjectBuildGlbViewer,
+  })),
+);
+import { SiteLogo } from "./components/SiteLogo";
 import { Results } from "./components/Results";
 import { SaveModal } from "./components/SaveModal";
 import { Ey, HR } from "./components/ui";
+import { generatePlan } from "./lib/generatePlan";
 import { translations, type Lang } from "./translations";
 import type { GeneratedPlan, PlanForm } from "./types/plan";
 
@@ -28,6 +38,7 @@ export default function App() {
   const [showSave, setShowSave] = useState(false);
   const plannerRef = useRef<HTMLElement | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
+  const planExportRef = useRef<HTMLDivElement | null>(null);
   const t = translations[lang];
   const plannerNote = "note" in t.planner ? (t.planner as { note?: string }).note : undefined;
   const foreignerBlock = "foreignerBlock" in t ? t.foreignerBlock : undefined;
@@ -46,6 +57,14 @@ export default function App() {
     setTimeout(() => plannerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
   };
 
+  /* Keep generated steps, notes and next actions aligned with the UI language when user switches after submit. */
+  useLayoutEffect(() => {
+    if (!result || planForm.projectType == null || planForm.tasks.length === 0) return;
+    setResult(generatePlan(planForm, lang));
+    // Intentionally only `lang`: avoid re-running when `result` updates (would loop).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
+
   const PY="96px 24px";
   const MX={maxWidth:1100,margin:"0 auto"};
 
@@ -56,9 +75,8 @@ export default function App() {
       {/* ── NAV ── */}
       <header style={{position:"sticky",top:0,zIndex:100,background:"rgba(250,250,249,.94)",backdropFilter:"blur(14px)",borderBottom:"1px solid var(--bdr)"}}>
         <div style={{...MX,padding:"0 24px",height:62,display:"flex",alignItems:"center",justifyContent:"space-between",gap:14}}>
-          <div style={{display:"flex",alignItems:"baseline",gap:5,flexShrink:0}}>
-            <span style={{fontSize:19,fontFamily:"var(--serif)",color:"var(--ink)",fontWeight:500}}>{t.nav.logo}</span>
-            <span style={{fontSize:10,fontWeight:700,letterSpacing:".09em",textTransform:"uppercase",color:"var(--acc)",fontFamily:"var(--sans)"}}>{t.nav.sub}</span>
+          <div style={{display:"flex",alignItems:"center",flexShrink:0}}>
+            <SiteLogo />
           </div>
           <nav className="hide-xs" style={{display:"flex",gap:24,alignItems:"center"}}>
             {[["how","0"],["planner","1"],["faq","3"]].map(([id,li])=>(
@@ -78,10 +96,10 @@ export default function App() {
           <div className="hero-g" style={{display:"grid",gridTemplateColumns:"1.05fr .95fr",gap:68,alignItems:"center"}}>
             <div className="fu">
               <p className="eyebrow" style={{marginBottom:16}}>{t.hero.eyebrow}</p>
-              <h1 style={{fontFamily:"var(--serif)",fontSize:"clamp(30px,4.2vw,50px)",fontWeight:500,color:"var(--ink)",lineHeight:1.13,letterSpacing:"-.02em",marginBottom:6}}>
+              <h1 style={{fontFamily:"var(--heading)",fontSize:"clamp(30px,4.2vw,50px)",fontWeight:500,color:"var(--ink)",lineHeight:1.13,letterSpacing:"-.02em",marginBottom:6}}>
                 {t.hero.title}
               </h1>
-              <h1 style={{fontFamily:"var(--serif)",fontSize:"clamp(30px,4.2vw,50px)",fontWeight:400,fontStyle:"italic",color:"var(--acc)",lineHeight:1.13,letterSpacing:"-.02em",marginBottom:22}}>
+              <h1 style={{fontFamily:"var(--heading)",fontSize:"clamp(30px,4.2vw,50px)",fontWeight:400,fontStyle:"italic",color:"var(--acc)",lineHeight:1.13,letterSpacing:"-.02em",marginBottom:22}}>
                 {t.hero.accent}
               </h1>
               <p style={{fontSize:16,color:"var(--ink3)",lineHeight:1.72,maxWidth:490,marginBottom:24,fontFamily:"var(--sans)"}}>{t.hero.sub}</p>
@@ -106,44 +124,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* Visual */}
-            <div className="hero-vis fu2" style={{position:"relative"}}>
-              <div className="card" style={{padding:26,boxShadow:"var(--sh2)"}}>
-                <p style={{fontSize:10,fontWeight:700,color:"var(--acc)",letterSpacing:".12em",textTransform:"uppercase",marginBottom:14,fontFamily:"var(--sans)"}}>
-                  {lang==="sr"?"Vaš plan":lang==="en"?"Your plan":"Ваш план"}
-                </p>
-                {[1,2,3,4,5].map(i=>(
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-                    <div style={{width:21,height:21,borderRadius:"50%",background:i<=2?"var(--acc)":"var(--bgw)",border:`1.5px solid ${i<=2?"var(--acc)":"var(--bdr)"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:i<=2?"#fff":"var(--ink4)",flexShrink:0}}>{i}</div>
-                    <div style={{height:7,background:i<=2?"var(--accmid)":"var(--bgw)",borderRadius:4,flex:1,maxWidth:[210,170,185,145,125][i-1],opacity:i<=2?1:.55}}/>
-                  </div>
-                ))}
-                <HR/>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:16}}>
-                  <div style={{background:"var(--accbg)",border:"1px solid var(--accmid)",borderRadius:8,padding:"13px 14px"}}>
-                    <span style={{fontSize:16,display:"block",marginBottom:7}}>💰</span>
-                    <div style={{height:6,background:"var(--accmid)",borderRadius:3,width:"75%",marginBottom:4}}/>
-                    <div style={{height:6,background:"var(--accmid)",borderRadius:3,width:"50%",opacity:.5}}/>
-                  </div>
-                  <div style={{background:"var(--grnbg)",border:"1px solid var(--grnmid)",borderRadius:8,padding:"13px 14px"}}>
-                    <span style={{fontSize:16,display:"block",marginBottom:7}}>✅</span>
-                    <div style={{height:6,background:"var(--grnmid)",borderRadius:3,width:"65%",marginBottom:4}}/>
-                    <div style={{height:6,background:"var(--grnmid)",borderRadius:3,width:"40%",opacity:.5}}/>
-                  </div>
-                </div>
-              </div>
-              <div style={{position:"absolute",bottom:-16,right:-16,background:"var(--card)",border:"1px solid var(--bdr)",borderRadius:11,padding:"9px 14px",boxShadow:"var(--sh1)",display:"flex",alignItems:"center",gap:9}}>
-                <span style={{fontSize:18}}>✅</span>
-                <div>
-                  <p style={{fontSize:11.5,fontWeight:600,color:"var(--grn)",fontFamily:"var(--sans)",marginBottom:2}}>
-                    {lang==="sr"?"Plan spreman":lang==="en"?"Plan ready":"План готов"}
-                  </p>
-                  <p style={{fontSize:10.5,color:"var(--ink4)",fontFamily:"var(--sans)"}}>
-                    {lang==="sr"?"11 koraka · ~€72.000":lang==="en"?"11 steps · ~€72,000":"11 шагов · ~€72 000"}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <HeroPlanVisual lang={lang} />
           </div>
         </div>
       </section>
@@ -155,10 +136,31 @@ export default function App() {
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:52,alignItems:"start"}} className="plan-g">
               <div>
                 <Ey>{t.mistakes.eyebrow}</Ey>
-                <h2 style={{fontFamily:"var(--serif)",fontSize:"clamp(24px,3vw,36px)",fontWeight:500,color:"var(--ink)",lineHeight:1.25,letterSpacing:"-.01em",marginBottom:14}}>
+                <h2 style={{fontFamily:"var(--heading)",fontSize:"clamp(24px,3vw,36px)",fontWeight:500,color:"var(--ink)",lineHeight:1.25,letterSpacing:"-.01em",marginBottom:14}}>
                   {t.mistakes.title}
                 </h2>
-                <p style={{fontSize:14.5,color:"var(--ink3)",lineHeight:1.7,fontFamily:"var(--sans)"}}>{t.mistakes.sub}</p>
+                <p style={{fontSize:14.5,color:"var(--ink3)",lineHeight:1.7,fontFamily:"var(--sans)",marginBottom:22}}>{t.mistakes.sub}</p>
+                <Suspense
+                  fallback={
+                    <div
+                      className="mistakes-glb fu3"
+                      style={{
+                        width: "100%",
+                        minHeight: 280,
+                        height: "min(40vh, 380px)",
+                        maxWidth: 520,
+                        borderRadius: "var(--rl)",
+                        border: "1px solid var(--bdr)",
+                        boxShadow: "var(--sh1)",
+                        background:
+                          "linear-gradient(165deg, #FDFBF8 0%, #F4F0EB 55%, var(--card) 100%)",
+                      }}
+                      aria-hidden
+                    />
+                  }
+                >
+                  <ProjectBuildGlbViewer />
+                </Suspense>
               </div>
               <div style={{display:"flex",flexDirection:"column",gap:0}}>
                 {t.mistakes.items.map((it,i)=>(
@@ -189,7 +191,7 @@ export default function App() {
       <section id="how" style={{padding:PY}}>
         <div style={{...MX}}>
           <Ey>{t.how.eyebrow}</Ey>
-          <h2 style={{fontFamily:"var(--serif)",fontSize:"clamp(24px,3vw,36px)",fontWeight:500,color:"var(--ink)",lineHeight:1.25,letterSpacing:"-.01em",marginBottom:48}}>
+          <h2 style={{fontFamily:"var(--heading)",fontSize:"clamp(24px,3vw,36px)",fontWeight:500,color:"var(--ink)",lineHeight:1.25,letterSpacing:"-.01em",marginBottom:48}}>
             {t.how.title}
           </h2>
           <div className="how-g" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:18}}>
@@ -199,7 +201,7 @@ export default function App() {
                   <span style={{fontSize:12,fontWeight:700,color:"var(--acc)",fontFamily:"var(--sans)",letterSpacing:".04em"}}>{s.n}</span>
                   <div style={{flex:1,height:1,background:"var(--bdr)"}}/>
                 </div>
-                <h3 style={{fontFamily:"var(--serif)",fontSize:17,fontWeight:500,color:"var(--ink)",marginBottom:10,lineHeight:1.35}}>{s.t}</h3>
+                <h3 style={{fontFamily:"var(--heading)",fontSize:17,fontWeight:500,color:"var(--ink)",marginBottom:10,lineHeight:1.35}}>{s.t}</h3>
                 <p style={{fontSize:13.5,color:"var(--ink3)",lineHeight:1.6,fontFamily:"var(--sans)"}}>{s.d}</p>
               </div>
             ))}
@@ -213,19 +215,33 @@ export default function App() {
       <section id="planner" ref={plannerRef} style={{padding:PY,background:"linear-gradient(180deg,#F8F5F2 0%,var(--bg) 100%)"}}>
         <div style={{...MX}}>
           <Ey>{t.planner.eyebrow}</Ey>
-          <div className="plan-g" style={{display:"grid",gridTemplateColumns:"1fr 360px",gap:26,alignItems:"start"}}>
-            <div className="card" style={{padding:34}}>
-              {!result?(
-                <Planner t={t} onResult={handleResult}/>
-              ):(
-                <div ref={resultRef}>
-                  <Results plan={result} t={t} form={planForm} onRestart={handleRestart} onSave={()=>setShowSave(true)}/>
-                </div>
-              )}
+          <div
+            className="plan-g"
+            ref={planExportRef}
+            style={{display:"grid",gridTemplateColumns:"1fr 360px",gap:26,alignItems:"stretch"}}
+          >
+            <div style={{ alignSelf: "start", minWidth: 0 }}>
+              <div className="card" style={{padding:34}}>
+                {!result?(
+                  <Planner t={t} onResult={handleResult}/>
+                ):(
+                  <div ref={resultRef}>
+                    <Results
+                      plan={result}
+                      t={t}
+                      form={planForm}
+                      onRestart={handleRestart}
+                      onSave={()=>setShowSave(true)}
+                      exportRootRef={planExportRef}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Sidebar */}
-            <div style={{display:"flex",flexDirection:"column",gap:14}}>
+            {/* Spoljašnji stub = visina reda; unutra sticky kartice dok skroluješ plan */}
+            <div className="planner-sidebar-host">
+              <div className="planner-sidebar" style={{display:"flex",flexDirection:"column",gap:14}}>
               <div className="card" style={{padding:"22px 24px",background:"var(--accbg)",borderColor:"var(--accmid)"}}>
                 <p style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--acc)",marginBottom:14,fontFamily:"var(--sans)"}}>
                   {t.lang==="sr"?"Šta ćete dobiti":t.lang==="en"?"What you'll receive":"Что вы получите"}
@@ -250,6 +266,7 @@ export default function App() {
                   {plannerNote || t.trust.items[3]?.d}
                 </p>
               </div>
+              </div>
             </div>
           </div>
         </div>
@@ -264,7 +281,7 @@ export default function App() {
             <div style={{...MX}}>
               <div style={{background:"var(--blubg)",border:"1px solid var(--blumid)",borderRadius:"var(--rxl)",padding:"34px 38px"}}>
                 <Ey>{foreignerBlock.eyebrow}</Ey>
-                <h2 style={{fontFamily:"var(--serif)",fontSize:"clamp(22px,2.8vw,32px)",fontWeight:500,color:"var(--blu)",lineHeight:1.3,letterSpacing:"-.01em",marginBottom:8}}>
+                <h2 style={{fontFamily:"var(--heading)",fontSize:"clamp(22px,2.8vw,32px)",fontWeight:500,color:"var(--blu)",lineHeight:1.3,letterSpacing:"-.01em",marginBottom:8}}>
                   {foreignerBlock.title}
                 </h2>
                 <p style={{fontSize:14,color:"var(--blu)",opacity:.7,marginBottom:26,fontFamily:"var(--sans)",lineHeight:1.6}}>{foreignerBlock.sub}</p>
@@ -365,7 +382,7 @@ export default function App() {
               <Ey>{eyebrow}</Ey>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:52,alignItems:"start",marginBottom:48}} className="plan-g">
                 <div>
-                  <h2 style={{fontFamily:"var(--serif)",fontSize:"clamp(24px,3vw,36px)",fontWeight:500,color:"var(--ink)",lineHeight:1.25,letterSpacing:"-.01em",marginBottom:16}}>
+                  <h2 style={{fontFamily:"var(--heading)",fontSize:"clamp(24px,3vw,36px)",fontWeight:500,color:"var(--ink)",lineHeight:1.25,letterSpacing:"-.01em",marginBottom:16}}>
                     {heading}
                   </h2>
                   <p style={{fontSize:14,color:"var(--ink3)",lineHeight:1.7,fontFamily:"var(--sans)",marginBottom:0}}>{sub}</p>
@@ -388,14 +405,14 @@ export default function App() {
             <div style={{width:22,height:1.5,background:"rgba(196,92,46,.7)",borderRadius:2}}/>
             <p style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(196,92,46,.85)",fontFamily:"var(--sans)"}}>{t.trust.eyebrow}</p>
           </div>
-          <h2 style={{fontFamily:"var(--serif)",fontSize:"clamp(22px,2.8vw,32px)",fontWeight:500,color:"#FAFAF9",lineHeight:1.3,letterSpacing:"-.01em",marginBottom:40}}>
+          <h2 style={{fontFamily:"var(--heading)",fontSize:"clamp(22px,2.8vw,32px)",fontWeight:500,color:"#FAFAF9",lineHeight:1.3,letterSpacing:"-.01em",marginBottom:40}}>
             {t.trust.title}
           </h2>
           <div className="trust-g" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:18}}>
             {t.trust.items.map((it,i)=>(
               <div key={i} style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.07)",borderRadius:"var(--rl)",padding:"24px 20px"}}>
                 <span style={{fontSize:24,display:"block",marginBottom:14}}>{it.icon}</span>
-                <h3 style={{fontFamily:"var(--serif)",fontSize:16,fontWeight:500,color:"#FAFAF8",marginBottom:8,lineHeight:1.35}}>{it.t}</h3>
+                <h3 style={{fontFamily:"var(--heading)",fontSize:16,fontWeight:500,color:"#FAFAF8",marginBottom:8,lineHeight:1.35}}>{it.t}</h3>
                 <p style={{fontSize:12.5,color:"rgba(250,250,248,.5)",lineHeight:1.65,fontFamily:"var(--sans)"}}>{it.d}</p>
               </div>
             ))}
@@ -407,7 +424,7 @@ export default function App() {
       <section id="faq" style={{padding:PY}}>
         <div style={{maxWidth:700,margin:"0 auto",padding:"0 24px"}}>
           <Ey>{t.faq.eyebrow}</Ey>
-          <h2 style={{fontFamily:"var(--serif)",fontSize:"clamp(24px,3vw,36px)",fontWeight:500,color:"var(--ink)",lineHeight:1.25,letterSpacing:"-.01em",marginBottom:36}}>
+          <h2 style={{fontFamily:"var(--heading)",fontSize:"clamp(24px,3vw,36px)",fontWeight:500,color:"var(--ink)",lineHeight:1.25,letterSpacing:"-.01em",marginBottom:36}}>
             {t.faq.title}
           </h2>
           <FAQ items={t.faq.items}/>
@@ -419,9 +436,8 @@ export default function App() {
         <div style={{...MX}}>
           <div className="how-g footer-g" style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr",gap:44,marginBottom:44}}>
             <div>
-              <div style={{display:"flex",alignItems:"baseline",gap:5,marginBottom:12}}>
-                <span style={{fontSize:18,fontFamily:"var(--serif)",color:"var(--ink)",fontWeight:500}}>{t.nav.logo}</span>
-                <span style={{fontSize:10,fontWeight:700,letterSpacing:".09em",textTransform:"uppercase",color:"var(--acc)",fontFamily:"var(--sans)"}}>{t.nav.sub}</span>
+              <div style={{display:"flex",alignItems:"center",marginBottom:12}}>
+                <SiteLogo compact />
               </div>
               <p style={{fontSize:13,color:"var(--ink3)",lineHeight:1.7,maxWidth:270,marginBottom:12,fontFamily:"var(--sans)"}}>{t.footer.tagline}</p>
               <p style={{fontSize:11,color:"var(--ink4)",lineHeight:1.6,maxWidth:290,fontFamily:"var(--sans)"}}>{t.footer.disclaimer}</p>
@@ -464,12 +480,17 @@ export default function App() {
             </div>
           </div>
           <HR/>
-          <div style={{paddingTop:18,display:"flex",flexWrap:"wrap",justifyContent:"space-between",gap:10,alignItems:"center"}}>
-            <p style={{fontSize:12,color:"var(--ink4)",fontFamily:"var(--sans)"}}>{t.footer.copy}</p>
+          <div style={{paddingTop:18,display:"flex",flexWrap:"wrap",justifyContent:"space-between",gap:16,alignItems:"flex-start"}}>
+            <div>
+              <p style={{fontSize:12,color:"var(--ink4)",fontFamily:"var(--sans)"}}>{t.footer.copy}</p>
+              <FooterLocalTime lang={lang} label={t.footer.localTimePrefix} />
+            </div>
             <p style={{fontSize:11.5,color:"var(--ink4)",fontFamily:"var(--sans)",maxWidth:460,textAlign:"right"}}>{t.footer.legal}</p>
           </div>
         </div>
       </footer>
+
+      <BackToTop label={t.nav.backToTop} />
     </div>
   );
 }

@@ -20,6 +20,7 @@ export function generatePlan(form: PlanForm, lang: Lang): GeneratedPlan {
   const BASE = {
     newbuild:{ lo:600, hi:1200 },
     reno:    { lo:200, hi:550  },
+    extension:{ lo:500, hi:1050 },
     interior:{ lo:120, hi:350  },
     yard:    { lo:60,  hi:180  },
   };
@@ -60,11 +61,15 @@ export function generatePlan(form: PlanForm, lang: Lang): GeneratedPlan {
     const tk = tasks[0];
     const c = TASK_COST[tk as keyof typeof TASK_COST];
     if(c){ lo = c.lo; hi = c.hi; }
-    else { lo = sz*(BASE[projectType]?.lo||200); hi = sz*(BASE[projectType]?.hi||600); }
+    else {
+      const b = BASE[projectType as keyof typeof BASE];
+      lo = sz * (b?.lo ?? 200);
+      hi = sz * (b?.hi ?? 600);
+    }
   } else {
     if(tasks.includes("fullbuild") || tasks.includes("fullreno")){
-      lo = sz*(BASE[projectType]?.lo||200);
-      hi = sz*(BASE[projectType]?.hi||600);
+      lo = sz * (BASE[projectType as keyof typeof BASE]?.lo ?? 200);
+      hi = sz * (BASE[projectType as keyof typeof BASE]?.hi ?? 600);
     } else {
       tasks.forEach(tk => {
         const c = TASK_COST[tk as keyof typeof TASK_COST];
@@ -172,6 +177,7 @@ export function generatePlan(form: PlanForm, lang: Lang): GeneratedPlan {
       ],
       newbuild:"Građevinska dozvola u Srbiji obično traje 1–4 meseca. Angažujte ovlašćenog arhitektu na vreme.",
       reno:"Za strukturalne promene možda su potrebne dozvole. Konsultujte opštinu.",
+      extension:"Nadogradnja često zahteva projekat i građevinsku dozvolu — proverite opštinu i postojeći objekat.",
       interior:"Koordinišite nabavku nameštaja unapred — rokovi isporuke mogu biti 6–12 nedelja.",
       yard:"Proverite katastar za granicu parcele pre postavljanja ograde.",
       foreigner:"Kao strani kupac: angažujte lokalnog advokata za proveru vlasništva i procedure kupovine.",
@@ -184,6 +190,7 @@ export function generatePlan(form: PlanForm, lang: Lang): GeneratedPlan {
       ],
       newbuild:"Building permits in Serbia typically take 1–4 months. Engage a licensed architect well in advance.",
       reno:"Structural changes may require planning permission. Check with your local municipality (opština).",
+      extension:"Extensions usually need a design package and may require a building permit — verify with your municipality.",
       interior:"Co-ordinate furniture orders early — lead times can be 6–12 weeks.",
       yard:"Check the cadastre for your exact boundary before erecting fencing.",
       foreigner:"As a foreign buyer: engage a local solicitor to verify ownership and navigate the purchase process.",
@@ -196,6 +203,7 @@ export function generatePlan(form: PlanForm, lang: Lang): GeneratedPlan {
       ],
       newbuild:"Разрешение на строительство в Сербии оформляется 1–4 месяца. Заблаговременно привлеките архитектора.",
       reno:"Перепланировка может требовать разрешений. Уточните в местной управе (opština).",
+      extension:"Пристройка обычно требует проект и может потребовать разрешения — уточните в общине и по существующему дому.",
       interior:"Заказывайте мебель заблаговременно — сроки поставки могут составлять 6–12 недель.",
       yard:"Перед установкой забора уточните точные границы участка в кадастре.",
       foreigner:"Как иностранному покупателю: привлеките местного юриста для проверки права собственности.",
@@ -207,18 +215,21 @@ export function generatePlan(form: PlanForm, lang: Lang): GeneratedPlan {
     sr:{
       newbuild:["Kontaktirajte ovlašćenog arhitektu u vašem regionu","Pribavite minimum 3 ponude za grube radove","Proverite lokalne uslove u vašoj opštini"],
       reno:["Angažujte iskusnog izvođača za snimanje stanja","Zatražite ponude od minimum 3 izvođača","Proverite da li su potrebne dozvole"],
+      extension:["Angažujte arhitektu za projekat nadogradnje i statiku postojećeg objekta","Proverite dozvole u opštini i uslove priključenja","Pribavite minimum 3 ponude od izvođača specijalizovanih za dogradnje"],
       interior:["Izradite plan nameštanja sa arhitektom enterijera","Naručite nameštaj sa dovoljnim predrokom","Koordinišite sa elektricharom za rasvetu"],
       yard:["Proverite katastarski plan parcele","Angažujte pejzažnog arhitektu za plan dvorišta","Pribavite ponude za zemljane radove"],
     },
     en:{
       newbuild:["Engage a licensed architect in your region","Obtain 3+ quotes for structural works","Check local planning conditions with your municipality"],
       reno:["Hire an experienced contractor to survey existing condition","Request 3+ quotes","Check if permits are required"],
+      extension:["Commission an architect for extension design and review existing structure","Confirm permit requirements with your municipality and utility connections","Obtain 3+ quotes from contractors experienced in extensions"],
       interior:["Create a furniture layout plan with an interior designer","Order furniture with sufficient lead time","Coordinate with an electrician for lighting"],
       yard:["Check your cadastre boundary plan","Engage a landscape designer for a yard plan","Obtain quotes for groundworks"],
     },
     ru:{
       newbuild:["Найдите лицензированного архитектора в вашем регионе","Запросите минимум 3 предложения на строительные работы","Уточните местные требования в общине"],
       reno:["Привлеките опытного подрядчика для обследования","Запросите минимум 3 коммерческих предложения","Проверьте необходимость разрешений"],
+      extension:["Закажите проект пристройки и проверку несущей конструкции существующего дома","Уточните разрешения в общине и условия подключения коммуникаций","Запросите минимум 3 предложения у подрядчиков с опытом пристроек"],
       interior:["Составьте план расстановки мебели с дизайнером интерьера","Заказывайте мебель с запасом по срокам","Согласуйте с электриком расположение освещения"],
       yard:["Проверьте кадастровый план участка","Привлеките ландшафтного дизайнера","Запросите сметы на земляные работы"],
     },
