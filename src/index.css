@@ -16,6 +16,7 @@
   --sh2:0 16px 48px rgba(0,0,0,.1),0 4px 16px rgba(0,0,0,.06);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 html{scroll-behavior:smooth;font-size:16px}
 body{background:var(--bg);color:var(--ink);font-family:var(--sans);overflow-x:hidden;-webkit-font-smoothing:antialiased}
 a{text-decoration:none;color:inherit}
@@ -219,7 +220,7 @@ button{cursor:pointer;font-family:var(--sans);border:none;background:none}
 .faq-item{border-bottom:1px solid var(--bdr)}
 .faq-item:first-child{border-top:1px solid var(--bdr)}
 .faq-q{display:flex;align-items:center;justify-content:space-between;padding:18px 0;cursor:pointer;gap:16px}
-.faq-qt{font-size:14.5px;font-weight:500;color:var(--ink);transition:color .15s;line-height:1.4}
+.faq-qt{font-size:14.5px;font-weight:500;color:var(--ink);transition:color .15s;line-height:1.4;margin:0;flex:1;min-width:0}
 .faq-q:hover .faq-qt{color:var(--acc)}
 .faq-ico{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--bdr2);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink3);flex-shrink:0;transition:all .2s}
 .faq-item.open .faq-ico{border-color:var(--acc);color:var(--acc);background:var(--accbg)}

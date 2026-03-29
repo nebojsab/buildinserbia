@@ -76,7 +76,7 @@ export default function App() {
       <header style={{position:"sticky",top:0,zIndex:100,background:"rgba(250,250,249,.94)",backdropFilter:"blur(14px)",borderBottom:"1px solid var(--bdr)"}}>
         <div style={{...MX,padding:"0 24px",height:62,display:"flex",alignItems:"center",justifyContent:"space-between",gap:14}}>
           <div style={{display:"flex",alignItems:"center",flexShrink:0}}>
-            <SiteLogo />
+            <SiteLogo priority />
           </div>
           <nav className="hide-xs" style={{display:"flex",gap:24,alignItems:"center"}}>
             {[["how","0"],["planner","1"],["faq","3"]].map(([id,li])=>(
@@ -96,11 +96,19 @@ export default function App() {
           <div className="hero-g" style={{display:"grid",gridTemplateColumns:"1.05fr .95fr",gap:68,alignItems:"center"}}>
             <div className="fu">
               <p className="eyebrow" style={{marginBottom:16}}>{t.hero.eyebrow}</p>
-              <h1 style={{fontFamily:"var(--heading)",fontSize:"clamp(30px,4.2vw,50px)",fontWeight:500,color:"var(--ink)",lineHeight:1.13,letterSpacing:"-.02em",marginBottom:6}}>
-                {t.hero.title}
-              </h1>
-              <h1 style={{fontFamily:"var(--heading)",fontSize:"clamp(30px,4.2vw,50px)",fontWeight:400,fontStyle:"italic",color:"var(--acc)",lineHeight:1.13,letterSpacing:"-.02em",marginBottom:22}}>
-                {t.hero.accent}
+              <h1
+                style={{
+                  fontFamily:"var(--heading)",
+                  fontSize:"clamp(30px,4.2vw,50px)",
+                  fontWeight:500,
+                  lineHeight:1.13,
+                  letterSpacing:"-.02em",
+                  marginTop:0,
+                  marginBottom:22,
+                }}
+              >
+                <span style={{display:"block",color:"var(--ink)",marginBottom:6}}>{t.hero.title}</span>
+                <span style={{display:"block",color:"var(--acc)",fontWeight:400,fontStyle:"italic"}}>{t.hero.accent}</span>
               </h1>
               <p style={{fontSize:16,color:"var(--ink3)",lineHeight:1.72,maxWidth:490,marginBottom:24,fontFamily:"var(--sans)"}}>{t.hero.sub}</p>
               {/* Cost preview */}
@@ -170,7 +178,7 @@ export default function App() {
                   <div key={i} style={{display:"flex",gap:14,alignItems:"flex-start",padding:"16px 0",borderBottom:i<t.mistakes.items.length-1?"1px solid var(--bdr)":"none"}}>
                     <span style={{fontSize:20,flexShrink:0,marginTop:1}}>{it.icon}</span>
                     <div>
-                      <p style={{fontSize:14,fontWeight:600,color:"var(--ink)",marginBottom:4,fontFamily:"var(--sans)"}}>{it.t}</p>
+                      <h3 style={{fontSize:14,fontWeight:600,color:"var(--ink)",marginBottom:4,marginTop:0,fontFamily:"var(--sans)"}}>{it.t}</h3>
                       <p style={{fontSize:13,color:"var(--ink3)",lineHeight:1.65,fontFamily:"var(--sans)"}}>{it.d}</p>
                     </div>
                   </div>
@@ -218,6 +226,9 @@ export default function App() {
       <section id="planner" ref={plannerRef} style={{padding:PY,background:"linear-gradient(180deg,#F8F5F2 0%,var(--bg) 100%)"}}>
         <div style={{...MX}}>
           <Ey>{t.planner.eyebrow}</Ey>
+          <h2 className="sr-only">
+            {t.planner.eyebrow}: {t.planner.title}
+          </h2>
           <div
             className="plan-g"
             ref={planExportRef}
@@ -293,7 +304,7 @@ export default function App() {
                     <div key={i} style={{display:"flex",gap:13,alignItems:"flex-start"}}>
                       <span style={{fontSize:20,flexShrink:0,marginTop:1}}>{it.icon}</span>
                       <div>
-                        <p style={{fontSize:13.5,fontWeight:600,color:"var(--blu)",marginBottom:5,fontFamily:"var(--sans)"}}>{it.t}</p>
+                        <h3 style={{fontSize:13.5,fontWeight:600,color:"var(--blu)",marginBottom:5,marginTop:0,fontFamily:"var(--sans)"}}>{it.t}</h3>
                         <p style={{fontSize:13,color:"var(--blu)",opacity:.7,lineHeight:1.65,fontFamily:"var(--sans)"}}>{it.d}</p>
                       </div>
                     </div>
@@ -373,7 +384,7 @@ export default function App() {
         }) => (
           <div className="card" style={{overflow:"hidden",...style}}>
             <div style={{padding:"13px 20px",borderBottom:"1px solid var(--bdr)",background:"var(--bgw)"}}>
-              <p style={{fontSize:10.5,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--ink3)",fontFamily:"var(--sans)"}}>{group.label}</p>
+              <h3 style={{fontSize:10.5,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--ink3)",fontFamily:"var(--sans)",margin:0}}>{group.label}</h3>
             </div>
             {group.keys.map(k=><RecRow key={k} k={k} recommended={group.recommended}/>)}
           </div>
@@ -440,7 +451,7 @@ export default function App() {
           <div className="how-g footer-g" style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr",gap:44,marginBottom:44}}>
             <div>
               <div style={{display:"flex",alignItems:"center",marginBottom:12}}>
-                <SiteLogo compact />
+                <SiteLogo compact loading="lazy" />
               </div>
               <p style={{fontSize:13,color:"var(--ink3)",lineHeight:1.7,maxWidth:270,marginBottom:12,fontFamily:"var(--sans)"}}>{t.footer.tagline}</p>
               <p style={{fontSize:11,color:"var(--ink4)",lineHeight:1.6,maxWidth:290,fontFamily:"var(--sans)"}}>{t.footer.disclaimer}</p>

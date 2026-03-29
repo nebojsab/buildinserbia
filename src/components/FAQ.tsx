@@ -7,7 +7,7 @@ export function FAQ({ items }: { items: { q: string; a: string }[] }) {
       {items.map((it, i) => (
         <div key={i} className={`faq-item${open === i ? " open" : ""}`}>
           <div className="faq-q" onClick={() => setOpen(open === i ? null : i)}>
-            <span className="faq-qt">{it.q}</span>
+            <h3 className="faq-qt">{it.q}</h3>
             <span className="faq-ico">{open === i ? "−" : "+"}</span>
           </div>
           {open === i && <div className="faq-a">{it.a}</div>}

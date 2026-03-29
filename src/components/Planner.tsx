@@ -133,7 +133,7 @@ export function Planner({
       {/* STEP 0: Project type */}
       {step===0&&S(
         <div>
-          <p style={{fontFamily:"var(--heading)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:22,lineHeight:1.3}}>{pw.title}</p>
+          <h3 style={{fontFamily:"var(--heading)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:22,marginTop:0,lineHeight:1.3}}>{pw.title}</h3>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}} className="task-g">
             {pw.projectTypes.map(pt=>(
               <button key={pt.k}
@@ -156,9 +156,9 @@ export function Planner({
       {/* STEP 1: Task selection */}
       {step===1&&S(
         <div>
-          <p style={{fontFamily:"var(--heading)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:6,lineHeight:1.3}}>
+          <h3 style={{fontFamily:"var(--heading)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:6,marginTop:0,lineHeight:1.3}}>
             {pw.projectTypes.find(p=>p.k===pType)?.icon} {pw.projectTypes.find(p=>p.k===pType)?.label}
-          </p>
+          </h3>
           <p style={{fontSize:13.5,color:"var(--ink3)",marginBottom:22,fontFamily:"var(--sans)"}}>{pw.selectHint}</p>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}} className="task-g">
             {taskList.map((tk) => {
@@ -223,9 +223,9 @@ export function Planner({
       {/* STEP 2: Details */}
       {step===2&&S(
         <div>
-          <p style={{fontFamily:"var(--heading)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:22,lineHeight:1.3}}>
+          <h3 style={{fontFamily:"var(--heading)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:22,marginTop:0,lineHeight:1.3}}>
             {t.lang==="sr"?"Detalji projekta":t.lang==="en"?"Project details":"Детали проекта"}
-          </p>
+          </h3>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:4}} className="res-2col">
             <div>
               <label className="flabel">{pw.fields.size.label}</label>
@@ -298,9 +298,9 @@ export function Planner({
       {/* STEP 3: Infrastructure */}
       {step===3&&S(
         <div>
-          <p style={{fontFamily:"var(--heading)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:8,lineHeight:1.3}}>
+          <h3 style={{fontFamily:"var(--heading)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:8,marginTop:0,lineHeight:1.3}}>
             {pw.fields.infra.label}
-          </p>
+          </h3>
           <p style={{fontSize:13.5,color:"var(--ink3)",marginBottom:22,fontFamily:"var(--sans)"}}>
             {t.lang==="sr"?"Ovo pomaže alatu da predloži prava rešenja za vašu situaciju.":t.lang==="en"?"This helps the tool suggest the right solutions for your situation.":"Это помогает инструменту предложить правильные решения для вашей ситуации."}
           </p>
