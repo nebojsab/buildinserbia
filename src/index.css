@@ -47,6 +47,7 @@ button{cursor:pointer;font-family:var(--sans);border:none;background:none}
   .how-g{grid-template-columns:1fr 1fr!important}
   .trust-g{grid-template-columns:1fr 1fr!important}
   .res-g{grid-template-columns:1fr!important}
+  .res-2col{grid-template-columns:1fr!important}
   .footer-g{grid-template-columns:1fr 1fr!important}
   .plan-g{grid-template-columns:1fr!important}
   .planner-sidebar{position:static}
@@ -55,11 +56,45 @@ button{cursor:pointer;font-family:var(--sans);border:none;background:none}
   .how-g{grid-template-columns:1fr!important}
   .trust-g{grid-template-columns:1fr!important}
   .footer-g{grid-template-columns:1fr!important}
-  .task-g{grid-template-columns:1fr 1fr!important}
+  .task-g{grid-template-columns:1fr!important}
   .res-2col{grid-template-columns:1fr!important}
   .hide-xs{display:none!important}
   .next-g{grid-template-columns:1fr!important}
-  .aff-g{grid-template-columns:1fr 1fr!important}
+  .aff-g{grid-template-columns:1fr!important}
+  .docs-g{grid-template-columns:1fr!important}
+  #planner .card{padding:16px!important}
+  #planner .step-ind{
+    margin:0 auto 30px;
+    width:90%;
+    justify-content:space-between;
+  }
+  #planner .step-ind > div{
+    position:relative;
+    align-items:center;
+  }
+  #planner .step-ind span{
+    position:absolute;
+    top:125%;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:10.5px;
+    white-space:nowrap;
+    text-align:center;
+  }
+  #planner .pbar{margin-bottom:24px}
+  #planner .step-line{margin-bottom:0}
+  .result-cta-row{
+    flex-direction:column!important;
+    align-items:stretch!important;
+  }
+  .result-cta-row > *{
+    width:100%!important;
+  }
+  .result-cta-row .btn-p,
+  .result-cta-row .btn-g,
+  .result-cta-row .btn-save{
+    justify-content:center;
+  }
 }
 
 /* Lang menu */
@@ -214,7 +249,7 @@ button{cursor:pointer;font-family:var(--sans);border:none;background:none}
 /* Step indicator */
 .step-ind{display:flex;align-items:center;gap:0;margin-bottom:36px}
 .step-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:all .3s}
-.step-line{flex:1;height:1.5px;transition:background .3s}
+.step-line{flex:1;height:1.5px;transition:background .3s;margin-bottom:14px}
 
 /* FAQ */
 .faq-item{border-bottom:1px solid var(--bdr)}

@@ -162,7 +162,7 @@ export function Results({
             {form.location||""}{form.location&&stageLabel?" · ":""}{stageLabel}
           </p>
         </div>
-        <div data-pdf-hide style={{display:"flex",gap:10,flexWrap:"wrap",alignItems:"center"}}>
+        <div data-pdf-hide className="result-cta-row" style={{display:"flex",gap:10,flexWrap:"wrap",alignItems:"center"}}>
           <div style={{display:"flex",flexDirection:"row",alignItems:"center",gap:10,flexWrap:"wrap"}}>
             <button className="btn-save" onClick={onSave} disabled={planZipLoading}><span>💾</span>{r.savePlan}</button>
             <p style={{fontSize:11,color:"rgba(255,255,255,.48)",fontFamily:"var(--sans)",lineHeight:1.35,margin:0,maxWidth:"min(280px, 42vw)"}}>{r.savePlanHint}</p>
@@ -498,7 +498,7 @@ export function Results({
             <p className="res-sec-title res-sec-title--inhead res-sec-title--acc">{r.docSectionTitle}</p>
           </div>
           <div style={{padding:"18px 24px 22px"}}>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:14}} className="aff-g">
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:14}} className="docs-g">
               {projectDocs.map((doc) => (
                 <div
                   key={doc.id}
@@ -582,6 +582,7 @@ export function Results({
       {/* Donja traka: iste akcije kao u headeru (sačuvaj + PDF + novi plan) */}
       <div
         data-pdf-hide
+        className="result-cta-row"
         style={{
           display: "flex",
           flexWrap: "wrap",

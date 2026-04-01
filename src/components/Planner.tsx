@@ -121,7 +121,7 @@ export function Planner({
               <span style={{fontSize:10,fontWeight:500,color:step===i?"var(--acc)":step>i?"var(--ink3)":"var(--ink4)",fontFamily:"var(--sans)",whiteSpace:"nowrap"}}>{lbl}</span>
             </div>
             {i<pw.stepLabels.length-1&&(
-              <div className="step-line" style={{background:step>i?"var(--acc)":"var(--bdr)",marginBottom:14}}/>
+              <div className="step-line" style={{background:step>i?"var(--acc)":"var(--bdr)"}}/>
             )}
           </Fragment>
         ))}
