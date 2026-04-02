@@ -1,4 +1,6 @@
-import { lazy, Suspense, useLayoutEffect, useRef, useState } from "react";
+"use client";
+
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { AFF } from "./constants/affiliate";
 import { FAQ } from "./components/FAQ";
@@ -17,6 +19,8 @@ import { Results } from "./components/Results";
 import { SaveModal } from "./components/SaveModal";
 import { Ey, HR } from "./components/ui";
 import { generatePlan } from "./lib/generatePlan";
+import { fetchMaintenance, type MaintenancePayload } from "./api/maintenance";
+import { ComingSoonScreen, MaintenanceScreen } from "./components/SystemStateScreens";
 import { translations, type Lang } from "./translations";
 import type { GeneratedPlan, PlanForm } from "./types/plan";
 
@@ -36,12 +40,46 @@ export default function App() {
   const [result, setResult] = useState<GeneratedPlan | null>(null);
   const [planForm, setPlanForm] = useState<PlanForm>(EMPTY_PLAN_FORM);
   const [showSave, setShowSave] = useState(false);
+  const [maint, setMaint] = useState<MaintenancePayload | null>(null);
+  const [gateLoading, setGateLoading] = useState(true);
   const plannerRef = useRef<HTMLElement | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
   const planExportRef = useRef<HTMLDivElement | null>(null);
   const t = translations[lang];
   const plannerNote = "note" in t.planner ? (t.planner as { note?: string }).note : undefined;
   const foreignerBlock = "foreignerBlock" in t ? t.foreignerBlock : undefined;
+
+  // Fetch maintenance / coming-soon status and re-check on focus/visibility.
+  // This prevents "flash" of the normal app when maintenance mode is enabled.
+  useEffect(() => {
+    let cancelled = false;
+
+    const reload = async () => {
+      setGateLoading(true);
+      try {
+        const data = await fetchMaintenance();
+        if (!cancelled) setMaint(data);
+      } finally {
+        if (!cancelled) setGateLoading(false);
+      }
+    };
+
+    void reload();
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void reload();
+    };
+    const onFocus = () => void reload();
+
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, []);
 
   const scrollTo = (id: string) =>
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -67,6 +105,20 @@ export default function App() {
 
   const PY="96px 24px";
   const MX={maxWidth:1100,margin:"0 auto"};
+
+  // Global gate for maintenance / coming soon modes
+  if (gateLoading) {
+    // Block rendering to avoid seeing the normal UI while we don't yet know the gate mode.
+    return <div style={{ background: "var(--bg)", minHeight: "100vh" }} />;
+  }
+  if (maint) {
+    if (maint.mode === "COMING_SOON") {
+      return <ComingSoonScreen lang={lang} status={maint} setLang={setLang} />;
+    }
+    if (maint.mode === "MAINTENANCE") {
+      return <MaintenanceScreen lang={lang} status={maint} setLang={setLang} />;
+    }
+  }
 
   return(
     <div style={{background:"var(--bg)",minHeight:"100vh"}}>

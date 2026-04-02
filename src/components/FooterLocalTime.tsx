@@ -9,15 +9,24 @@ const localeByLang: Record<Lang, string> = {
 
 /** Sat, minut, sekunda + kratki naziv zone i IANA identifikator (npr. Europe/Belgrade). */
 export function FooterLocalTime({ lang, label }: { lang: Lang; label: string }) {
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
+    setNow(new Date());
     const id = window.setInterval(() => setNow(new Date()), 1000);
     return () => window.clearInterval(id);
   }, []);
 
   const loc = localeByLang[lang];
   const iana = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  if (!now) {
+    return (
+      <p style={{ fontSize: 11, color: "var(--ink4)", fontFamily: "var(--sans)", marginTop: 6, lineHeight: 1.45 }}>
+        <span style={{ opacity: 0.9 }}>{label}: </span>
+      </p>
+    );
+  }
 
   const time = new Intl.DateTimeFormat(loc, {
     hour: "2-digit",

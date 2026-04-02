@@ -1,4 +1,20 @@
-const base = (import.meta.env.VITE_AFFILIATE_BASE_URL ?? "https://example.com/affiliate").replace(
+function resolveAffiliateBase(): string {
+  // Vite: prefer VITE_AFFILIATE_BASE_URL when available
+  const viteBase =
+    typeof import.meta !== "undefined" && (import.meta as any).env?.VITE_AFFILIATE_BASE_URL
+      ? (import.meta as any).env.VITE_AFFILIATE_BASE_URL
+      : undefined;
+
+  // Next / Node: allow NEXT_PUBLIC_AFFILIATE_BASE_URL
+  const nextBase =
+    typeof process !== "undefined" && process.env?.NEXT_PUBLIC_AFFILIATE_BASE_URL
+      ? process.env.NEXT_PUBLIC_AFFILIATE_BASE_URL
+      : undefined;
+
+  return viteBase ?? nextBase ?? "https://example.com/affiliate";
+}
+
+const base = resolveAffiliateBase().replace(
   /\/$/,
   "",
 );

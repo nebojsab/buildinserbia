@@ -1,0 +1,32 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum MaintMode {
+  NORMAL
+  READ_ONLY
+  MAINTENANCE
+  COMING_SOON
+}
+
+model MaintenanceStatus {
+  id            Int       @id @default(1)
+  mode          MaintMode @default(NORMAL)
+  messageSr     String?
+  messageEn     String?
+  messageRu     String?
+  startsAt      DateTime?
+  endsAt        DateTime?
+  updatedAt     DateTime  @updatedAt
+  updatedByUser String?
+}
