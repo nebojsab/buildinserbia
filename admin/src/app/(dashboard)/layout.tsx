@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { requireAuth, signOut } from "@/lib/auth";
+import { getPublicSiteUrl } from "@/lib/publicSiteUrl";
 
 async function logoutAction() {
   "use server";
@@ -9,6 +10,7 @@ async function logoutAction() {
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const user = await requireAuth();
+  const publicSiteRoot = `${getPublicSiteUrl()}/`;
 
   return (
     <div
@@ -31,7 +33,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           gap: 16,
         }}
       >
-        <a href="http://localhost:3000/" style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+        <a href={publicSiteRoot} style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
           <img
             src="/Logo.svg"
             alt="Build in Serbia"
