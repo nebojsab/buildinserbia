@@ -1,4 +1,6 @@
 export type MaintenancePayload = {
+  /** Set by GET /api/status when admin session cookie is present (requires credentials on fetch). */
+  previewBypass?: boolean;
   mode: "NORMAL" | "READ_ONLY" | "MAINTENANCE" | "COMING_SOON";
   messageSr: string | null;
   messageEn: string | null;
@@ -65,6 +67,8 @@ export async function fetchMaintenance(): Promise<MaintenancePayload | null> {
     const url = base ? `${base}/api/status?ts=${ts}` : `/api/status?ts=${ts}`;
     const res = await fetch(url, {
       cache: "no-store",
+      credentials: "include",
+      mode: "cors",
       headers: {
         "Cache-Control": "no-cache",
       },

@@ -20,6 +20,7 @@ import { SaveModal } from "./components/SaveModal";
 import { Ey, HR } from "./components/ui";
 import { generatePlan } from "./lib/generatePlan";
 import { fetchMaintenance, type MaintenancePayload } from "./api/maintenance";
+import { getPublicPreviewBypassFromWindow } from "./lib/publicPreviewBypass";
 import { ComingSoonScreen, MaintenanceScreen } from "./components/SystemStateScreens";
 import { translations, type Lang } from "./translations";
 import type { GeneratedPlan, PlanForm } from "./types/plan";
@@ -41,7 +42,12 @@ export default function App() {
   const [planForm, setPlanForm] = useState<PlanForm>(EMPTY_PLAN_FORM);
   const [showSave, setShowSave] = useState(false);
   const [maint, setMaint] = useState<MaintenancePayload | null>(null);
-  const [gateLoading, setGateLoading] = useState(true);
+  const previewBypassRef = useRef<boolean | null>(null);
+  if (previewBypassRef.current === null) {
+    previewBypassRef.current = getPublicPreviewBypassFromWindow();
+  }
+  const previewBypass = previewBypassRef.current;
+  const [gateLoading, setGateLoading] = useState(() => !previewBypassRef.current!);
   const plannerRef = useRef<HTMLElement | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
   const planExportRef = useRef<HTMLDivElement | null>(null);
@@ -55,7 +61,7 @@ export default function App() {
     let cancelled = false;
 
     const reload = async () => {
-      setGateLoading(true);
+      if (!previewBypass) setGateLoading(true);
       try {
         const data = await fetchMaintenance();
         if (!cancelled) setMaint(data);
@@ -79,7 +85,7 @@ export default function App() {
       window.removeEventListener("focus", onFocus);
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, []);
+  }, [previewBypass]);
 
   const scrollTo = (id: string) =>
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -106,12 +112,13 @@ export default function App() {
   const PY="96px 24px";
   const MX={maxWidth:1100,margin:"0 auto"};
 
-  // Global gate for maintenance / coming soon modes
-  if (gateLoading) {
-    // Block rendering to avoid seeing the normal UI while we don't yet know the gate mode.
+  const previewBypassEffective = previewBypass || maint?.previewBypass === true;
+
+  // Global gate: URL/sessionStorage/cookie OR server confirms admin session (see /api/status + credentials: include).
+  if (gateLoading && !previewBypass) {
     return <div style={{ background: "var(--bg)", minHeight: "100vh" }} />;
   }
-  if (maint) {
+  if (maint && !previewBypassEffective) {
     if (maint.mode === "COMING_SOON") {
       return <ComingSoonScreen lang={lang} status={maint} setLang={setLang} />;
     }
