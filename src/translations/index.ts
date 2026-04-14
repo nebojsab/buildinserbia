@@ -2,7 +2,7 @@ export const translations = {
 /* ─────────────────── SERBIAN ─────────────────── */
 sr:{
   lang:"sr",
-  nav:{logo:"BuildInSerbia",links:["Kako funkcioniše","Planer","Resursi","FAQ"],cta:"Kreiraj plan",backToTop:"Na vrh"},
+  nav:{logo:"BuildInSerbia",links:["Kako funkcioniše","Planer","Resursi","FAQ","Dokumenti"],cta:"Kreiraj plan",backToTop:"Na vrh"},
   hero:{
     eyebrow:"Besplatan alat za planiranje gradnje u Srbiji",
     title:"Znajte tačno šta radite pre nego što potrošite",
@@ -238,7 +238,7 @@ sr:{
 /* ─────────────────── ENGLISH ─────────────────── */
 en:{
   lang:"en",
-  nav:{logo:"BuildInSerbia",links:["How it works","Planner","Resources","FAQ"],cta:"Generate plan",backToTop:"Back to top"},
+  nav:{logo:"BuildInSerbia",links:["How it works","Planner","Resources","FAQ","Documents"],cta:"Generate plan",backToTop:"Back to top"},
   hero:{
     eyebrow:"Free planning tool for building in Serbia",
     title:"Know exactly what you're doing before you spend",
@@ -481,7 +481,7 @@ en:{
 /* ─────────────────── RUSSIAN ─────────────────── */
 ru:{
   lang:"ru",
-  nav:{logo:"BuildInSerbia",links:["Как это работает","Планировщик","Ресурсы","FAQ"],cta:"Создать план",backToTop:"Наверх"},
+  nav:{logo:"BuildInSerbia",links:["Как это работает","Планировщик","Ресурсы","FAQ","Документы"],cta:"Создать план",backToTop:"Наверх"},
   hero:{
     eyebrow:"Бесплатный инструмент планирования строительства в Сербии",
     title:"Знайте точно, что делаете, прежде чем потратить",
