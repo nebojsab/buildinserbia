@@ -32,11 +32,16 @@ type FetchResultEntry = {
   storedPath?: string;
 };
 
+type PendingUpload = {
+  id: string;
+  file: File;
+  displayName: string;
+};
+
 export function MediaLibraryManager() {
   const toast = useToast();
   const [items, setItems] = useState<MediaItem[]>([]);
-  const [name, setName] = useState("");
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [pendingUploads, setPendingUploads] = useState<PendingUpload[]>([]);
   const [categoryInput, setCategoryInput] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
@@ -88,7 +93,7 @@ export function MediaLibraryManager() {
     };
   }, []);
 
-  const isSubmitDisabled = selectedFiles.length === 0 || uploading;
+  const isSubmitDisabled = pendingUploads.length === 0 || uploading;
 
   async function restoreViaClientZip(file: File) {
     const bytes = await file.arrayBuffer();
@@ -201,11 +206,11 @@ export function MediaLibraryManager() {
   }
 
   async function onUpload() {
-    if (selectedFiles.length === 0) return;
+    if (pendingUploads.length === 0) return;
     setError(null);
-    const unsupported = selectedFiles.find((entry) => !isSupportedMediaFile(entry.name));
+    const unsupported = pendingUploads.find((entry) => !isSupportedMediaFile(entry.file.name));
     if (unsupported) {
-      setError(`Nepodrzan format: ${unsupported.name}. Podrzani formati su: jpg, png, svg, webp, mp4.`);
+      setError(`Nepodrzan format: ${unsupported.file.name}. Podrzani formati su: jpg, png, svg, webp, mp4.`);
       return;
     }
     setUploading(true);
@@ -216,20 +221,19 @@ export function MediaLibraryManager() {
       );
       let uploadedCount = 0;
       const failed: string[] = [];
-      for (const file of selectedFiles) {
+      for (const entry of pendingUploads) {
         try {
           await addMediaItemFromFile({
-            file,
-            name: selectedFiles.length === 1 ? (name.trim() || file.name) : file.name,
+            file: entry.file,
+            name: entry.displayName.trim() || entry.file.name,
             categories: uploadCategories,
           });
           uploadedCount += 1;
         } catch {
-          failed.push(file.name);
+          failed.push(entry.file.name);
         }
       }
-      setName("");
-      setSelectedFiles([]);
+      setPendingUploads([]);
       setCategories([]);
       setCategoryInput("");
       if (uploadInputRef.current) uploadInputRef.current.value = "";
@@ -407,10 +411,43 @@ export function MediaLibraryManager() {
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }} className="res-2col">
           <div>
-            <label className="flabel">Ime fajla</label>
-            <input className="finput" value={name} onChange={(event) => setName(event.target.value)} placeholder="Npr. Hero slika za dokument" />
+            <label className="flabel">Nazivi fajlova</label>
+            {pendingUploads.length === 0 ? (
+              <input className="finput" value="" readOnly placeholder="Izaberi fajlove za upload" />
+            ) : (
+              <div
+                style={{
+                  display: "grid",
+                  gap: 8,
+                  maxHeight: 164,
+                  overflowY: "auto",
+                  border: "1px solid var(--bdr)",
+                  borderRadius: 8,
+                  padding: 8,
+                  background: "var(--card)",
+                }}
+              >
+                {pendingUploads.map((entry) => (
+                  <div key={entry.id} style={{ display: "grid", gap: 4 }}>
+                    <p style={{ fontSize: 11.5, color: "var(--ink4)" }}>{entry.file.name}</p>
+                    <input
+                      className="finput"
+                      value={entry.displayName}
+                      onChange={(event) =>
+                        setPendingUploads((prev) =>
+                          prev.map((item) =>
+                            item.id === entry.id ? { ...item, displayName: event.target.value } : item,
+                          ),
+                        )
+                      }
+                      placeholder="Naziv za prikaz"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
             <p style={{ fontSize: 11.5, color: "var(--ink4)", marginTop: 6 }}>
-              Opcionalno (primenjuje se samo kada uploaduješ jedan fajl).
+              Možeš izmeniti naziv za svaki fajl pre slanja.
             </p>
           </div>
           <div>
@@ -423,12 +460,12 @@ export function MediaLibraryManager() {
               >
                 Izaberi fajlove
               </button>
-              <span style={{ fontSize: 12.5, color: selectedFiles.length > 0 ? "var(--ink2)" : "var(--ink4)" }}>
-                {selectedFiles.length === 0
+              <span style={{ fontSize: 12.5, color: pendingUploads.length > 0 ? "var(--ink2)" : "var(--ink4)" }}>
+                {pendingUploads.length === 0
                   ? "Nije izabran fajl"
-                  : selectedFiles.length === 1
-                    ? selectedFiles[0].name
-                    : `Izabrano fajlova: ${selectedFiles.length}`}
+                  : pendingUploads.length === 1
+                    ? pendingUploads[0].file.name
+                    : `Izabrano fajlova: ${pendingUploads.length}`}
               </span>
               <input
                 ref={uploadInputRef}
@@ -436,7 +473,14 @@ export function MediaLibraryManager() {
                 accept=".jpg,.jpeg,.png,.svg,.webp,.mp4"
                 multiple
                 style={{ display: "none" }}
-                onChange={(event) => setSelectedFiles(Array.from(event.target.files ?? []))}
+                onChange={(event) => {
+                  const next = Array.from(event.target.files ?? []).map((file, index) => ({
+                    id: `${file.name}-${file.size}-${file.lastModified}-${index}`,
+                    file,
+                    displayName: file.name,
+                  }));
+                  setPendingUploads(next);
+                }}
               />
             </div>
             <p style={{ fontSize: 11.5, color: "var(--ink4)", marginTop: 6 }}>
@@ -448,7 +492,7 @@ export function MediaLibraryManager() {
         <div style={{ marginTop: 10 }}>
           <label className="flabel">Kategorije</label>
           <p style={{ fontSize: 11.5, color: "var(--ink4)", marginBottom: 6 }}>
-            Izaberite postojeće iz liste ili upišite novu i pritisnite Enter. Više kategorija odjednom.
+            Izaberite postojeće iz liste ili upišite novu i pritisnite Enter. Kategorije važe za sve izabrane fajlove.
           </p>
           <div style={{ position: "relative" }}>
             <input
