@@ -205,44 +205,45 @@ export function MediaLibraryManager() {
     return merged;
   }
 
+  async function uploadBatch(entries: PendingUpload[]) {
+    const unsupported = entries.find((entry) => !isSupportedMediaFile(entry.file.name));
+    if (unsupported) {
+      setError(`Nepodrzan format: ${unsupported.file.name}. Podrzani formati su: jpg, png, svg, webp, mp4.`);
+      throw new Error(`Nepodrzan format: ${unsupported.file.name}`);
+    }
+    const pendingCategory = normalizeCategory(categoryInput);
+    const uploadCategories = mergeUniqueCategories(
+      pendingCategory ? [...categories, pendingCategory] : categories,
+    );
+    let uploadedCount = 0;
+    const failed: string[] = [];
+    for (const entry of entries) {
+      try {
+        await addMediaItemFromFile({
+          file: entry.file,
+          name: entry.displayName.trim() || entry.file.name,
+          categories: uploadCategories,
+        });
+        uploadedCount += 1;
+      } catch {
+        failed.push(entry.file.name);
+      }
+    }
+    return { uploadedCount, failed };
+  }
+
   async function onUpload() {
     if (pendingUploads.length === 0) return;
     setError(null);
-    const unsupported = pendingUploads.find((entry) => !isSupportedMediaFile(entry.file.name));
-    if (unsupported) {
-      setError(`Nepodrzan format: ${unsupported.file.name}. Podrzani formati su: jpg, png, svg, webp, mp4.`);
-      return;
-    }
     setUploading(true);
     try {
-      const pendingCategory = normalizeCategory(categoryInput);
-      const uploadCategories = mergeUniqueCategories(
-        pendingCategory ? [...categories, pendingCategory] : categories,
-      );
-      let uploadedCount = 0;
-      const failed: string[] = [];
-      for (const entry of pendingUploads) {
-        try {
-          await addMediaItemFromFile({
-            file: entry.file,
-            name: entry.displayName.trim() || entry.file.name,
-            categories: uploadCategories,
-          });
-          uploadedCount += 1;
-        } catch {
-          failed.push(entry.file.name);
-        }
-      }
+      const { uploadedCount, failed } = await uploadBatch(pendingUploads);
       setPendingUploads([]);
       setCategories([]);
       setCategoryInput("");
       if (uploadInputRef.current) uploadInputRef.current.value = "";
       if (failed.length === 0) {
-        toast.success(
-          uploadedCount === 1
-            ? "Media fajl je uspešno dodat."
-            : `Uspešno je dodato ${uploadedCount} fajlova.`,
-        );
+        toast.success(uploadedCount === 1 ? "Media fajl je uspešno dodat." : `Uspešno je dodato ${uploadedCount} fajlova.`);
       } else {
         const successPart = uploadedCount > 0 ? `Uspešno: ${uploadedCount}. ` : "";
         const failedPart = `Neuspešno: ${failed.length}.`;
@@ -292,6 +293,43 @@ export function MediaLibraryManager() {
       toast.error(message);
     } finally {
       setRestoring(false);
+      if (restoreInputRef.current) restoreInputRef.current.value = "";
+    }
+  }
+
+  async function onRestoreInputSelection(files: File[]) {
+    if (files.length === 0) return;
+    const single = files.length === 1 ? files[0] : null;
+    const isZip = !!single && /\.zip$/i.test(single.name);
+    if (isZip) {
+      await onRestoreImport(single);
+      return;
+    }
+
+    setError(null);
+    setUploading(true);
+    try {
+      const entries: PendingUpload[] = files.map((file, index) => ({
+        id: `restore-${file.name}-${file.size}-${file.lastModified}-${index}`,
+        file,
+        displayName: file.name,
+      }));
+      const { uploadedCount, failed } = await uploadBatch(entries);
+      await refreshItems();
+      if (failed.length === 0) {
+        toast.success(uploadedCount === 1 ? "Media fajl je uspešno dodat." : `Uspešno je dodato ${uploadedCount} fajlova.`);
+      } else {
+        const successPart = uploadedCount > 0 ? `Uspešno: ${uploadedCount}. ` : "";
+        const failedPart = `Neuspešno: ${failed.length}.`;
+        setError(`${successPart}${failedPart} Proveri fajlove: ${failed.join(", ")}`);
+        toast.error(`${successPart}${failedPart}`);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Import nije uspeo.";
+      setError(message);
+      toast.error(message);
+    } finally {
+      setUploading(false);
       if (restoreInputRef.current) restoreInputRef.current.value = "";
     }
   }
@@ -364,12 +402,12 @@ export function MediaLibraryManager() {
             <input
               ref={restoreInputRef}
               type="file"
-              accept=".zip,application/zip"
+              accept=".zip,application/zip,.jpg,.jpeg,.png,.svg,.webp,.mp4"
+              multiple
               style={{ display: "none" }}
               onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (!file) return;
-                void onRestoreImport(file);
+                const files = Array.from(event.target.files ?? []);
+                void onRestoreInputSelection(files);
               }}
             />
             <a href="/api/backup/all" className="btn-g">

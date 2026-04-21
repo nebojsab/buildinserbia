@@ -107,7 +107,8 @@ type BlobIndexItem = {
   blobPath?: string | null;
 };
 
-const MEDIA_INDEX_PREFIX = "media/library-index.json";
+const MEDIA_INDEX_PREFIX = "media/library-index";
+const MEDIA_INDEX_BLOB_PATH = `${MEDIA_INDEX_PREFIX}.json`;
 
 function toBlobIndexItem(record: MediaAssetRecord): BlobIndexItem {
   return {
@@ -153,7 +154,7 @@ async function readBlobIndex(): Promise<BlobIndexItem[]> {
 }
 
 async function writeBlobIndex(items: BlobIndexItem[]): Promise<void> {
-  await put(MEDIA_INDEX_PREFIX, JSON.stringify(items), {
+  await put(MEDIA_INDEX_BLOB_PATH, JSON.stringify(items), {
     access: "public",
     addRandomSuffix: true,
     contentType: "application/json",
