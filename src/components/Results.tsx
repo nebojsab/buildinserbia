@@ -7,6 +7,8 @@ import { DocumentPreviewModal, downloadProjectDocument } from "./DocumentPreview
 import { HR } from "./ui";
 import type { GeneratedPlan, PlanForm, ProjectType } from "../types/plan";
 import { translations } from "../translations";
+import { getHighlightedPublishedDocuments } from "../content/repository";
+import { localizeContentItem, normalizeLocale } from "../content/localize";
 
 type T = (typeof translations)["sr"];
 
@@ -85,6 +87,31 @@ export function Results({
 
   const [previewDoc, setPreviewDoc] = useState<ProjectDocument | null>(null);
   const [planZipLoading, setPlanZipLoading] = useState(false);
+  const highlightedDocuments = useMemo(
+    () =>
+      getHighlightedPublishedDocuments(4).map((item) =>
+        localizeContentItem(item, normalizeLocale(t.lang)),
+      ),
+    [t.lang],
+  );
+  const helpfulDocumentsCopy =
+    t.lang === "sr"
+      ? {
+          title: "Korisni dokumenti",
+          body: "Pogledajte prakticne vodice i dokumenta vezana za gradnju, dozvole, budzet i pripremu projekta.",
+          viewAll: "Pogledaj sve",
+        }
+      : t.lang === "ru"
+        ? {
+            title: "Полезные документы",
+            body: "Изучите практические гайды и материалы по строительству, разрешениям, бюджету и подготовке проекта.",
+            viewAll: "Смотреть все",
+          }
+        : {
+            title: "Helpful documents",
+            body: "Explore practical guides and planning documents related to construction, permits, budgeting, and project preparation.",
+            viewAll: "View all",
+          };
 
   const projectDocs = useMemo(() => {
     if (!form.projectType) return [];
@@ -578,6 +605,47 @@ export function Results({
           }}
         />
       ) : null}
+
+      <div data-pdf-hide className="card" style={{ overflow: "hidden", marginBottom: 28 }}>
+        <div style={{ padding: "20px 24px 12px", borderBottom: "1px solid var(--bdr)" }}>
+          <p className="res-sec-title res-sec-title--inhead res-sec-title--acc">{helpfulDocumentsCopy.title}</p>
+          <p style={{ fontSize: 13, color: "var(--ink3)", lineHeight: 1.6, marginTop: 8 }}>
+            {helpfulDocumentsCopy.body}
+          </p>
+        </div>
+        <div style={{ padding: "16px 24px 20px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 12 }}>
+            {highlightedDocuments.map((item) => (
+              <a
+                key={item.id}
+                href={`/documents/${item.slug}?lang=${t.lang}`}
+                className="irec"
+                style={{ alignItems: "flex-start" }}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p className="irec-name">{item.title}</p>
+                  <p className="irec-desc" style={{ marginTop: 3 }}>{item.excerpt}</p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 7 }}>
+                    {item.categories.slice(0, 2).map((tag) => (
+                      <span key={`${item.id}-${tag}`} style={{ fontSize: 10.5, color: "var(--ink4)" }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <span className="irec-cta">→</span>
+              </a>
+            ))}
+          </div>
+          <div style={{ marginTop: 14 }}>
+            <a href={`/documents?lang=${t.lang}`} className="btn-g" target="_blank" rel="noopener noreferrer">
+              {helpfulDocumentsCopy.viewAll}
+            </a>
+          </div>
+        </div>
+      </div>
 
       {/* Donja traka: iste akcije kao u headeru (sačuvaj + PDF + novi plan) */}
       <div

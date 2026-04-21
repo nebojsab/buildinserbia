@@ -19,6 +19,11 @@ enum MaintMode {
   COMING_SOON
 }
 
+enum MediaAssetKind {
+  image
+  video
+}
+
 model MaintenanceStatus {
   id            Int       @id @default(1)
   mode          MaintMode @default(NORMAL)
@@ -29,4 +34,17 @@ model MaintenanceStatus {
   endsAt        DateTime?
   updatedAt     DateTime  @updatedAt
   updatedByUser String?
+}
+
+model MediaAsset {
+  id           String         @id @default(cuid())
+  name         String
+  fileName     String
+  mimeType     String
+  url          String
+  kind         MediaAssetKind
+  blobPath     String?
+  categories   String         @default("[]")
+  addedAt      DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 }

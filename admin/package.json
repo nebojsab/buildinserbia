@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "prisma generate && next dev",
     "build": "prisma generate && next build",
     "postinstall": "prisma generate",
     "start": "next start",
@@ -12,7 +12,7 @@
   "dependencies": {
     "@prisma/client": "^6.19.0",
     "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^9.5.0",
+    "@react-three/fiber": "^9.6.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/blob": "^2.3.2",
     "docx": "^9.6.1",

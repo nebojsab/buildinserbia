@@ -4,6 +4,7 @@ import type { getMaintenanceState } from "@/lib/maintenanceState";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MaintenanceLangTabs } from "./MaintenanceLangTabs";
 import { DEFAULT_LANGS } from "./maintenanceDefaults";
+import { MediaLibraryPicker } from "@/components/media/MediaLibraryPicker";
 
 type MaintenanceState = ReturnType<typeof getMaintenanceState>;
 type MaintenanceStateResolved = Awaited<MaintenanceState>;
@@ -25,16 +26,21 @@ export function MaintenanceAdminPanel({
   const [mode, setMode] = useState<MaintenanceStateResolved["mode"]>(status.mode);
   const [bgMode, setBgMode] = useState<MaintenanceStateResolved["bgMode"]>(status.bgMode);
   const [removeBgImage, setRemoveBgImage] = useState(false);
+  const [bgImageUrl, setBgImageUrl] = useState(status.bgImagePath ?? "");
+  const [bgUploadName, setBgUploadName] = useState("");
   const [resetKey, setResetKey] = useState(0);
   const [toastText, setToastText] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
   const initialSnapshotRef = useRef<string>("");
+  const bgUploadInputRef = useRef<HTMLInputElement | null>(null);
 
   // Sync after save/reset navigation so UI matches the persisted state.
   useEffect(() => {
     setMode(status.mode);
     setBgMode(status.bgMode);
     setRemoveBgImage(false);
+    setBgImageUrl(status.bgImagePath ?? "");
+    setBgUploadName("");
   }, [status.mode, status.bgMode]);
 
   const normalizeText = (v: string | null | undefined) => {
@@ -86,10 +92,13 @@ export function MaintenanceAdminPanel({
 
     let bgImageToken: string | null = null;
     if (effectiveBgMode === "IMAGE" && !remove) {
+      const manualBgUrl = (fd.get("bgImageUrl")?.toString() || fd.get("bgImageUrlManual")?.toString() || "").trim();
       const bgInput = form.elements.namedItem("bgImage") as HTMLInputElement | null;
       if (bgInput?.files && bgInput.files.length > 0) {
         const f = bgInput.files[0];
         bgImageToken = `${f.name}:${f.size}`;
+      } else if (manualBgUrl) {
+        bgImageToken = manualBgUrl;
       } else {
         bgImageToken = status.bgImagePath;
       }
@@ -211,6 +220,7 @@ export function MaintenanceAdminPanel({
     // clear file input so we don't accidentally re-upload
     const fileInput = form.elements.namedItem("bgImage") as HTMLInputElement | null;
     if (fileInput) fileInput.value = "";
+    setBgImageUrl("");
 
     // language blocks
     for (const l of langKeys) {
@@ -303,14 +313,57 @@ export function MaintenanceAdminPanel({
 
               {bgMode === "IMAGE" && (
                 <>
+                  <input type="hidden" name="bgImageUrl" value={bgImageUrl} />
                   <label style={{ display: "grid", gap: 4 }}>
                     <span className="flabel">Upload pozadinske slike (opciono)</span>
-                    <input type="file" name="bgImage" accept="image/*" />
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                      <button
+                        type="button"
+                        className="btn-g"
+                        onClick={() => bgUploadInputRef.current?.click()}
+                      >
+                        Izaberi sliku
+                      </button>
+                      <span style={{ fontSize: 12.5, color: bgUploadName ? "var(--ink2)" : "var(--ink4)" }}>
+                        {bgUploadName || "Nije izabrana slika"}
+                      </span>
+                    </div>
+                    <input
+                      ref={bgUploadInputRef}
+                      type="file"
+                      name="bgImage"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      onChange={(event) => {
+                        setBgUploadName(event.target.files?.[0]?.name ?? "");
+                      }}
+                    />
                     {status.bgImagePath && (
                       <span style={{ fontSize: 11, color: "var(--ink4)" }}>
                         Trenutno: {status.bgImagePath}
                       </span>
                     )}
+                  </label>
+
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <MediaLibraryPicker
+                      kind="image"
+                      label="Izaberi iz Media Library"
+                      onSelect={(item) => {
+                        setBgImageUrl(item.url);
+                      }}
+                    />
+                  </div>
+
+                  <label style={{ display: "grid", gap: 4 }}>
+                    <span className="flabel">ili URL pozadinske slike</span>
+                    <input
+                      name="bgImageUrlManual"
+                      className="finput"
+                      value={bgImageUrl}
+                      onChange={(event) => setBgImageUrl(event.target.value)}
+                      placeholder="https://..."
+                    />
                   </label>
 
                   <label style={{ display: "flex", alignItems: "center", gap: 8 }}>

@@ -104,6 +104,10 @@ async function updateMaintenance(formData: FormData) {
 
   const bgModeRaw = formData.get("bgMode")?.toString() || current.bgMode;
   const removeBgImage = formData.get("removeBgImage") === "on";
+  const bgImageUrlRaw =
+    formData.get("bgImageUrl")?.toString().trim() ||
+    formData.get("bgImageUrlManual")?.toString().trim() ||
+    "";
   const bgMode: "COLOR" | "IMAGE" = bgModeRaw === "IMAGE" ? "IMAGE" : "COLOR";
   const effectiveBgMode: "COLOR" | "IMAGE" = removeBgImage ? "COLOR" : bgMode;
 
@@ -119,6 +123,7 @@ async function updateMaintenance(formData: FormData) {
   if (effectiveBgMode === "IMAGE" && !removeBgImage && bgImagePath !== null) {
     // keep existing unless a new file is uploaded
   }
+  let uploadedNewImage = false;
   if (effectiveBgMode === "IMAGE" && !removeBgImage && fileEntry && typeof fileEntry !== "string") {
     const fileLike = fileEntry as unknown as FileLike;
     if (typeof fileLike.arrayBuffer === "function" && typeof fileLike.size === "number" && fileLike.size > 0) {
@@ -130,6 +135,7 @@ async function updateMaintenance(formData: FormData) {
           const pathname = `maintenance/background-${Date.now()}-${Math.floor(Math.random() * 1e6)}.${ext}`;
           const blob = await put(pathname, bytes, { access: "public" });
           bgImagePath = blob.url;
+          uploadedNewImage = true;
         } else {
           const uploadsDir = path.join(process.cwd(), "public", "maintenance");
           fs.mkdirSync(uploadsDir, { recursive: true });
@@ -137,11 +143,16 @@ async function updateMaintenance(formData: FormData) {
           const fullPath = path.join(uploadsDir, filename);
           fs.writeFileSync(fullPath, Buffer.from(bytes));
           bgImagePath = `/maintenance/${filename}`;
+          uploadedNewImage = true;
         }
       } catch {
         bgImagePath = null;
       }
     }
+  }
+
+  if (effectiveBgMode === "IMAGE" && !removeBgImage && bgImageUrlRaw && !uploadedNewImage) {
+    bgImagePath = bgImageUrlRaw;
   }
 
   await setMaintenanceState({

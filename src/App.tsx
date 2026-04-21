@@ -1,6 +1,6 @@
 "use client";
 
-import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { AFF } from "./constants/affiliate";
 import { FAQ } from "./components/FAQ";
@@ -9,11 +9,6 @@ import { Planner } from "./components/Planner";
 import { BackToTop } from "./components/BackToTop";
 import { FooterLocalTime } from "./components/FooterLocalTime";
 import { HeroPlanVisual } from "./components/HeroPlanVisual";
-const ProjectBuildGlbViewer = lazy(() =>
-  import("./components/ProjectBuildGlbViewer").then((m) => ({
-    default: m.ProjectBuildGlbViewer,
-  })),
-);
 import { SiteLogo } from "./components/SiteLogo";
 import { Results } from "./components/Results";
 import { SaveModal } from "./components/SaveModal";
@@ -38,6 +33,7 @@ const EMPTY_PLAN_FORM: PlanForm = {
 };
 
 export default function App() {
+  const MISTAKES_IMAGE_SRC = "/api/assets/mistakes-image";
   const [lang, setLang] = useState<Lang>("sr");
   const [result, setResult] = useState<GeneratedPlan | null>(null);
   const [planForm, setPlanForm] = useState<PlanForm>(EMPTY_PLAN_FORM);
@@ -55,6 +51,8 @@ export default function App() {
   const t = translations[lang];
   const plannerNote = "note" in t.planner ? (t.planner as { note?: string }).note : undefined;
   const foreignerBlock = "foreignerBlock" in t ? t.foreignerBlock : undefined;
+  const docsLabel = lang === "sr" ? "Dokumenti" : lang === "ru" ? "Документы" : "Documents";
+  const blogLabel = lang === "sr" ? "Blog" : lang === "ru" ? "Блог" : "Blog";
 
   // Fetch maintenance / coming-soon status and re-check on focus/visibility.
   // This prevents "flash" of the normal app when maintenance mode is enabled.
@@ -142,6 +140,8 @@ export default function App() {
             {[["how","0"],["planner","1"],["docs","4"],["faq","3"]].map(([id,li])=>(
               <button key={id} className="nav-lnk" onClick={()=>scrollTo(id)}>{t.nav.links[Number(li)]}</button>
             ))}
+            <a href={`/documents?lang=${lang}`} className="nav-lnk">{docsLabel}</a>
+            <a href={`/blog?lang=${lang}`} className="nav-lnk">{blogLabel}</a>
           </nav>
           <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
             <LangSwitch lang={lang} setLang={setLang}/>
@@ -201,34 +201,51 @@ export default function App() {
       {t.mistakes&&(
         <section style={{padding:"72px 24px",background:"var(--bgw)",borderBottom:"1px solid var(--bdr)"}}>
           <div style={{...MX}}>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:52,alignItems:"start"}} className="plan-g">
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:52,alignItems:"end"}} className="plan-g">
               <div>
                 <Ey>{t.mistakes.eyebrow}</Ey>
                 <h2 style={{fontFamily:"var(--heading)",fontSize:"clamp(24px,3vw,36px)",fontWeight:500,color:"var(--ink)",lineHeight:1.25,letterSpacing:"-.01em",marginBottom:14}}>
                   {t.mistakes.title}
                 </h2>
                 <p style={{fontSize:14.5,color:"var(--ink3)",lineHeight:1.7,fontFamily:"var(--sans)",marginBottom:22}}>{t.mistakes.sub}</p>
-                <Suspense
-                  fallback={
-                    <div
-                      className="mistakes-glb fu3"
-                      style={{
-                        width: "100%",
-                        minHeight: 252,
-                        height: "min(36vh, 340px)",
-                        maxWidth: 480,
-                        borderRadius: "var(--rl)",
-                        border: "1px solid var(--bdr)",
-                        boxShadow: "var(--sh1)",
-                        background:
-                          "linear-gradient(165deg, #FBF9F6 0%, #EFEBE5 55%, var(--card) 100%)",
-                      }}
-                      aria-hidden
-                    />
-                  }
+                <div
+                  className="mistakes-glb fu3"
+                  style={{
+                    width: "100%",
+                    aspectRatio: "1 / 1",
+                    maxWidth: 480,
+                    borderRadius: "var(--rl)",
+                    border: "1px solid var(--bdr)",
+                    boxShadow: "var(--sh1)",
+                    background:
+                      "linear-gradient(165deg, #FBF9F6 0%, #EFEBE5 55%, var(--card) 100%)",
+                    overflow: "hidden",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
                 >
-                  <ProjectBuildGlbViewer />
-                </Suspense>
+                  <img
+                    src={MISTAKES_IMAGE_SRC}
+                    alt="Common construction mistakes visual"
+                    onError={(event) => {
+                      const stage = event.currentTarget.getAttribute("data-fallback-stage") ?? "0";
+                      if (stage === "0") {
+                        event.currentTarget.setAttribute("data-fallback-stage", "1");
+                        event.currentTarget.src = "/mistakes-static-image.webp";
+                        return;
+                      }
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src = "/Logo.svg";
+                    }}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
+                    }}
+                  />
+                </div>
               </div>
               <div style={{display:"flex",flexDirection:"column",gap:0}}>
                 <p style={{fontSize:13.5,color:"var(--ink2)",fontFamily:"var(--sans)",lineHeight:1.55,marginBottom:14,fontWeight:500}}>
@@ -548,6 +565,8 @@ export default function App() {
                   {t.nav.links[Number(li)]}
                 </button>
               ))}
+              <a href={`/documents?lang=${lang}`} style={{display:"block",fontSize:13.5,color:"var(--ink3)",marginBottom:10,fontFamily:"var(--sans)"}}>{docsLabel}</a>
+              <a href={`/blog?lang=${lang}`} style={{display:"block",fontSize:13.5,color:"var(--ink3)",fontFamily:"var(--sans)"}}>{blogLabel}</a>
             </div>
             <div>
               <p style={{fontSize:10.5,fontWeight:700,color:"var(--ink3)",letterSpacing:".09em",textTransform:"uppercase",marginBottom:14,fontFamily:"var(--sans)"}}>

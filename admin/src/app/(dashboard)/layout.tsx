@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
 import { requireAuth, signOut } from "@/lib/auth";
 import { getPublicSiteUrl } from "@/lib/publicSiteUrl";
+import { AdminSidebarNav } from "@/components/layout/AdminSidebarNav";
 
 async function logoutAction() {
   "use server";
@@ -40,20 +40,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
             style={{ height: 22, width: "auto", maxWidth: 180, display: "block" }}
           />
         </a>
-        <nav style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 13 }}>
-          <Link href="/admin" style={{ padding: "6px 10px", borderRadius: 8, color: "var(--ink2)" }}>
-            Dashboard
-          </Link>
-          <Link href="/maintenance" style={{ padding: "6px 10px", borderRadius: 8, color: "var(--ink2)" }}>
-            Podesavanja Vidljivosti
-          </Link>
-          <Link href="/media" style={{ padding: "6px 10px", borderRadius: 8, color: "var(--ink2)" }}>
-            Media library
-          </Link>
-          <Link href="/docs" style={{ padding: "6px 10px", borderRadius: 8, color: "var(--ink2)" }}>
-            Document library
-          </Link>
-        </nav>
+        <AdminSidebarNav />
       </aside>
 
       <div style={{ flex: 1, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
