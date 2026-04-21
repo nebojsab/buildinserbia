@@ -108,9 +108,10 @@ export async function POST(request: Request) {
         }
 
         const fileBytes = await zipEntry.async("uint8array");
+        const fileBody = Buffer.from(fileBytes);
         const blob = await put(
           `media/restored/${Date.now()}-${safeFileName(item.fileName)}`,
-          fileBytes,
+          fileBody,
           {
             access: "public",
             addRandomSuffix: true,

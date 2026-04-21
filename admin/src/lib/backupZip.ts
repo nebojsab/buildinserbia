@@ -7,7 +7,9 @@ export function safeFileName(input: string): string {
 
 export async function zipToDownloadResponse(zip: JSZip, fileName: string): Promise<Response> {
   const payload = await zip.generateAsync({ type: "uint8array" });
-  return new Response(payload, {
+  const arrayBuffer = new ArrayBuffer(payload.byteLength);
+  new Uint8Array(arrayBuffer).set(payload);
+  return new Response(arrayBuffer, {
     headers: {
       "Content-Type": "application/zip",
       "Content-Disposition": `attachment; filename="${fileName}"`,

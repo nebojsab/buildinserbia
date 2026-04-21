@@ -451,7 +451,9 @@ export function ContentAdminManager({
     );
     zip.file(`content/${backupFile}`, JSON.stringify(items, null, 2));
     const bytes = await zip.generateAsync({ type: "uint8array" });
-    const blob = new Blob([bytes], { type: "application/zip" });
+    const arrayBuffer = new ArrayBuffer(bytes.byteLength);
+    new Uint8Array(arrayBuffer).set(bytes);
+    const blob = new Blob([arrayBuffer], { type: "application/zip" });
     const url = window.URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
