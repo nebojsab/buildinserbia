@@ -36,7 +36,7 @@ export function MediaLibraryManager() {
   const toast = useToast();
   const [items, setItems] = useState<MediaItem[]>([]);
   const [name, setName] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [categoryInput, setCategoryInput] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
@@ -88,7 +88,7 @@ export function MediaLibraryManager() {
     };
   }, []);
 
-  const isSubmitDisabled = !file || !name.trim() || uploading;
+  const isSubmitDisabled = selectedFiles.length === 0 || uploading;
 
   async function restoreViaClientZip(file: File) {
     const bytes = await file.arrayBuffer();
@@ -201,10 +201,11 @@ export function MediaLibraryManager() {
   }
 
   async function onUpload() {
-    if (!file || !name.trim()) return;
+    if (selectedFiles.length === 0) return;
     setError(null);
-    if (!isSupportedMediaFile(file.name)) {
-      setError("Podrzani formati su: jpg, png, svg, webp, mp4.");
+    const unsupported = selectedFiles.find((entry) => !isSupportedMediaFile(entry.name));
+    if (unsupported) {
+      setError(`Nepodrzan format: ${unsupported.name}. Podrzani formati su: jpg, png, svg, webp, mp4.`);
       return;
     }
     setUploading(true);
@@ -213,17 +214,37 @@ export function MediaLibraryManager() {
       const uploadCategories = mergeUniqueCategories(
         pendingCategory ? [...categories, pendingCategory] : categories,
       );
-
-      await addMediaItemFromFile({
-        file,
-        name: name.trim(),
-        categories: uploadCategories,
-      });
+      let uploadedCount = 0;
+      const failed: string[] = [];
+      for (const file of selectedFiles) {
+        try {
+          await addMediaItemFromFile({
+            file,
+            name: selectedFiles.length === 1 ? (name.trim() || file.name) : file.name,
+            categories: uploadCategories,
+          });
+          uploadedCount += 1;
+        } catch {
+          failed.push(file.name);
+        }
+      }
       setName("");
-      setFile(null);
+      setSelectedFiles([]);
       setCategories([]);
       setCategoryInput("");
-      toast.success("Media fajl je uspešno dodat.");
+      if (uploadInputRef.current) uploadInputRef.current.value = "";
+      if (failed.length === 0) {
+        toast.success(
+          uploadedCount === 1
+            ? "Media fajl je uspešno dodat."
+            : `Uspešno je dodato ${uploadedCount} fajlova.`,
+        );
+      } else {
+        const successPart = uploadedCount > 0 ? `Uspešno: ${uploadedCount}. ` : "";
+        const failedPart = `Neuspešno: ${failed.length}.`;
+        setError(`${successPart}${failedPart} Proveri fajlove: ${failed.join(", ")}`);
+        toast.error(`${successPart}${failedPart}`);
+      }
     } catch (uploadError) {
       setError(uploadError instanceof Error ? uploadError.message : "Greska pri upload-u.");
       toast.error(uploadError instanceof Error ? uploadError.message : "Greška pri upload-u.");
@@ -388,6 +409,9 @@ export function MediaLibraryManager() {
           <div>
             <label className="flabel">Ime fajla</label>
             <input className="finput" value={name} onChange={(event) => setName(event.target.value)} placeholder="Npr. Hero slika za dokument" />
+            <p style={{ fontSize: 11.5, color: "var(--ink4)", marginTop: 6 }}>
+              Opcionalno (primenjuje se samo kada uploaduješ jedan fajl).
+            </p>
           </div>
           <div>
             <label className="flabel">Upload fajla</label>
@@ -397,17 +421,22 @@ export function MediaLibraryManager() {
                 className="btn-g"
                 onClick={() => uploadInputRef.current?.click()}
               >
-                Izaberi fajl
+                Izaberi fajlove
               </button>
-              <span style={{ fontSize: 12.5, color: file ? "var(--ink2)" : "var(--ink4)" }}>
-                {file ? file.name : "Nije izabran fajl"}
+              <span style={{ fontSize: 12.5, color: selectedFiles.length > 0 ? "var(--ink2)" : "var(--ink4)" }}>
+                {selectedFiles.length === 0
+                  ? "Nije izabran fajl"
+                  : selectedFiles.length === 1
+                    ? selectedFiles[0].name
+                    : `Izabrano fajlova: ${selectedFiles.length}`}
               </span>
               <input
                 ref={uploadInputRef}
                 type="file"
                 accept=".jpg,.jpeg,.png,.svg,.webp,.mp4"
+                multiple
                 style={{ display: "none" }}
-                onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+                onChange={(event) => setSelectedFiles(Array.from(event.target.files ?? []))}
               />
             </div>
             <p style={{ fontSize: 11.5, color: "var(--ink4)", marginTop: 6 }}>
