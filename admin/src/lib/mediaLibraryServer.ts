@@ -1,3 +1,4 @@
+import { list, put } from "@vercel/blob";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import type { MediaItem, MediaKind } from "@/lib/mediaLibraryStore";
@@ -11,10 +12,28 @@ class MediaStoreUnavailableError extends Error {
 function shouldUseRawFallback(error: unknown): boolean {
   if (error instanceof MediaStoreUnavailableError) return true;
   if (error instanceof Prisma.PrismaClientInitializationError) {
-    return /Environment variable not found:\s*DATABASE_URL/i.test(error.message);
+    return /Environment variable not found:\s*DATABASE_URL|Unable to open the database file/i.test(
+      error.message,
+    );
   }
   if (error instanceof Error) {
-    return /Environment variable not found:\s*DATABASE_URL/i.test(error.message);
+    return /Environment variable not found:\s*DATABASE_URL|Unable to open the database file/i.test(
+      error.message,
+    );
+  }
+  return false;
+}
+
+function shouldUseBlobFallback(error: unknown): boolean {
+  if (error instanceof Prisma.PrismaClientInitializationError) {
+    return /Unable to open the database file|Environment variable not found:\s*DATABASE_URL/i.test(
+      error.message,
+    );
+  }
+  if (error instanceof Error) {
+    return /Unable to open the database file|Environment variable not found:\s*DATABASE_URL/i.test(
+      error.message,
+    );
   }
   return false;
 }
@@ -75,6 +94,133 @@ type MediaAssetRecord = {
   categories: string;
   blobPath?: string | null;
 };
+
+type BlobIndexItem = {
+  id: string;
+  name: string;
+  fileName: string;
+  mimeType: string;
+  url: string;
+  kind: MediaKind;
+  categories: string[];
+  addedAt: string;
+  blobPath?: string | null;
+};
+
+const MEDIA_INDEX_PREFIX = "media/library-index.json";
+
+function toBlobIndexItem(record: MediaAssetRecord): BlobIndexItem {
+  return {
+    id: record.id,
+    name: record.name,
+    fileName: record.fileName,
+    mimeType: record.mimeType,
+    url: record.url,
+    kind: record.kind as MediaKind,
+    categories: parseCategories(record.categories),
+    addedAt: record.addedAt.toISOString(),
+    blobPath: record.blobPath ?? null,
+  };
+}
+
+function validateBlobIndexItem(entry: unknown): entry is BlobIndexItem {
+  if (!entry || typeof entry !== "object") return false;
+  const item = entry as Partial<BlobIndexItem>;
+  return (
+    typeof item.id === "string" &&
+    typeof item.name === "string" &&
+    typeof item.fileName === "string" &&
+    typeof item.mimeType === "string" &&
+    typeof item.url === "string" &&
+    (item.kind === "image" || item.kind === "video") &&
+    typeof item.addedAt === "string" &&
+    Array.isArray(item.categories)
+  );
+}
+
+async function readBlobIndex(): Promise<BlobIndexItem[]> {
+  const { blobs } = await list({
+    prefix: MEDIA_INDEX_PREFIX,
+    limit: 20,
+  });
+  if (!Array.isArray(blobs) || blobs.length === 0) return [];
+  const latest = [...blobs].sort((a, b) => +new Date(b.uploadedAt) - +new Date(a.uploadedAt))[0];
+  const response = await fetch(latest.url, { cache: "no-store" });
+  if (!response.ok) return [];
+  const parsed = (await response.json()) as unknown;
+  if (!Array.isArray(parsed)) return [];
+  return parsed.filter(validateBlobIndexItem).sort((a, b) => +new Date(b.addedAt) - +new Date(a.addedAt));
+}
+
+async function writeBlobIndex(items: BlobIndexItem[]): Promise<void> {
+  await put(MEDIA_INDEX_PREFIX, JSON.stringify(items), {
+    access: "public",
+    addRandomSuffix: true,
+    contentType: "application/json",
+  });
+}
+
+function blobIndexItemToRecord(item: BlobIndexItem): MediaAssetRecord {
+  return {
+    id: item.id,
+    name: item.name,
+    fileName: item.fileName,
+    mimeType: item.mimeType,
+    url: item.url,
+    kind: item.kind,
+    categories: JSON.stringify(Array.isArray(item.categories) ? item.categories : []),
+    addedAt: new Date(item.addedAt),
+    blobPath: item.blobPath ?? null,
+  };
+}
+
+async function findManyBlob(): Promise<MediaAssetRecord[]> {
+  const items = await readBlobIndex();
+  return items.map(blobIndexItemToRecord);
+}
+
+async function findUniqueBlob(id: string): Promise<(MediaAssetRecord & { blobPath: string | null }) | null> {
+  const items = await readBlobIndex();
+  const match = items.find((item) => item.id === id);
+  if (!match) return null;
+  const record = blobIndexItemToRecord(match);
+  return { ...record, blobPath: record.blobPath ?? null };
+}
+
+async function createBlob(input: {
+  name: string;
+  fileName: string;
+  mimeType: string;
+  url: string;
+  kind: MediaKind;
+  categories: string[];
+  blobPath?: string;
+  addedAt?: Date;
+}): Promise<MediaAssetRecord> {
+  const items = await readBlobIndex();
+  const id = generateMediaId();
+  const addedAt = (input.addedAt ?? new Date()).toISOString();
+  const next: BlobIndexItem = {
+    id,
+    name: input.name,
+    fileName: input.fileName,
+    mimeType: input.mimeType,
+    url: input.url,
+    kind: input.kind,
+    categories: input.categories,
+    addedAt,
+    blobPath: input.blobPath ?? null,
+  };
+  const updated = [next, ...items.filter((item) => item.id !== id)];
+  await writeBlobIndex(updated);
+  return blobIndexItemToRecord(next);
+}
+
+async function deleteBlob(id: string): Promise<void> {
+  const items = await readBlobIndex();
+  const updated = items.filter((item) => item.id !== id);
+  await writeBlobIndex(updated);
+}
 
 function mapRowToRecord(row: {
   id: string;
@@ -308,7 +454,12 @@ export async function listMediaItems(): Promise<MediaItem[]> {
     });
   } catch (error) {
     if (!shouldUseRawFallback(error)) throw error;
-    records = await findManyRaw();
+    try {
+      records = await findManyRaw();
+    } catch (rawError) {
+      if (!shouldUseBlobFallback(rawError)) throw rawError;
+      records = await findManyBlob();
+    }
   }
   return records.map((record) => toMediaItem(record));
 }
@@ -321,7 +472,12 @@ export async function getMediaItemById(id: string): Promise<(MediaItem & { blobP
     });
   } catch (error) {
     if (!shouldUseRawFallback(error)) throw error;
-    record = await findUniqueRaw(id);
+    try {
+      record = await findUniqueRaw(id);
+    } catch (rawError) {
+      if (!shouldUseBlobFallback(rawError)) throw rawError;
+      record = await findUniqueBlob(id);
+    }
   }
   if (!record) return null;
   return {
@@ -356,7 +512,12 @@ export async function createMediaItem(input: {
     });
   } catch (error) {
     if (!shouldUseRawFallback(error)) throw error;
-    record = await createRaw(input);
+    try {
+      record = await createRaw(input);
+    } catch (rawError) {
+      if (!shouldUseBlobFallback(rawError)) throw rawError;
+      record = await createBlob(input);
+    }
   }
 
   return toMediaItem(record);
@@ -369,7 +530,12 @@ export async function deleteMediaItemById(id: string): Promise<void> {
     });
   } catch (error) {
     if (!shouldUseRawFallback(error)) throw error;
-    await deleteRaw(id);
+    try {
+      await deleteRaw(id);
+    } catch (rawError) {
+      if (!shouldUseBlobFallback(rawError)) throw rawError;
+      await deleteBlob(id);
+    }
   }
 }
 
