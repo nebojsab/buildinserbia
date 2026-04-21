@@ -1,5 +1,6 @@
 import { getAllContentByType } from "@shared/content/repository";
 import type { BaseContentItem, ContentType } from "@shared/content/types";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 
 type ContentRow = {
@@ -41,18 +42,43 @@ function parseRows(rows: ContentRow[], type: ContentType): BaseContentItem[] {
   return parsed;
 }
 
+function shouldFallbackToSeed(error: unknown): boolean {
+  if (error instanceof Prisma.PrismaClientInitializationError) {
+    return /Unable to open the database file|Environment variable not found:\s*DATABASE_URL/i.test(
+      error.message,
+    );
+  }
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    const metaMessage = String((error.meta as { message?: string } | undefined)?.message ?? "");
+    return error.code === "P2010" && /no such table:\s*ContentRecord/i.test(metaMessage);
+  }
+  if (error instanceof Error) {
+    return /Unable to open the database file|Environment variable not found:\s*DATABASE_URL|no such table:\s*ContentRecord/i.test(
+      error.message,
+    );
+  }
+  return false;
+}
+
 export async function getServerContentByType(typeInput: string): Promise<BaseContentItem[]> {
   assertType(typeInput);
   const type = typeInput;
-  await ensureContentTable();
+  try {
+    await ensureContentTable();
 
-  const rows = await prisma.$queryRawUnsafe<ContentRow[]>(
-    `SELECT payload FROM ContentRecord WHERE contentType = ? ORDER BY updatedAt DESC`,
-    type,
-  );
-  const parsed = parseRows(rows, type);
-  if (parsed.length > 0) return parsed;
-  return getAllContentByType(type);
+    const rows = await prisma.$queryRawUnsafe<ContentRow[]>(
+      `SELECT payload FROM ContentRecord WHERE contentType = ? ORDER BY updatedAt DESC`,
+      type,
+    );
+    const parsed = parseRows(rows, type);
+    if (parsed.length > 0) return parsed;
+    return getAllContentByType(type);
+  } catch (error) {
+    if (shouldFallbackToSeed(error)) {
+      return getAllContentByType(type);
+    }
+    throw error;
+  }
 }
 
 export async function getServerPublishedContentByType(typeInput: string): Promise<BaseContentItem[]> {
