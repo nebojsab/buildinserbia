@@ -1,5 +1,6 @@
 "use client";
 
+import JSZip from "jszip";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   addMediaItemFromFile,
@@ -16,6 +17,19 @@ type MediaHealthPayload = {
   db: { status: "ok" | "fail"; message: string };
   blob: { status: "ok" | "fail"; message: string };
   overall: "ok" | "fail";
+};
+
+type MediaBackupEntry = {
+  id: string;
+  name: string;
+  fileName: string;
+  mimeType: string;
+  categories?: string[];
+};
+
+type FetchResultEntry = {
+  id?: string;
+  storedPath?: string;
 };
 
 export function MediaLibraryManager() {
@@ -75,6 +89,89 @@ export function MediaLibraryManager() {
   }, []);
 
   const isSubmitDisabled = !file || !name.trim() || uploading;
+
+  async function restoreViaClientZip(file: File) {
+    const bytes = await file.arrayBuffer();
+    const zip = await JSZip.loadAsync(bytes);
+    const mediaIndexFile = zip.file("media/media-index.json");
+    if (!mediaIndexFile) {
+      throw new Error("media/media-index.json nije pronadjen u backup fajlu.");
+    }
+
+    const indexRaw = await mediaIndexFile.async("text");
+    const indexParsed = JSON.parse(indexRaw) as unknown;
+    if (!Array.isArray(indexParsed)) {
+      throw new Error("Backup nema validne media stavke za import.");
+    }
+
+    const entries = indexParsed.filter((entry): entry is MediaBackupEntry => {
+      if (!entry || typeof entry !== "object") return false;
+      const candidate = entry as Partial<MediaBackupEntry>;
+      return (
+        typeof candidate.id === "string" &&
+        typeof candidate.name === "string" &&
+        typeof candidate.fileName === "string" &&
+        typeof candidate.mimeType === "string"
+      );
+    });
+
+    if (entries.length === 0) {
+      throw new Error("Backup nema validne media stavke za import.");
+    }
+
+    const fetchResultsFile = zip.file("media/fetch-results.json");
+    const pathById = new Map<string, string>();
+    if (fetchResultsFile) {
+      const fetchRaw = await fetchResultsFile.async("text");
+      const fetchParsed = JSON.parse(fetchRaw) as unknown;
+      if (Array.isArray(fetchParsed)) {
+        for (const item of fetchParsed as FetchResultEntry[]) {
+          if (!item?.id || !item.storedPath) continue;
+          pathById.set(item.id, item.storedPath);
+        }
+      }
+    }
+
+    let imported = 0;
+    const failed: Array<{ id: string; reason: string }> = [];
+
+    for (const entry of entries) {
+      try {
+        const suggestedPath =
+          pathById.get(entry.id) ??
+          `media/${entry.id.replace(/[^a-zA-Z0-9._-]/g, "").toLowerCase()}-${entry.fileName
+            .replace(/[^a-zA-Z0-9._-]/g, "")
+            .toLowerCase()}`;
+        const zipPath = suggestedPath.startsWith("media/") ? suggestedPath : `media/${suggestedPath}`;
+        const zipEntry = zip.file(zipPath);
+        if (!zipEntry) {
+          failed.push({ id: entry.id, reason: `Nedostaje fajl u arhivi: ${zipPath}` });
+          continue;
+        }
+
+        const fileBytes = await zipEntry.async("uint8array");
+        const fileBuffer = new ArrayBuffer(fileBytes.byteLength);
+        new Uint8Array(fileBuffer).set(fileBytes);
+        const rebuiltFile = new File([fileBuffer], entry.fileName, {
+          type: entry.mimeType || "application/octet-stream",
+        });
+
+        await addMediaItemFromFile({
+          file: rebuiltFile,
+          name: entry.name || entry.fileName,
+          categories: Array.isArray(entry.categories) ? entry.categories : [],
+        });
+        imported += 1;
+      } catch (itemError) {
+        failed.push({
+          id: entry.id,
+          reason: itemError instanceof Error ? itemError.message : "Unknown import error",
+        });
+      }
+    }
+
+    return { imported, failedCount: failed.length };
+  }
 
   function normalizeCategory(value: string) {
     return value.trim().replace(/\s+/g, " ");
@@ -149,6 +246,14 @@ export function MediaLibraryManager() {
         | { error?: string; imported?: number; failedCount?: number }
         | null;
       if (!response.ok) {
+        if (response.status === 413) {
+          const fallback = await restoreViaClientZip(file);
+          await refreshItems();
+          toast.success(
+            `Restore završen preko fallback-a. Uvezeno: ${fallback.imported}. Neuspešno: ${fallback.failedCount}.`,
+          );
+          return;
+        }
         throw new Error(payload?.error ?? "Restore import nije uspeo.");
       }
       await refreshItems();
