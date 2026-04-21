@@ -10,6 +10,15 @@ const navLinkStyle: CSSProperties = {
   fontWeight: 500,
   color: "var(--ink3)",
   fontFamily: "var(--sans)",
+  paddingBottom: 2,
+  borderBottom: "2px solid transparent",
+  transition: "color .15s, border-color .15s",
+};
+
+const navLinkActiveStyle: CSSProperties = {
+  color: "var(--acc)",
+  fontWeight: 700,
+  borderBottomColor: "var(--acc)",
 };
 
 const LANG_COPY: Record<ContentLocale, { home: string; documents: string; blog: string }> = {
@@ -32,6 +41,11 @@ const FLAGS: Record<ContentLocale, string> = {
 
 function withLang(path: string, locale: ContentLocale): string {
   return `${path}?lang=${locale}`;
+}
+
+function isNavActive(targetPath: string, currentPath: string): boolean {
+  if (targetPath === "/") return currentPath === "/";
+  return currentPath === targetPath || currentPath.startsWith(`${targetPath}/`);
 }
 
 export function PublicSiteChrome({
@@ -86,13 +100,33 @@ export function PublicSiteChrome({
             <img src="/Logo.svg" alt="BuildInSerbia" style={{ height: 24, width: "auto", display: "block" }} />
           </Link>
           <nav style={{ display: "flex", alignItems: "center", gap: 24 }}>
-            <Link href={withLang("/", locale)} style={navLinkStyle}>
+            <Link
+              href={withLang("/", locale)}
+              style={isNavActive("/", currentPath) ? { ...navLinkStyle, ...navLinkActiveStyle } : navLinkStyle}
+              aria-current={isNavActive("/", currentPath) ? "page" : undefined}
+            >
               {copy.home}
             </Link>
-            <Link href={withLang("/documents", locale)} style={navLinkStyle}>
+            <Link
+              href={withLang("/documents", locale)}
+              style={
+                isNavActive("/documents", currentPath)
+                  ? { ...navLinkStyle, ...navLinkActiveStyle }
+                  : navLinkStyle
+              }
+              aria-current={isNavActive("/documents", currentPath) ? "page" : undefined}
+            >
               {copy.documents}
             </Link>
-            <Link href={withLang("/blog", locale)} style={navLinkStyle}>
+            <Link
+              href={withLang("/blog", locale)}
+              style={
+                isNavActive("/blog", currentPath)
+                  ? { ...navLinkStyle, ...navLinkActiveStyle }
+                  : navLinkStyle
+              }
+              aria-current={isNavActive("/blog", currentPath) ? "page" : undefined}
+            >
               {copy.blog}
             </Link>
           </nav>
