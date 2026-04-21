@@ -100,6 +100,47 @@ export async function deleteMediaItem(id: string) {
   notify();
 }
 
+export async function updateMediaItem(input: {
+  id: string;
+  name: string;
+  categories: string[];
+}) {
+  const response = await fetch(`/api/media/${input.id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: input.name,
+      categories: normalizeMediaCategories(input.categories),
+    }),
+  });
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(payload?.error ?? "Ažuriranje media fajla nije uspelo.");
+  }
+  notify();
+}
+
+export async function replaceMediaItemFile(input: {
+  id: string;
+  file: File;
+  name: string;
+  categories: string[];
+}) {
+  const formData = new FormData();
+  formData.append("file", input.file);
+  formData.append("name", input.name.trim() || input.file.name);
+  formData.append("categories", JSON.stringify(normalizeMediaCategories(input.categories)));
+  const response = await fetch(`/api/media/${input.id}`, {
+    method: "PUT",
+    body: formData,
+  });
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(payload?.error ?? "Replace media fajla nije uspeo.");
+  }
+  notify();
+}
+
 export function subscribeMediaLibrary(listener: () => void): () => void {
   if (typeof window === "undefined") return () => {};
   const wrapped = () => listener();

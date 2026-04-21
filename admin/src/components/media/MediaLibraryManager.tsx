@@ -7,7 +7,9 @@ import {
   deleteMediaItem,
   getMediaLibraryItems,
   isSupportedMediaFile,
+  replaceMediaItemFile,
   subscribeMediaLibrary,
+  updateMediaItem,
   type MediaItem,
 } from "@/lib/mediaLibraryStore";
 import { useToast } from "@/components/ui/ToastProvider";
@@ -53,6 +55,8 @@ export function MediaLibraryManager() {
   const [healthLoading, setHealthLoading] = useState(true);
   const restoreInputRef = useRef<HTMLInputElement | null>(null);
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
+  const replaceInputRef = useRef<HTMLInputElement | null>(null);
+  const [replaceTarget, setReplaceTarget] = useState<MediaItem | null>(null);
 
   const refreshItems = useCallback(async () => {
     try {
@@ -334,6 +338,60 @@ export function MediaLibraryManager() {
     }
   }
 
+  async function onEditMetadata(item: MediaItem) {
+    const nextName = window.prompt("Novi naziv fajla", item.name);
+    if (nextName === null) return;
+    const nextCategoriesRaw = window.prompt(
+      "Kategorije (odvojene zarezom)",
+      item.categories.join(", "),
+    );
+    if (nextCategoriesRaw === null) return;
+
+    const nextCategories = nextCategoriesRaw
+      .split(",")
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+
+    try {
+      setError(null);
+      await updateMediaItem({
+        id: item.id,
+        name: nextName.trim() || item.name,
+        categories: nextCategories,
+      });
+      await refreshItems();
+      toast.success("Metadata je uspešno ažuriran.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Ažuriranje nije uspelo.";
+      setError(message);
+      toast.error(message);
+    }
+  }
+
+  async function onReplaceSelected(file: File | null) {
+    if (!file || !replaceTarget) return;
+    try {
+      setUploading(true);
+      setError(null);
+      await replaceMediaItemFile({
+        id: replaceTarget.id,
+        file,
+        name: replaceTarget.name,
+        categories: replaceTarget.categories,
+      });
+      await refreshItems();
+      toast.success("Fajl je uspešno zamenjen.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Replace nije uspeo.";
+      setError(message);
+      toast.error(message);
+    } finally {
+      setUploading(false);
+      setReplaceTarget(null);
+      if (replaceInputRef.current) replaceInputRef.current.value = "";
+    }
+  }
+
   const sorted = useMemo(
     () => [...items].sort((a, b) => +new Date(b.addedAt) - +new Date(a.addedAt)),
     [items],
@@ -413,6 +471,16 @@ export function MediaLibraryManager() {
             <a href="/api/backup/all" className="btn-g">
               Backup everything
             </a>
+            <input
+              ref={replaceInputRef}
+              type="file"
+              accept=".jpg,.jpeg,.png,.svg,.webp,.mp4"
+              style={{ display: "none" }}
+              onChange={(event) => {
+                const file = event.target.files?.[0] ?? null;
+                void onReplaceSelected(file);
+              }}
+            />
           </div>
         </div>
         <p style={{ fontSize: 13, color: "var(--ink3)", lineHeight: 1.6, marginBottom: 14 }}>
@@ -746,6 +814,25 @@ export function MediaLibraryManager() {
                     </td>
                     <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>
                       <div style={{ display: "flex", gap: 8 }}>
+                        <button
+                          type="button"
+                          className="btn-g"
+                          style={{ padding: "6px 9px", fontSize: 11.5 }}
+                          onClick={() => void onEditMetadata(item)}
+                        >
+                          Uredi
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-g"
+                          style={{ padding: "6px 9px", fontSize: 11.5 }}
+                          onClick={() => {
+                            setReplaceTarget(item);
+                            replaceInputRef.current?.click();
+                          }}
+                        >
+                          Replace
+                        </button>
                         <button
                           type="button"
                           className="btn-g"

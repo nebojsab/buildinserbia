@@ -1,5 +1,6 @@
 import { getAllContentByType } from "@shared/content/repository";
 import type { BaseContentItem, ContentType } from "@shared/content/types";
+import { list, put } from "@vercel/blob";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 
@@ -60,6 +61,40 @@ function shouldFallbackToSeed(error: unknown): boolean {
   return false;
 }
 
+function blobIndexPathForType(type: ContentType): string {
+  return `content/content-index-${type}.json`;
+}
+
+function blobIndexPrefixForType(type: ContentType): string {
+  return `content/content-index-${type}`;
+}
+
+function sanitizeItemsByType(type: ContentType, items: BaseContentItem[]): BaseContentItem[] {
+  return items.filter((item) => item.type === type);
+}
+
+async function readBlobContentByType(type: ContentType): Promise<BaseContentItem[]> {
+  const { blobs } = await list({
+    prefix: blobIndexPrefixForType(type),
+    limit: 20,
+  });
+  if (!Array.isArray(blobs) || blobs.length === 0) return [];
+  const latest = [...blobs].sort((a, b) => +new Date(b.uploadedAt) - +new Date(a.uploadedAt))[0];
+  const response = await fetch(latest.url, { cache: "no-store" });
+  if (!response.ok) return [];
+  const parsed = (await response.json()) as unknown;
+  if (!Array.isArray(parsed)) return [];
+  return sanitizeItemsByType(type, parsed as BaseContentItem[]);
+}
+
+async function writeBlobContentByType(type: ContentType, items: BaseContentItem[]): Promise<void> {
+  await put(blobIndexPathForType(type), JSON.stringify(sanitizeItemsByType(type, items)), {
+    access: "public",
+    addRandomSuffix: true,
+    contentType: "application/json",
+  });
+}
+
 export async function getServerContentByType(typeInput: string): Promise<BaseContentItem[]> {
   assertType(typeInput);
   const type = typeInput;
@@ -75,6 +110,12 @@ export async function getServerContentByType(typeInput: string): Promise<BaseCon
     return getAllContentByType(type);
   } catch (error) {
     if (shouldFallbackToSeed(error)) {
+      try {
+        const blobItems = await readBlobContentByType(type);
+        if (blobItems.length > 0) return blobItems;
+      } catch {
+        // Ignore Blob lookup failures and keep seed fallback.
+      }
       return getAllContentByType(type);
     }
     throw error;
@@ -92,21 +133,25 @@ export async function saveServerContentByType(
 ): Promise<void> {
   assertType(typeInput);
   const type = typeInput;
-  const sanitized = items.filter((item) => item.type === type);
-  await ensureContentTable();
-
-  await prisma.$transaction(async (tx) => {
-    await tx.$executeRawUnsafe(`DELETE FROM ContentRecord WHERE contentType = ?`, type);
-    const nowIso = new Date().toISOString();
-    for (const item of sanitized) {
-      await tx.$executeRawUnsafe(
-        `INSERT INTO ContentRecord (id, contentType, payload, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)`,
-        item.id,
-        type,
-        JSON.stringify(item),
-        item.createdAt || nowIso,
-        nowIso,
-      );
-    }
-  });
+  const sanitized = sanitizeItemsByType(type, items);
+  try {
+    await ensureContentTable();
+    await prisma.$transaction(async (tx) => {
+      await tx.$executeRawUnsafe(`DELETE FROM ContentRecord WHERE contentType = ?`, type);
+      const nowIso = new Date().toISOString();
+      for (const item of sanitized) {
+        await tx.$executeRawUnsafe(
+          `INSERT INTO ContentRecord (id, contentType, payload, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)`,
+          item.id,
+          type,
+          JSON.stringify(item),
+          item.createdAt || nowIso,
+          nowIso,
+        );
+      }
+    });
+  } catch (error) {
+    if (!shouldFallbackToSeed(error)) throw error;
+    await writeBlobContentByType(type, sanitized);
+  }
 }

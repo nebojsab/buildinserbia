@@ -95,6 +95,16 @@ type MediaAssetRecord = {
   blobPath?: string | null;
 };
 
+type UpdateMediaInput = {
+  name?: string;
+  fileName?: string;
+  mimeType?: string;
+  url?: string;
+  kind?: MediaKind;
+  categories?: string[];
+  blobPath?: string | null;
+};
+
 type BlobIndexItem = {
   id: string;
   name: string;
@@ -221,6 +231,27 @@ async function deleteBlob(id: string): Promise<void> {
   const items = await readBlobIndex();
   const updated = items.filter((item) => item.id !== id);
   await writeBlobIndex(updated);
+}
+
+async function updateBlob(id: string, input: UpdateMediaInput): Promise<MediaAssetRecord> {
+  const items = await readBlobIndex();
+  const existing = items.find((item) => item.id === id);
+  if (!existing) {
+    throw new Error("Media fajl nije pronadjen.");
+  }
+  const updatedItem: BlobIndexItem = {
+    ...existing,
+    name: input.name ?? existing.name,
+    fileName: input.fileName ?? existing.fileName,
+    mimeType: input.mimeType ?? existing.mimeType,
+    url: input.url ?? existing.url,
+    kind: input.kind ?? existing.kind,
+    categories: input.categories ?? existing.categories,
+    blobPath: input.blobPath !== undefined ? input.blobPath : (existing.blobPath ?? null),
+  };
+  const updated = [updatedItem, ...items.filter((item) => item.id !== id)];
+  await writeBlobIndex(updated);
+  return blobIndexItemToRecord(updatedItem);
 }
 
 function mapRowToRecord(row: {
@@ -400,6 +431,48 @@ async function deleteRaw(id: string): Promise<void> {
   }
 }
 
+async function updateRaw(id: string, input: UpdateMediaInput): Promise<MediaAssetRecord> {
+  const existing = await findUniqueRaw(id);
+  if (!existing) {
+    throw new Error("Media fajl nije pronadjen.");
+  }
+  const next = {
+    name: input.name ?? existing.name,
+    fileName: input.fileName ?? existing.fileName,
+    mimeType: input.mimeType ?? existing.mimeType,
+    url: input.url ?? existing.url,
+    kind: input.kind ?? (existing.kind as MediaKind),
+    categories: JSON.stringify(input.categories ?? parseCategories(existing.categories)),
+    blobPath: input.blobPath !== undefined ? input.blobPath : existing.blobPath ?? null,
+  };
+
+  try {
+    await rawPrisma().$executeRaw(Prisma.sql`
+      UPDATE "MediaAsset"
+      SET
+        "name" = ${next.name},
+        "fileName" = ${next.fileName},
+        "mimeType" = ${next.mimeType},
+        "url" = ${next.url},
+        "kind" = ${next.kind},
+        "categories" = ${next.categories},
+        "blobPath" = ${next.blobPath},
+        "updatedAt" = ${new Date()}
+      WHERE "id" = ${id}
+    `);
+  } catch (error) {
+    if (!isMissingMediaTableError(error)) throw error;
+    await ensureMediaAssetTable();
+    throw new Error("Media fajl nije pronadjen.");
+  }
+
+  const updated = await findUniqueRaw(id);
+  if (!updated) {
+    throw new Error("Media fajl nije pronadjen.");
+  }
+  return updated;
+}
+
 function mediaAssetDelegate() {
   const delegate = (prisma as { mediaAsset?: unknown }).mediaAsset;
   if (!delegate) {
@@ -421,6 +494,18 @@ function mediaAssetDelegate() {
       };
     }) => Promise<MediaAssetRecord>;
     delete: (args: { where: { id: string } }) => Promise<void>;
+    update: (args: {
+      where: { id: string };
+      data: {
+        name?: string;
+        fileName?: string;
+        mimeType?: string;
+        url?: string;
+        kind?: MediaKind;
+        categories?: string;
+        blobPath?: string | null;
+      };
+    }) => Promise<MediaAssetRecord>;
   };
 }
 
@@ -538,6 +623,33 @@ export async function deleteMediaItemById(id: string): Promise<void> {
       await deleteBlob(id);
     }
   }
+}
+
+export async function updateMediaItemById(id: string, input: UpdateMediaInput): Promise<MediaItem> {
+  let record: MediaAssetRecord;
+  try {
+    record = await mediaAssetDelegate().update({
+      where: { id },
+      data: {
+        ...(input.name !== undefined ? { name: input.name } : {}),
+        ...(input.fileName !== undefined ? { fileName: input.fileName } : {}),
+        ...(input.mimeType !== undefined ? { mimeType: input.mimeType } : {}),
+        ...(input.url !== undefined ? { url: input.url } : {}),
+        ...(input.kind !== undefined ? { kind: input.kind } : {}),
+        ...(input.categories !== undefined ? { categories: JSON.stringify(input.categories) } : {}),
+        ...(input.blobPath !== undefined ? { blobPath: input.blobPath } : {}),
+      },
+    });
+  } catch (error) {
+    if (!shouldUseRawFallback(error)) throw error;
+    try {
+      record = await updateRaw(id, input);
+    } catch (rawError) {
+      if (!shouldUseBlobFallback(rawError)) throw rawError;
+      record = await updateBlob(id, input);
+    }
+  }
+  return toMediaItem(record);
 }
 
 export function isMediaStoreUnavailableError(error: unknown): error is MediaStoreUnavailableError {
