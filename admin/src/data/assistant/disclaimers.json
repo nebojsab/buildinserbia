@@ -1,0 +1,38 @@
+[
+  {
+    "id": "disc-sr-general",
+    "locale": "sr",
+    "category": "general",
+    "text": "Odgovori su informativni i služe kao pomoć pri snalaženju kroz sajt."
+  },
+  {
+    "id": "disc-sr-legal",
+    "locale": "sr",
+    "category": "legal_or_regulatory",
+    "text": "Ovo nije pravni savet. Za tačne procedure proverite zvanične izvore ili konsultujte stručnjaka."
+  },
+  {
+    "id": "disc-en-general",
+    "locale": "en",
+    "category": "general",
+    "text": "Answers are informational and intended to help you navigate the site."
+  },
+  {
+    "id": "disc-en-legal",
+    "locale": "en",
+    "category": "legal_or_regulatory",
+    "text": "This is not legal advice. Please verify procedures on official sources or consult a qualified professional."
+  },
+  {
+    "id": "disc-ru-general",
+    "locale": "ru",
+    "category": "general",
+    "text": "Ответы носят информационный характер и помогают ориентироваться по сайту."
+  },
+  {
+    "id": "disc-ru-legal",
+    "locale": "ru",
+    "category": "legal_or_regulatory",
+    "text": "Это не юридическая консультация. Для точных процедур используйте официальные источники или консультацию специалиста."
+  }
+]

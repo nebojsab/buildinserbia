@@ -1,0 +1,74 @@
+[
+  {
+    "id": "ext-euprava-sr",
+    "locale": "sr",
+    "title": "eUprava",
+    "url": "https://euprava.gov.rs",
+    "tags": ["državno", "dozvole", "uprava"],
+    "trustLevel": "official"
+  },
+  {
+    "id": "ext-rgz-sr",
+    "locale": "sr",
+    "title": "RGZ Katastar",
+    "url": "https://www.rgz.gov.rs",
+    "tags": ["katastar", "parcela", "vlasništvo"],
+    "trustLevel": "official"
+  },
+  {
+    "id": "ext-mgsi-sr",
+    "locale": "sr",
+    "title": "Ministarstvo građevinarstva",
+    "url": "https://mgsi.gov.rs",
+    "tags": ["dozvole", "regulativa", "zakon"],
+    "trustLevel": "official"
+  },
+  {
+    "id": "ext-euprava-en",
+    "locale": "en",
+    "title": "eGovernment Portal",
+    "url": "https://euprava.gov.rs",
+    "tags": ["official", "permits"],
+    "trustLevel": "official"
+  },
+  {
+    "id": "ext-rgz-en",
+    "locale": "en",
+    "title": "Cadastre (RGZ)",
+    "url": "https://www.rgz.gov.rs",
+    "tags": ["cadastre", "ownership"],
+    "trustLevel": "official"
+  },
+  {
+    "id": "ext-mgsi-en",
+    "locale": "en",
+    "title": "Ministry of Construction",
+    "url": "https://mgsi.gov.rs",
+    "tags": ["permits", "regulation"],
+    "trustLevel": "official"
+  },
+  {
+    "id": "ext-euprava-ru",
+    "locale": "ru",
+    "title": "eUprava",
+    "url": "https://euprava.gov.rs",
+    "tags": ["официально", "разрешения"],
+    "trustLevel": "official"
+  },
+  {
+    "id": "ext-rgz-ru",
+    "locale": "ru",
+    "title": "Кадастр RGZ",
+    "url": "https://www.rgz.gov.rs",
+    "tags": ["кадастр", "собственность"],
+    "trustLevel": "official"
+  },
+  {
+    "id": "ext-mgsi-ru",
+    "locale": "ru",
+    "title": "Министерство строительства",
+    "url": "https://mgsi.gov.rs",
+    "tags": ["регулирование", "разрешения"],
+    "trustLevel": "official"
+  }
+]

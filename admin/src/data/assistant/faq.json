@@ -1,0 +1,66 @@
+[
+  {
+    "id": "faq-sr-1",
+    "locale": "sr",
+    "question": "Kako funkcioniše Planner?",
+    "answer": "Planner vodi kroz 4 koraka: tip projekta, zadaci, detalji i infrastruktura. Na kraju dobijate informativan plan i opseg troškova.",
+    "tags": ["planner", "koraci", "kako"],
+    "relatedLinkIds": ["site-planner", "site-faq"]
+  },
+  {
+    "id": "faq-sr-2",
+    "locale": "sr",
+    "question": "Šta ako ne znam tačne mere?",
+    "answer": "Možete uneti okvirne vrednosti. Assistant će vas upozoriti da procena može imati nižu preciznost.",
+    "tags": ["mere", "rough", "procena"],
+    "relatedLinkIds": ["site-planner", "site-faq"]
+  },
+  {
+    "id": "faq-sr-3",
+    "locale": "sr",
+    "question": "Da li su procene troškova konačne?",
+    "answer": "Ne. Procene su informativne i služe za planiranje budžeta. Konačne cene zavise od izvođača, materijala i lokacije.",
+    "tags": ["trošak", "budžet", "cena"],
+    "relatedLinkIds": ["site-planner"]
+  },
+  {
+    "id": "faq-sr-4",
+    "locale": "sr",
+    "question": "Gde mogu da pronađem dokumente?",
+    "answer": "Dokumente možete pronaći u sekciji Dokumenti. Tamo su vodiči i preuzimanja.",
+    "tags": ["dokumenti", "download"],
+    "relatedLinkIds": ["site-documents"]
+  },
+  {
+    "id": "faq-en-1",
+    "locale": "en",
+    "question": "How does the Planner work?",
+    "answer": "Planner has 4 steps: project type, tasks, details, and infrastructure. You then get an informative plan and cost range.",
+    "tags": ["planner", "steps", "how"],
+    "relatedLinkIds": ["site-planner", "site-faq"]
+  },
+  {
+    "id": "faq-en-2",
+    "locale": "en",
+    "question": "What if I do not know exact dimensions?",
+    "answer": "You can enter approximate values. The assistant will mark that estimate precision is lower.",
+    "tags": ["dimensions", "rough", "estimate"],
+    "relatedLinkIds": ["site-planner", "site-faq"]
+  },
+  {
+    "id": "faq-ru-1",
+    "locale": "ru",
+    "question": "Как работает Planner?",
+    "answer": "Planner включает 4 шага: тип проекта, задачи, детали и инфраструктура. В конце вы получаете ориентировочный план и диапазон стоимости.",
+    "tags": ["planner", "шаги"],
+    "relatedLinkIds": ["site-planner", "site-faq"]
+  },
+  {
+    "id": "faq-ru-2",
+    "locale": "ru",
+    "question": "Что делать, если нет точных размеров?",
+    "answer": "Можно указать приблизительные значения. Assistant покажет предупреждение о более низкой точности оценки.",
+    "tags": ["размеры", "оценка"],
+    "relatedLinkIds": ["site-planner", "site-faq"]
+  }
+]

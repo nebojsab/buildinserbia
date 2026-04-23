@@ -12,7 +12,6 @@ import { HeroPlanVisual } from "./components/HeroPlanVisual";
 import { SiteLogo } from "./components/SiteLogo";
 import { Results } from "./components/Results";
 import { SaveModal } from "./components/SaveModal";
-import { DocumentLibrary } from "./components/DocumentLibrary";
 import { Ey, HR } from "./components/ui";
 import { generatePlan } from "./lib/generatePlan";
 import { fetchMaintenance, type MaintenancePayload } from "./api/maintenance";
@@ -137,7 +136,7 @@ export default function App() {
             <SiteLogo priority />
           </div>
           <nav className="hide-xs" style={{display:"flex",gap:24,alignItems:"center"}}>
-            {[["how","0"],["planner","1"],["docs","4"],["faq","3"]].map(([id,li])=>(
+            {[["how","0"],["planner","1"],["faq","3"]].map(([id,li])=>(
               <button key={id} className="nav-lnk" onClick={()=>scrollTo(id)}>{t.nav.links[Number(li)]}</button>
             ))}
             <a href={`/documents?lang=${lang}`} className="nav-lnk">{docsLabel}</a>
@@ -511,26 +510,6 @@ export default function App() {
         </div>
       </section>
 
-      {/* ── DOCUMENT LIBRARY ── */}
-      <section id="docs" style={{padding:PY,background:"var(--bgw)",borderBottom:"1px solid var(--bdr)"}}>
-        <div style={{...MX}}>
-          <p className="eyebrow" style={{marginBottom:14}}>{t.nav.links[4]}</p>
-          <h2 style={{fontFamily:"var(--heading)",fontSize:"clamp(24px,3vw,36px)",fontWeight:500,color:"var(--ink)",lineHeight:1.25,letterSpacing:"-.01em",marginBottom:12}}>
-            {lang==="sr"?"Preuzmite relevantne dokumente":lang==="en"?"Download relevant documents":"Скачайте нужные документы"}
-          </h2>
-          <p style={{fontSize:14,color:"var(--ink3)",lineHeight:1.7,fontFamily:"var(--sans)",marginBottom:36,maxWidth:620}}>
-            {lang==="sr"
-              ?"Ovde možete pronaći i preuzeti sve dokumente potrebne za gradnju i renoviranje u Srbiji — propisi, obrasci, uputstva i više."
-              :lang==="en"
-              ?"Find and download all documents you need for building and renovating in Serbia — regulations, forms, guides and more."
-              :"Здесь вы найдёте все документы, необходимые для строительства и ремонта в Сербии — нормативы, бланки, инструкции и многое другое."}
-          </p>
-          <DocumentLibrary lang={lang} />
-        </div>
-      </section>
-
-      <HR/>
-
       {/* ── FAQ ── */}
       <section id="faq" style={{padding:PY}}>
         <div style={{maxWidth:700,margin:"0 auto",padding:"0 24px"}}>
@@ -557,7 +536,7 @@ export default function App() {
               <p style={{fontSize:10.5,fontWeight:700,color:"var(--ink3)",letterSpacing:".09em",textTransform:"uppercase",marginBottom:14,fontFamily:"var(--sans)"}}>
                 {lang==="sr"?"Navigacija":lang==="en"?"Navigation":"Навигация"}
               </p>
-              {[["how","0"],["planner","1"],["docs","4"],["faq","3"]].map(([id,li])=>(
+              {[["how","0"],["planner","1"],["faq","3"]].map(([id,li])=>(
                 <button key={id} onClick={()=>scrollTo(id)}
                   style={{display:"block",fontSize:13.5,color:"var(--ink3)",background:"none",border:"none",marginBottom:10,padding:0,fontFamily:"var(--sans)",cursor:"pointer",transition:"color .15s"}}
                   onMouseEnter={e=>e.currentTarget.style.color="var(--ink)"}

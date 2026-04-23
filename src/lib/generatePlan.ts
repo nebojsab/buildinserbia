@@ -1,4 +1,5 @@
 import { TASK_AFF } from "../constants/affiliate";
+import { estimateWindowReplacementFromPlanner } from "../planner/windowEstimate";
 import type { Lang } from "../translations";
 import type { GeneratedPlan, PlanForm, PlanStep, ProjectType } from "../types/plan";
 
@@ -26,7 +27,7 @@ export function generatePlan(form: PlanForm, lang: Lang): GeneratedPlan {
   };
 
   /* Per-task costs (flat, not per m²) */
-  const TASK_COST = {
+  const taskCost = {
     foundations:{ lo:sz*80,  hi:sz*160  },
     walls:      { lo:sz*90,  hi:sz*180  },
     roof:       { lo:sz*70,  hi:sz*140  },
@@ -55,11 +56,25 @@ export function generatePlan(form: PlanForm, lang: Lang): GeneratedPlan {
     outdoorlight:{ lo:500,   hi:2000    },
   };
 
+  const detailsPayload =
+    form.details && typeof form.details === "object"
+      ? (form.details as {
+          taskModes?: Record<string, string>;
+          taskDetailsByType?: Record<string, Record<string, unknown>>;
+        })
+      : undefined;
+  const windowDetails = detailsPayload?.taskDetailsByType?.winreplace;
+  const windowMode = detailsPayload?.taskModes?.winreplace === "exact" ? "exact" : "rough";
+  const windowEstimate = estimateWindowReplacementFromPlanner(windowDetails, windowMode);
+  if (windowEstimate) {
+    taskCost.winreplace = { lo: windowEstimate.lo, hi: windowEstimate.hi };
+  }
+
   /* Compute cost */
   let lo = 0, hi = 0;
   if(isMicro){
     const tk = tasks[0];
-    const c = TASK_COST[tk as keyof typeof TASK_COST];
+    const c = taskCost[tk as keyof typeof taskCost];
     if(c){ lo = c.lo; hi = c.hi; }
     else {
       const b = BASE[projectType as keyof typeof BASE];
@@ -72,7 +87,7 @@ export function generatePlan(form: PlanForm, lang: Lang): GeneratedPlan {
       hi = sz * (BASE[projectType as keyof typeof BASE]?.hi ?? 600);
     } else {
       tasks.forEach(tk => {
-        const c = TASK_COST[tk as keyof typeof TASK_COST];
+        const c = taskCost[tk as keyof typeof taskCost];
         if(c){ lo += c.lo; hi += c.hi; }
       });
     }

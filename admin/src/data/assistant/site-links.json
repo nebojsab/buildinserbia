@@ -1,0 +1,19 @@
+[
+  { "id": "site-home", "locale": "sr", "title": "Početna", "path": "/", "tags": ["home", "navigacija"] },
+  { "id": "site-planner", "locale": "sr", "title": "Planner", "path": "/#planner", "tags": ["planner", "plan"] },
+  { "id": "site-documents", "locale": "sr", "title": "Dokumenti", "path": "/documents", "tags": ["dokumenti", "vodiči"] },
+  { "id": "site-blog", "locale": "sr", "title": "Blog", "path": "/blog", "tags": ["blog", "saveti"] },
+  { "id": "site-faq", "locale": "sr", "title": "FAQ", "path": "/#faq", "tags": ["faq", "pitanja"] },
+
+  { "id": "site-home-en", "locale": "en", "title": "Home", "path": "/?lang=en", "tags": ["home", "navigation"] },
+  { "id": "site-planner-en", "locale": "en", "title": "Planner", "path": "/?lang=en#planner", "tags": ["planner", "plan"] },
+  { "id": "site-documents-en", "locale": "en", "title": "Documents", "path": "/documents?lang=en", "tags": ["documents", "guides"] },
+  { "id": "site-blog-en", "locale": "en", "title": "Blog", "path": "/blog?lang=en", "tags": ["blog", "guides"] },
+  { "id": "site-faq-en", "locale": "en", "title": "FAQ", "path": "/?lang=en#faq", "tags": ["faq", "questions"] },
+
+  { "id": "site-home-ru", "locale": "ru", "title": "Главная", "path": "/?lang=ru", "tags": ["home", "навигация"] },
+  { "id": "site-planner-ru", "locale": "ru", "title": "Planner", "path": "/?lang=ru#planner", "tags": ["planner", "план"] },
+  { "id": "site-documents-ru", "locale": "ru", "title": "Документы", "path": "/documents?lang=ru", "tags": ["документы", "гайды"] },
+  { "id": "site-blog-ru", "locale": "ru", "title": "Блог", "path": "/blog?lang=ru", "tags": ["блог"] },
+  { "id": "site-faq-ru", "locale": "ru", "title": "FAQ", "path": "/?lang=ru#faq", "tags": ["faq"] }
+]

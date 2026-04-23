@@ -9,6 +9,7 @@ export interface PlanForm {
   userType: number;
   infra: number;
   location: string;
+  details?: Record<string, unknown>;
 }
 
 export interface PlanStep {

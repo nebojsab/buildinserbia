@@ -1,0 +1,38 @@
+[
+  {
+    "id": "help-sr-1",
+    "locale": "sr",
+    "type": "planner_help",
+    "title": "Kako da krenem sa planner-om",
+    "summary": "Kratko objašnjenje koraka i šta je minimum unosa.",
+    "content": "Počni izborom tipa projekta i zadataka. Ako nemaš sve podatke, u koraku detalja unesi okvirne vrednosti i nastavi.",
+    "tags": ["planner", "start", "koraci"]
+  },
+  {
+    "id": "help-sr-2",
+    "locale": "sr",
+    "type": "planner_help",
+    "title": "Procena kada nemate tačne mere",
+    "summary": "Kako da unesete rough vrednosti bez blokiranja.",
+    "content": "Za prozore unesi broj otvora i prosečne dimenzije po tipu. Za instalacije unesi broj tačaka ako ne znaš dužine kablova/cevi.",
+    "tags": ["planner", "rough", "mere", "otvori"]
+  },
+  {
+    "id": "help-en-1",
+    "locale": "en",
+    "type": "planner_help",
+    "title": "Planner quick start",
+    "summary": "How to move through planner with minimum required data.",
+    "content": "Select project type and tasks first. If exact values are unknown, use approximate values in Details and continue.",
+    "tags": ["planner", "start", "steps"]
+  },
+  {
+    "id": "help-ru-1",
+    "locale": "ru",
+    "type": "planner_help",
+    "title": "Быстрый старт Planner",
+    "summary": "Как пройти planner с минимальным набором данных.",
+    "content": "Сначала выберите тип проекта и задачи. Если точные значения неизвестны, используйте приблизительные.",
+    "tags": ["planner", "start"]
+  }
+]

@@ -246,6 +246,108 @@ button{cursor:pointer;font-family:var(--sans);border:none;background:none}
 .task-opt.muted:hover{opacity:.62}
 .task-opt.muted .task-label{color:var(--ink4)}
 
+/* Planner estimate mode segmented toggle */
+.estimate-mode-toggle{
+  position:relative;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  align-items:center;
+  width:min(100%,460px);
+  border-radius:var(--r);
+  padding:3px;
+  background:var(--acc);
+  box-shadow:0 2px 8px rgba(196,92,46,.28);
+}
+.estimate-mode-toggle__thumb{
+  position:absolute;
+  left:3px;
+  top:3px;
+  bottom:3px;
+  width:calc(50% - 3px);
+  border-radius:var(--r);
+  background:var(--card);
+  box-shadow:0 6px 16px rgba(24,24,27,.12);
+  transform:translateX(0);
+  transition:transform .28s cubic-bezier(.22,1,.36,1),box-shadow .22s ease;
+  pointer-events:none;
+}
+.estimate-mode-toggle__thumb.is-rough{
+  transform:translateX(calc(100% - 3px));
+}
+.estimate-mode-toggle__option{
+  position:relative;
+  z-index:1;
+  border:none;
+  background:transparent;
+  color:rgba(255,255,255,.88);
+  font-size:12px;
+  font-weight:600;
+  line-height:1.2;
+  padding:9px 12px;
+  border-radius:var(--r);
+  transition:color .18s ease,transform .18s ease;
+}
+.estimate-mode-toggle__option:hover{
+  color:#fff;
+}
+.estimate-mode-toggle__option.is-active{
+  color:var(--acc);
+}
+.estimate-mode-toggle__option:focus-visible{
+  outline:2px solid rgba(255,255,255,.8);
+  outline-offset:-2px;
+}
+@media(prefers-reduced-motion:no-preference){
+  .estimate-mode-toggle__option:active{
+    transform:scale(.985);
+  }
+}
+
+/* Planner task accordions */
+.task-accordion__summary{
+  position:relative;
+  display:block;
+  cursor:pointer;
+  width:100%;
+  padding:0;
+  border:none;
+  background:transparent;
+  text-align:left;
+}
+.task-accordion__summary-text{
+  min-width:0;
+  padding-right:28px;
+}
+.task-accordion__chevron{
+  position:absolute;
+  top:1px;
+  right:0;
+  width:20px;
+  height:20px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border:none;
+  background:transparent;
+  color:var(--ink3);
+  flex-shrink:0;
+  transition:transform .2s ease,color .2s ease;
+  pointer-events:none;
+}
+.task-accordion__summary::after{
+  content:none;
+}
+.task-accordion.is-open .task-accordion__chevron{
+  transform:rotate(180deg);
+  color:var(--ink2);
+}
+.task-accordion__summary:hover .task-accordion__chevron{
+  color:var(--ink);
+}
+.task-accordion.is-open .task-accordion__summary:hover .task-accordion__chevron{
+  color:var(--ink);
+}
+
 /* Step indicator */
 .step-ind{display:flex;align-items:center;gap:0;margin-bottom:36px}
 .step-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:all .3s}

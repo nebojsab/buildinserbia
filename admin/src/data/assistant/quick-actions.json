@@ -1,0 +1,16 @@
+[
+  { "locale": "sr", "text": "Kako funkcioniše Planner?" },
+  { "locale": "sr", "text": "Pomozi mi oko dokumenata" },
+  { "locale": "sr", "text": "Gde su FAQ odgovori?" },
+  { "locale": "sr", "text": "Koji su provereni zvanični linkovi?" },
+
+  { "locale": "en", "text": "How does the Planner work?" },
+  { "locale": "en", "text": "Help me with documents" },
+  { "locale": "en", "text": "Where is FAQ?" },
+  { "locale": "en", "text": "Show trusted official links" },
+
+  { "locale": "ru", "text": "Как работает Planner?" },
+  { "locale": "ru", "text": "Помоги с документами" },
+  { "locale": "ru", "text": "Где FAQ?" },
+  { "locale": "ru", "text": "Покажи официальные ссылки" }
+]

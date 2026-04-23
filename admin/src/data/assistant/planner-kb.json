@@ -1,0 +1,66 @@
+[
+  {
+    "id": "planner-sr-step-details",
+    "locale": "sr",
+    "type": "step_explanation",
+    "title": "Korak Detalji",
+    "content": "U koraku Detalji unosite minimalne vrednosti potrebne za procenu. Ako nemate tačne mere, možete koristiti okvirne unose.",
+    "tags": ["detalji", "korak", "planner"],
+    "stepKey": "details"
+  },
+  {
+    "id": "planner-sr-winreplace-estimate",
+    "locale": "sr",
+    "type": "estimation_tip",
+    "title": "Kako proceniti dimenzije prozora",
+    "content": "Ako nemate tačne mere, grupišite otvore po tipu i unesite prosečne dimenzije. Kasnije možete korigovati svaki unos.",
+    "tags": ["prozori", "otvori", "mere", "rough"],
+    "taskKey": "winreplace"
+  },
+  {
+    "id": "planner-sr-bathreno-field",
+    "locale": "sr",
+    "type": "field_help",
+    "title": "Površina zidova za keramiku",
+    "content": "Okvirno: perimetar kupatila x visina oblaganja, pa oduzmite površine većih otvora gde nema pločica.",
+    "tags": ["kupatilo", "zidovi", "keramika"],
+    "fieldKey": "bathroomWallTileAreaM2",
+    "taskKey": "bathreno"
+  },
+  {
+    "id": "planner-en-step-details",
+    "locale": "en",
+    "type": "step_explanation",
+    "title": "Details step",
+    "content": "In Details step, enter minimum inputs required for estimate. If exact values are unknown, approximate inputs are accepted.",
+    "tags": ["details", "step", "planner"],
+    "stepKey": "details"
+  },
+  {
+    "id": "planner-en-winreplace-estimate",
+    "locale": "en",
+    "type": "estimation_tip",
+    "title": "How to estimate window dimensions",
+    "content": "If exact values are unavailable, group openings by type and enter average dimensions. You can refine later.",
+    "tags": ["windows", "openings", "dimensions", "rough"],
+    "taskKey": "winreplace"
+  },
+  {
+    "id": "planner-ru-step-details",
+    "locale": "ru",
+    "type": "step_explanation",
+    "title": "Шаг Детали",
+    "content": "На шаге Детали укажите минимально необходимые данные для оценки. При отсутствии точных значений допустим приблизительный ввод.",
+    "tags": ["детали", "шаг", "planner"],
+    "stepKey": "details"
+  },
+  {
+    "id": "planner-ru-winreplace-estimate",
+    "locale": "ru",
+    "type": "estimation_tip",
+    "title": "Как оценить размеры окон",
+    "content": "Если нет точных размеров, сгруппируйте проемы по типу и укажите средние значения. Позже можно уточнить.",
+    "tags": ["окна", "проемы", "размеры", "rough"],
+    "taskKey": "winreplace"
+  }
+]

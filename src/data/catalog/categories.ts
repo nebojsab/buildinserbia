@@ -1,0 +1,34 @@
+import type { CatalogCategory } from "../../types/catalog";
+
+export const categories: CatalogCategory[] = [
+  {
+    id: "windows",
+    title: { sr: "Prozori", en: "Windows", ru: "Okna" },
+    description: {
+      sr: "PVC/ALU/drvena stolarija i sistemi otvaranja.",
+      en: "PVC/ALU/wood windows and opening systems.",
+      ru: "PVC/ALU/derevyannye okna i sistemy otkryvaniya.",
+    },
+    sortOrder: 10,
+    isActive: true,
+  },
+  { id: "shutters", title: { sr: "Roletne", en: "Shutters", ru: "Rolstavni" }, sortOrder: 20, isActive: true },
+  { id: "mosquito_nets", title: { sr: "Komarnici", en: "Mosquito nets", ru: "Moskitnye setki" }, sortOrder: 30, isActive: true },
+  { id: "shower_cabins", title: { sr: "Tus kabine", en: "Shower cabins", ru: "Dushevye kabiny" }, sortOrder: 40, isActive: true },
+  { id: "tiles", title: { sr: "Plocice", en: "Tiles", ru: "Plitka" }, sortOrder: 50, isActive: true },
+  { id: "faucets", title: { sr: "Slavine", en: "Faucets", ru: "Smesiteli" }, sortOrder: 60, isActive: true },
+  { id: "sinks", title: { sr: "Lavaboi i sudopere", en: "Sinks and basins", ru: "Rakviny i moyki" }, sortOrder: 70, isActive: true },
+  { id: "toilets", title: { sr: "WC solje", en: "Toilets", ru: "Unitazy" }, sortOrder: 80, isActive: true },
+  { id: "bathroom_furniture", title: { sr: "Kupatilski namestaj", en: "Bathroom furniture", ru: "Mebel dlya vannoy" }, sortOrder: 90, isActive: true },
+  { id: "kitchen_elements", title: { sr: "Kuhinjski elementi", en: "Kitchen elements", ru: "Kukhonnye moduli" }, sortOrder: 100, isActive: true },
+  { id: "kitchen_sinks", title: { sr: "Kuhinjske sudopere", en: "Kitchen sinks", ru: "Kukhonnye moyki" }, sortOrder: 110, isActive: true },
+  { id: "kitchen_faucets", title: { sr: "Kuhinjske slavine", en: "Kitchen faucets", ru: "Kukhonnye smesiteli" }, sortOrder: 120, isActive: true },
+  { id: "lighting", title: { sr: "Unutrasnja rasveta", en: "Indoor lighting", ru: "Vnutrennee osveshchenie" }, sortOrder: 130, isActive: true },
+  { id: "outdoor_lighting", title: { sr: "Spoljasnja rasveta", en: "Outdoor lighting", ru: "Naruzhnoe osveshchenie" }, sortOrder: 140, isActive: true },
+  { id: "fences", title: { sr: "Ograde", en: "Fences", ru: "Zabory" }, sortOrder: 150, isActive: true },
+  { id: "gates", title: { sr: "Kapije", en: "Gates", ru: "Vorota" }, sortOrder: 160, isActive: true },
+  { id: "gate_motors", title: { sr: "Motori za kapije", en: "Gate motors", ru: "Privody dlya vorot" }, sortOrder: 170, isActive: true },
+  { id: "paving", title: { sr: "Poplocavanje", en: "Paving", ru: "Moshchenie" }, sortOrder: 180, isActive: true },
+  { id: "irrigation", title: { sr: "Navodnjavanje", en: "Irrigation", ru: "Oroshenie" }, sortOrder: 190, isActive: true },
+  { id: "lawn", title: { sr: "Travnjak", en: "Lawn", ru: "Gazonn" }, sortOrder: 200, isActive: true },
+];

@@ -11,6 +11,7 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { href: "/admin", label: "Dashboard" },
   { href: "/maintenance", label: "Podesavanja Vidljivosti" },
+  { href: "/admin/catalog", label: "Curated catalog" },
   { href: "/admin/document-library", label: "Document library" },
   { href: "/admin/blog-posts", label: "Blog posts" },
   { href: "/media", label: "Media library" },

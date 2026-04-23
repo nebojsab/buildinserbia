@@ -4,11 +4,13 @@ import { fmt } from "../lib/format";
 import { generateProjectDocuments, type DocLang, type ProjectDocument } from "../lib/generateProjectDocs";
 import { monthlyPayment } from "../lib/loan";
 import { DocumentPreviewModal, downloadProjectDocument } from "./DocumentPreviewModal";
+import { RecommendedProductsSection } from "./catalog/RecommendedProductsSection";
 import { HR } from "./ui";
 import type { GeneratedPlan, PlanForm, ProjectType } from "../types/plan";
-import { translations } from "../translations";
+import { translations, type Lang } from "../translations";
 import { getHighlightedPublishedDocuments } from "../content/repository";
 import { localizeContentItem, normalizeLocale } from "../content/localize";
+import { getRecommendedProducts } from "../lib/catalog/getRecommendedProducts";
 
 type T = (typeof translations)["sr"];
 
@@ -87,12 +89,22 @@ export function Results({
 
   const [previewDoc, setPreviewDoc] = useState<ProjectDocument | null>(null);
   const [planZipLoading, setPlanZipLoading] = useState(false);
+  const locale = t.lang as Lang;
   const highlightedDocuments = useMemo(
     () =>
       getHighlightedPublishedDocuments(4).map((item) =>
-        localizeContentItem(item, normalizeLocale(t.lang)),
+        localizeContentItem(item, normalizeLocale(locale)),
       ),
-    [t.lang],
+    [locale],
+  );
+  const recommendedProducts = useMemo(
+    () =>
+      getRecommendedProducts(form.tasks, locale, {
+        maxGroups: 4,
+        maxProductsPerGroup: 3,
+        maxRelatedProducts: 4,
+      }),
+    [form.tasks, locale],
   );
   const helpfulDocumentsCopy =
     t.lang === "sr"
@@ -516,6 +528,10 @@ export function Results({
         <div style={{padding:"0 24px 16px",borderTop:"1px solid var(--bdr)"}}>
           <p style={{fontSize:11,color:"var(--ink4)",fontFamily:"var(--sans)",paddingTop:14,lineHeight:1.55}}>{r.affilNote}</p>
         </div>
+      </div>
+
+      <div data-pdf-hide>
+        <RecommendedProductsSection data={recommendedProducts} lang={locale} selectedTasks={form.tasks} />
       </div>
 
       {/* Generated project documentation */}
