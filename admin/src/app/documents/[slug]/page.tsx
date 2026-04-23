@@ -181,7 +181,12 @@ export default async function DocumentDetailPage({
                         {attachment.fileSize ? ` • ${attachment.fileSize}` : ""}
                       </p>
                     </div>
-                    <a href={attachment.fileUrl} className="btn-g" download>
+                    <a
+                      href={attachment.fileUrl}
+                      className="btn-g"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       {ctaLabel}
                     </a>
                   </div>
