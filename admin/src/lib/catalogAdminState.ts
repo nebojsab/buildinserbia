@@ -22,6 +22,7 @@ type CatalogAdminState = {
 
 const STATE_FILE = path.join(process.cwd(), "catalog-admin-state.json");
 const STATE_BLOB_PATH = "catalog-admin-state.json";
+const STATE_BLOB_ACCESS = "private" as const;
 const canUseBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
 
 function parseState(raw: string): CatalogAdminState {
@@ -46,7 +47,7 @@ function loadFromFile(): CatalogAdminState {
 }
 
 async function loadFromBlob(): Promise<CatalogAdminState> {
-  const result = await get(STATE_BLOB_PATH, { access: "public" });
+  const result = await get(STATE_BLOB_PATH, { access: STATE_BLOB_ACCESS });
   if (!result || result.statusCode !== 200) throw new Error("missing-blob");
   const stream = result.stream as ReadableStream<Uint8Array>;
   const text = await new Response(stream).text();
@@ -64,8 +65,11 @@ function persistToFile(state: CatalogAdminState) {
 async function saveState(state: CatalogAdminState): Promise<void> {
   if (canUseBlob) {
     await put(STATE_BLOB_PATH, JSON.stringify(state), {
-      access: "public",
+      access: STATE_BLOB_ACCESS,
       allowOverwrite: true,
+      addRandomSuffix: false,
+      cacheControlMaxAge: 0,
+      contentType: "application/json; charset=utf-8",
     });
     return;
   }
