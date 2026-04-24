@@ -22,7 +22,7 @@ type CatalogAdminState = {
 
 const STATE_FILE = path.join(process.cwd(), "catalog-admin-state.json");
 const STATE_BLOB_PATH = "catalog-admin-state.json";
-const STATE_BLOB_ACCESS = "private" as const;
+const STATE_BLOB_ACCESS = "public" as const;
 const canUseBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
 
 function parseState(raw: string): CatalogAdminState {
@@ -67,9 +67,6 @@ async function saveState(state: CatalogAdminState): Promise<void> {
     await put(STATE_BLOB_PATH, JSON.stringify(state), {
       access: STATE_BLOB_ACCESS,
       allowOverwrite: true,
-      addRandomSuffix: false,
-      cacheControlMaxAge: 0,
-      contentType: "application/json; charset=utf-8",
     });
     return;
   }
