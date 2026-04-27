@@ -1,3 +1,5 @@
+import { humanizeIntentForUser } from "./artifactUserText";
+import type { ProjectState } from "../types/agentic";
 import type { GeneratedPlan, PlanForm, ProjectType } from "../types/plan";
 
 export type DocLang = "sr" | "en" | "ru";
@@ -73,7 +75,94 @@ const T = {
     en: { title: "Statement on works not requiring a building permit (informative)", desc: "For low-impact works; confirm with your municipality before starting." },
     ru: { title: "Справка о работах без разрешения (информационно)", desc: "Для небольших работ; уточните в местной управе." },
   },
+  agentPrep: {
+    sr: {
+      title: "Pregled pripreme (kontekst planera)",
+      desc: "Tekstualni izlaz pripremnih koraka, ugovor i predmer su iznad/ispod — ovo pomaže prenosu u ponude i dopunu podataka.",
+    },
+    en: {
+      title: "Planner prep snapshot (agent context)",
+      desc: "Text snapshot of the prep step; your RFQ, BoQ, and work plan are separate files above/below — this carries scope context into quotes.",
+    },
+    ru: {
+      title: "Снимок подготовки (контекст планировщика)",
+      desc: "Текстовый снимок шага подготовки; остальные документы рядом — для передачи в смету и доработку деталей.",
+    },
+  },
 } as const;
+
+function getAgentProjectState(form: PlanForm): ProjectState | null {
+  const d = form.details;
+  if (!d || typeof d !== "object" || !("agentProjectState" in d)) return null;
+  const s = (d as { agentProjectState?: ProjectState }).agentProjectState;
+  if (!s?.artifacts?.length) return null;
+  return s;
+}
+
+function buildBodyAgentPrep(ctx: ProjectDocContext, state: ProjectState): string {
+  const L = (m: Record<DocLang, string>) => m[ctx.lang];
+  const lines: string[] = [
+    L({
+      sr: "Kontekst iz planerskog unosa (pripremne kartice)",
+      en: "Planner intake context (prep cards)",
+      ru: "Контекст планировщика (карточки подготовки)",
+    }),
+    "",
+  ];
+  if (state.goal) lines.push(L({ sr: "Cilj:", en: "Goal:", ru: "Цель:" }) + " " + state.goal);
+  if (state.intent) {
+    lines.push(
+      L({ sr: "Fokus projekta:", en: "Project focus:", ru: "Фокус проекта:" }) +
+        " " +
+        humanizeIntentForUser(ctx.lang, state.intent),
+    );
+  }
+  if (state.location) {
+    lines.push(L({ sr: "Lokacija:", en: "Location:", ru: "Адрес:" }) + " " + state.location);
+  }
+  const muni = state.knownFacts.municipalityHint;
+  if (muni && typeof muni.value === "string") {
+    lines.push(
+      L({
+        sr: "Prepoznata opština (heuristika, nije adresa):",
+        en: "Parsed municipality (heuristic, not a full address):",
+        ru: "Распознанная општина (эвристика, не полный адрес):",
+      }) + " " + muni.value,
+    );
+  }
+  lines.push("");
+  for (const a of state.artifacts) {
+    lines.push("— " + a.title + " [" + a.status + "]");
+    lines.push(
+      a.content
+        .split("\n")
+        .map((line) => "  " + line)
+        .join("\n"),
+    );
+    if (a.assumptions.length) {
+      lines.push(
+        "  " +
+          L({ sr: "Napomene:", en: "Notes:", ru: "Примечания:" }) +
+          " " +
+          a.assumptions.join(" "),
+      );
+    }
+    lines.push("");
+  }
+  if (state.openQuestions.length) {
+    lines.push(
+      L({
+        sr: "Otvorene dopune (sa rezultata):",
+        en: "Open follow-ups (from results):",
+        ru: "Нерешённые уточнения (с экрана результата):",
+      }),
+    );
+    for (const q of state.openQuestions) {
+      lines.push("• " + q);
+    }
+  }
+  return lines.join("\n");
+}
 
 function boqLines(
   lang: DocLang,
@@ -630,6 +719,22 @@ export function generateProjectDocuments(
           : lang === "ru"
             ? "spravka-bez-razresheniya.txt"
             : "izjava-bez-dozvole-informativno.txt",
+    });
+  }
+
+  const agentState = getAgentProjectState(form);
+  if (agentState) {
+    docs.push({
+      id: "agent-prep",
+      title: T.agentPrep[lang].title,
+      description: T.agentPrep[lang].desc,
+      body: buildBodyAgentPrep(ctx, agentState),
+      filename:
+        lang === "en"
+          ? "planner-agent-context.txt"
+          : lang === "ru"
+            ? "kontekst-planirovshchika.txt"
+            : "pripremni-kontekst-planer.txt",
     });
   }
 

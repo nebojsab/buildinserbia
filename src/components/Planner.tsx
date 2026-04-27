@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import {
   FULL_RENOVATION_TASK_KEY,
@@ -18,8 +18,24 @@ import {
 } from "../planner/taskFormConfig";
 import { getFieldsForStep } from "../planner/conditionalResolver";
 import { plannerTaskDefinitions, type ConditionalFieldDefinition } from "../planner/conditionalConfig";
+import { ArtifactContentRich } from "./ArtifactContentRich";
 import { estimateWindowReplacementFromPlanner } from "../planner/windowEstimate";
 import type { PlannerAssistantBridgeSnapshot } from "../lib/plannerAssistantBridge";
+import { createInitialProjectState, orchestratePlannerIntake } from "../lib/agentic/orchestrator";
+import type { ChatLine, PlannerAgentApply } from "../lib/plannerConversationalAgentLocal";
+import { PlannerConversationalAgent } from "./PlannerConversationalAgent";
+import type { AppLocale } from "../types/agentic";
+import type { ProjectState } from "../types/agentic";
+import type { PlannerIntakeResult, PlannerStatePatch } from "../types/plannerIntake";
+import { runPlannerIntake } from "../api/plannerIntake";
+import { IntakePrompt } from "./planner/intake/IntakePrompt";
+import { IntakeReview } from "./planner/intake/IntakeReview";
+import { ClarificationMiniStep } from "./planner/intake/ClarificationMiniStep";
+import { IntakeDebugCard } from "./planner/intake/IntakeDebugCard";
+import { applyClarificationAnswers, getClarificationQuestions } from "../lib/planner-intake/clarificationRules";
+import { mapIntakeToPlannerState } from "../lib/planner-intake/mapToPlannerState";
+import { trackPlannerIntakeEvent } from "../lib/planner-intake/analytics";
+import { getMissingCriticalFields } from "../lib/planner/selectors/getMissingCriticalFields";
 
 type T = (typeof translations)["sr"];
 
@@ -108,7 +124,7 @@ export function Planner({
   const [step, setStep] = useState(0); // 0=type, 1=tasks, 2=details, 3=infra
   const [pType, setPType] = useState<ProjectType | null>(null);
   const [selTasks, setSelTasks] = useState<string[]>([]);
-  const [size] = useState("");
+  const [size, setSize] = useState("");
   const [budget] = useState(2);
   const [location,setLocation] = useState("");
   const [stage, setStage] = useState(0);
@@ -120,29 +136,60 @@ export function Planner({
   const [taskDetails, setTaskDetails] = useState<Record<string, Record<string, TaskDetailValue>>>({});
   const [conditionalInfraDetails, setConditionalInfraDetails] = useState<Record<string, TaskDetailValue>>({});
   const [openTaskAccordions, setOpenTaskAccordions] = useState<Record<string, boolean>>({});
-  const [submitting, setSub] = useState(false);
-  const rootRef = useRef<HTMLDivElement | null>(null);
-  const hasMountedStepRef = useRef(false);
+  const [projectGoal, setProjectGoal] = useState("");
+  const [projectState, setProjectState] = useState<ProjectState>(() =>
+    createInitialProjectState(`session-${Math.random().toString(36).slice(2, 10)}`),
+  );
+  const [plannerConversationalLines, setPlannerConversationalLines] = useState<ChatLine[]>([]);
+  const [intakeStage, setIntakeStage] = useState<"entry" | "review" | "clarify" | "skipped">("entry");
+  const [intakeLoading, setIntakeLoading] = useState(false);
+  const [intakeError, setIntakeError] = useState<string | null>(null);
+  const [intakeResult, setIntakeResult] = useState<PlannerIntakeResult | null>(null);
+  const [intakePatch, setIntakePatch] = useState<PlannerStatePatch | null>(null);
+  const [intakeSuggestedKeys, setIntakeSuggestedKeys] = useState<string[]>([]);
+  const [intakeMissingKeys, setIntakeMissingKeys] = useState<string[]>([]);
 
+  const applyPlannerStatePatch = (patch: PlannerStatePatch) => {
+    if (patch.pType) setPType(patch.pType);
+    if (Array.isArray(patch.selTasks) && patch.selTasks.length > 0) setSelTasks(patch.selTasks);
+    if (patch.commonDetails) {
+      setCommonDetails((prev) => ({ ...prev, ...patch.commonDetails } as Record<string, TaskDetailValue>));
+    }
+    if (patch.conditionalDetails) {
+      setConditionalDetails((prev) => ({ ...prev, ...patch.conditionalDetails } as Record<string, TaskDetailValue>));
+    }
+    if (typeof patch.size === "string" && patch.size.trim()) setSize(patch.size.trim());
+    if (typeof patch.projectGoal === "string" && patch.projectGoal.trim()) setProjectGoal(patch.projectGoal.trim());
+    if (typeof patch.startStep === "number" && patch.startStep >= 0 && patch.startStep <= 3) setStep(patch.startStep);
+    const suggested = [
+      ...Object.keys(patch.commonDetails ?? {}),
+      ...Object.keys(patch.conditionalDetails ?? {}),
+    ];
+    setIntakeSuggestedKeys(Array.from(new Set(suggested)));
+    setIntakeMissingKeys(Array.from(new Set(patch.missingFieldKeys ?? [])));
+  };
+
+  const applyAgentSuggestion = (a: PlannerAgentApply) => {
+    applyPlannerStatePatch({
+      pType: a.projectType,
+      selTasks: a.taskKeys,
+      commonDetails: a.projectType === "reno" && a.reno ? a.reno : undefined,
+      conditionalDetails: a.projectType !== "reno" && a.conditional ? a.conditional : undefined,
+      size:
+        typeof (a.reno?.totalPropertyAreaM2 ?? a.conditional?.totalPropertyAreaM2) === "string"
+          ? String(a.reno?.totalPropertyAreaM2 ?? a.conditional?.totalPropertyAreaM2)
+          : undefined,
+      projectGoal: `${projectGoal.trim()}${a.goalAppend}`.trim(),
+      source: "llm-intake",
+    });
+  };
+  const [submitting, setSub] = useState(false);
   const stageOptions = pType ? pw.stagesByType[pType] : [];
   const stageHelper = pType ? pw.stageHelperByType[pType] : "";
 
   useEffect(() => {
     setStage(0);
   }, [pType]);
-
-  useEffect(() => {
-    // Keep stepper and step title in focus when moving between steps.
-    if (!hasMountedStepRef.current) {
-      hasMountedStepRef.current = true;
-      return;
-    }
-    const root = rootRef.current;
-    if (!root) return;
-    const headerOffset = 86;
-    const targetTop = Math.max(0, root.getBoundingClientRect().top + window.scrollY - headerOffset);
-    window.scrollTo({ top: targetTop, behavior: "smooth" });
-  }, [step]);
 
   useEffect(() => {
     if (stageOptions.length === 0) return;
@@ -225,6 +272,7 @@ export function Planner({
     ...detailsFieldLayout.parentCommon,
     ...detailsFieldLayout.shared,
   ];
+  const intakeCriticalMissing = getMissingCriticalFields(intakeResult);
   const conditionalInfraSignature = conditionalInfraFields.map((field) => field.id).join("|");
   const conditionalDetailSignature = conditionalDetailFields.map((field) => field.id).join("|");
 
@@ -251,10 +299,140 @@ export function Planner({
     });
   };
 
-  const canNext0 = !!pType;
+  const canNext0 = !!pType && projectGoal.trim().length >= 10;
   const canNext1 = selTasks.length > 0;
 
   const localized = (copy: Record<Lang, string>) => copy[t.lang as Lang] ?? copy.sr;
+  const intakeLabels = (pw as typeof pw & { intake?: Record<string, string> }).intake;
+  const intakeCategoryLabelMap: Record<string, string> = Object.fromEntries(
+    pw.projectTypes.map((entry) => [entry.k, entry.label]),
+  );
+  const intakeTaskLabelMap: Record<string, string> = Object.fromEntries(
+    Object.values(pw.tasks)
+      .flat()
+      .map((entry) => [entry.k, entry.label]),
+  );
+  const intakeTaskOrderMap: Record<string, number> = Object.fromEntries(
+    Object.values(pw.tasks)
+      .flat()
+      .map((entry, index) => [entry.k, index]),
+  );
+  const intakeFieldLabelMap: Record<string, string> = {
+    totalPropertyAreaM2:
+      t.lang === "sr" ? "Ukupna površina (m²)" : t.lang === "en" ? "Total area (m²)" : "Общая площадь (м²)",
+    extensionAreaM2:
+      t.lang === "sr" ? "Površina nadogradnje (m²)" : t.lang === "en" ? "Extension area (m²)" : "Площадь надстройки (м²)",
+    lotAreaM2:
+      t.lang === "sr" ? "Površina placa (m²)" : t.lang === "en" ? "Lot area (m²)" : "Площадь участка (м²)",
+    propertyType:
+      t.lang === "sr" ? "Tip objekta" : t.lang === "en" ? "Property type" : "Тип объекта",
+    budgetBand:
+      t.lang === "sr" ? "Budžetski okvir" : t.lang === "en" ? "Budget band" : "Бюджетный диапазон",
+    location:
+      t.lang === "sr" ? "Lokacija" : t.lang === "en" ? "Location" : "Локация",
+    municipality:
+      t.lang === "sr" ? "Opština" : t.lang === "en" ? "Municipality" : "Муниципалитет",
+  };
+  const mixedScopeHintFor = (result: PlannerIntakeResult | null): string | undefined => {
+    if (!result) return undefined;
+    const source = `${result.rawUserGoal} ${result.detectedIntent}`.toLowerCase();
+    const mentionsReno = /renov|reno|adapt|remont|kupatil|proz/.test(source);
+    const mentionsExtension = /nadograd|dograd|extension|aneks|sprat/.test(source);
+    if (!(mentionsReno && mentionsExtension)) return undefined;
+    if (result.parentCategory !== "extension") return undefined;
+    return t.lang === "sr"
+      ? "Detektovana je kombinacija nadogradnje i renoviranja. Startujemo od nadogradnje; renoviranje možete odmah dodati u sledećem koraku."
+      : t.lang === "en"
+        ? "A mixed extension + renovation scope is detected. We start from extension; you can add renovation tasks in the next step."
+        : "Обнаружена комбинация надстройки и ремонта. Стартуем с надстройки; задачи ремонта можно добавить на следующем шаге.";
+  };
+  const intakeTaskLabelsFromKeys = (taskKeys: string[]) =>
+    taskKeys.map((key) => intakeTaskLabelMap[key] ?? key);
+  const isIntakeSuggested = (key: string) => intakeSuggestedKeys.includes(key);
+  const isIntakeMissing = (key: string) => intakeMissingKeys.includes(key);
+
+  const runIntake = async () => {
+    const goal = projectGoal.trim();
+    if (goal.length < 10) return;
+    setIntakeLoading(true);
+    setIntakeError(null);
+    trackPlannerIntakeEvent("intake_started", { locale: t.lang as Lang });
+    try {
+      const response = await runPlannerIntake(goal, t.lang as Lang);
+      setIntakeResult(response.intake);
+      setIntakePatch(response.plannerPatch);
+      setIntakeStage("review");
+      trackPlannerIntakeEvent("intake_reviewed", {
+        locale: t.lang as Lang,
+        confidence: response.intake.confidence.overall,
+        parentCategory: response.intake.parentCategory,
+        parentCategoryLabel:
+          intakeCategoryLabelMap[response.intake.parentCategory] ?? response.intake.parentCategory,
+        taskCount: response.intake.childTasks.length,
+        taskKeys: response.intake.childTasks,
+        taskLabels: intakeTaskLabelsFromKeys(response.intake.childTasks),
+      });
+    } catch (error) {
+      const rawMessage = error instanceof Error ? error.message : "Intake failed";
+      if (rawMessage.includes("not available")) {
+        setIntakeError(
+          t.lang === "sr"
+            ? "Intake servis trenutno nije dostupan. Možete kliknuti „Preskoči i idi na planner“."
+            : t.lang === "en"
+              ? "Intake service is currently unavailable. You can click “Skip and open planner”."
+              : "Сервис intake сейчас недоступен. Нажмите «Пропустить и открыть planner».",
+        );
+      } else {
+        setIntakeError(rawMessage);
+      }
+    } finally {
+      setIntakeLoading(false);
+    }
+  };
+
+  const confirmIntakeAndContinue = () => {
+    if (intakeResult) {
+      const pendingClarifications = getClarificationQuestions(intakeResult);
+      if (pendingClarifications.length > 0) {
+        setIntakeStage("clarify");
+        trackPlannerIntakeEvent("intake_clarification_opened", { locale: t.lang as Lang });
+        return;
+      }
+    }
+    if (intakePatch) applyPlannerStatePatch(intakePatch);
+    trackPlannerIntakeEvent("intake_confirmed", {
+      locale: t.lang as Lang,
+      parentCategory: intakeResult?.parentCategory,
+      parentCategoryLabel: intakeResult
+        ? intakeCategoryLabelMap[intakeResult.parentCategory] ?? intakeResult.parentCategory
+        : undefined,
+      taskCount: intakeResult?.childTasks.length,
+      taskKeys: intakeResult?.childTasks,
+      taskLabels: intakeResult ? intakeTaskLabelsFromKeys(intakeResult.childTasks) : undefined,
+    });
+    setIntakeStage("skipped");
+  };
+
+  const continueFromClarifications = (answers: Record<string, string>) => {
+    if (!intakeResult) {
+      setIntakeStage("skipped");
+      return;
+    }
+    const enriched = applyClarificationAnswers(intakeResult, answers);
+    const patch = mapIntakeToPlannerState(enriched);
+    setIntakeResult(enriched);
+    setIntakePatch(patch);
+    applyPlannerStatePatch(patch);
+    trackPlannerIntakeEvent("intake_clarification_completed", {
+      locale: t.lang as Lang,
+      parentCategory: enriched.parentCategory,
+      parentCategoryLabel: intakeCategoryLabelMap[enriched.parentCategory] ?? enriched.parentCategory,
+      taskCount: enriched.childTasks.length,
+      taskKeys: enriched.childTasks,
+      taskLabels: intakeTaskLabelsFromKeys(enriched.childTasks),
+    });
+    setIntakeStage("skipped");
+  };
 
   const setTaskFieldValue = (
     task: PlannerTaskType,
@@ -581,6 +759,17 @@ export function Planner({
       budgetBand === "low" ? 1 : budgetBand === "mid" ? 2 : budgetBand === "high" ? 3 : budget;
     const resolvedLocation = location;
     const resolvedSize = pType === "reno" ? deriveRenoSize() : deriveConditionalSize();
+    const orchestration = orchestratePlannerIntake(projectState, {
+      goal: projectGoal.trim(),
+      projectType: pType,
+      location: resolvedLocation,
+      tasks: resolveTasksForPlanSubmit(pType, selTasks, renoGranularKeys),
+      stage,
+      budget: budgetFromBand,
+      locale: t.lang as AppLocale,
+    });
+    setProjectState(orchestration.state);
+
     const form: PlanForm = {
       projectType: pType,
       tasks: resolveTasksForPlanSubmit(pType, selTasks, renoGranularKeys),
@@ -600,12 +789,16 @@ export function Planner({
               infrastructureDetails: conditionalInfraDetails,
               conditionalParent: pType,
               conditionalTaskSelection: selTasks,
+              agentProjectState: orchestration.state,
+              plannerConversational: plannerConversationalLines,
             }
           : {
               conditionalDetailValues: conditionalDetails,
               infrastructureDetails: conditionalInfraDetails,
               conditionalParent: pType,
               conditionalTaskSelection: selTasks,
+              agentProjectState: orchestration.state,
+              plannerConversational: plannerConversationalLines,
             },
     };
     setTimeout(() => {
@@ -620,8 +813,98 @@ export function Planner({
     </div>
   );
 
+  if (intakeStage !== "skipped" && intakeLabels) {
+    return (
+      <div>
+        <IntakeDebugCard lang={t.lang as Lang} />
+        {intakeStage === "entry" ? (
+          <IntakePrompt
+            value={projectGoal}
+            loading={intakeLoading}
+            error={intakeError}
+            onChange={setProjectGoal}
+            onSubmit={() => void runIntake()}
+            onSkip={() => setIntakeStage("skipped")}
+            labels={{
+              title: intakeLabels.title,
+              subtitle: intakeLabels.subtitle,
+              placeholder: intakeLabels.placeholder,
+              submit: intakeLabels.submit,
+              skip: intakeLabels.skip,
+              loading: intakeLabels.loading,
+              error: intakeLabels.error,
+            }}
+          />
+        ) : intakeStage === "review" && intakeResult ? (
+          <IntakeReview
+            result={intakeResult}
+            categoryLabelMap={intakeCategoryLabelMap}
+            taskLabelMap={intakeTaskLabelMap}
+            taskOrderMap={intakeTaskOrderMap}
+            fieldLabelMap={intakeFieldLabelMap}
+            mixedScopeHint={mixedScopeHintFor(intakeResult)}
+            onConfirm={confirmIntakeAndContinue}
+            onEdit={() => setIntakeStage("entry")}
+            onFallback={() => {
+              trackPlannerIntakeEvent("intake_fallback", {
+                locale: t.lang as Lang,
+                parentCategory: intakeResult.parentCategory,
+                parentCategoryLabel:
+                  intakeCategoryLabelMap[intakeResult.parentCategory] ?? intakeResult.parentCategory,
+                taskCount: intakeResult.childTasks.length,
+                taskKeys: intakeResult.childTasks,
+                taskLabels: intakeTaskLabelsFromKeys(intakeResult.childTasks),
+              });
+              setIntakeStage("skipped");
+            }}
+            labels={{
+              title: intakeLabels.reviewTitle,
+              understood: intakeLabels.understood,
+              detectedParent: intakeLabels.detectedParent,
+              detectedTasks: intakeLabels.detectedTasks,
+              extractedValues: intakeLabels.extractedValues,
+              missing: intakeLabels.missing,
+              assumptions: intakeLabels.assumptions,
+              confidence: intakeLabels.confidence,
+              confirm: intakeLabels.confirm,
+              edit: intakeLabels.edit,
+              fallback: intakeLabels.fallback,
+            }}
+          />
+        ) : intakeStage === "clarify" && intakeResult ? (
+          <ClarificationMiniStep
+            questions={getClarificationQuestions(intakeResult)}
+            onContinue={continueFromClarifications}
+            onSkip={() => {
+              if (intakePatch) applyPlannerStatePatch(intakePatch);
+              trackPlannerIntakeEvent("intake_confirmed", {
+                locale: t.lang as Lang,
+                parentCategory: intakeResult?.parentCategory,
+                parentCategoryLabel: intakeResult
+                  ? intakeCategoryLabelMap[intakeResult.parentCategory] ?? intakeResult.parentCategory
+                  : undefined,
+                taskCount: intakeResult?.childTasks.length,
+                taskKeys: intakeResult?.childTasks,
+                taskLabels: intakeResult ? intakeTaskLabelsFromKeys(intakeResult.childTasks) : undefined,
+              });
+              setIntakeStage("skipped");
+            }}
+            labels={{
+              title: intakeLabels.clarifyTitle,
+              subtitle: intakeLabels.clarifySubtitle,
+              answerPlaceholder: intakeLabels.clarifyPlaceholder,
+              continue: intakeLabels.clarifyContinue,
+              skip: intakeLabels.clarifySkip,
+            }}
+          />
+        ) : null}
+      </div>
+    );
+  }
+
   return(
-    <div ref={rootRef}>
+    <div>
+      <IntakeDebugCard lang={t.lang as Lang} />
       {/* Step indicator */}
       <div className="step-ind">
         {pw.stepLabels.map((lbl,i)=>(
@@ -649,6 +932,35 @@ export function Planner({
       {step===0&&S(
         <div>
           <h3 style={{fontFamily:"var(--heading)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:22,marginTop:0,lineHeight:1.3}}>{pw.title}</h3>
+          <div style={{ marginBottom: 16 }}>
+            <label className="flabel">
+              {pw.goalLabel} *
+            </label>
+            <textarea
+              className="finput"
+              rows={3}
+              value={projectGoal}
+              placeholder={pw.goalPlaceholder}
+              onChange={(event) => setProjectGoal(event.target.value)}
+              style={{
+                width: "100%",
+                resize: "vertical",
+                minHeight: 84,
+              }}
+            />
+            <p style={{ marginTop: 6, fontSize: 11.5, color: "var(--ink4)" }}>
+              {pw.goalHelper}
+            </p>
+            {"conversationalAgent" in pw && pw.conversationalAgent ? (
+              <PlannerConversationalAgent
+                lang={t.lang as Lang}
+                projectGoal={projectGoal}
+                onApplySuggestion={applyAgentSuggestion}
+                onTranscript={setPlannerConversationalLines}
+                labels={pw.conversationalAgent}
+              />
+            ) : null}
+          </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}} className="task-g">
             {pw.projectTypes.map(pt=>(
               <button key={pt.k}
@@ -662,8 +974,17 @@ export function Planner({
               </button>
             ))}
           </div>
-          <div style={{marginTop:28,display:"flex",justifyContent:"flex-end"}}>
-            <button className="btn-p" onClick={()=>setStep(1)} disabled={!canNext0} style={{fontSize:14}}>{pw.next}</button>
+          <div style={{ marginTop: 28, display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+            <p style={{ margin: 0, fontSize: 12.5, color: "var(--ink3)", lineHeight: 1.5, maxWidth: "min(100%, 420px)" }}>
+              {!canNext0 && projectGoal.trim().length >= 10 && !pType
+                ? pw.nextNeedProjectType
+                : !canNext0 && pType && projectGoal.trim().length < 10
+                  ? pw.nextNeedGoalShort
+                  : null}
+            </p>
+            <button className="btn-p" onClick={() => setStep(1)} disabled={!canNext0} style={{ fontSize: 14, flexShrink: 0 }} type="button">
+              {pw.next}
+            </button>
           </div>
         </div>
       )}
@@ -741,6 +1062,27 @@ export function Planner({
           <h3 style={{fontFamily:"var(--heading)",fontSize:22,fontWeight:500,color:"var(--ink)",marginBottom:22,marginTop:0,lineHeight:1.3}}>
             {t.lang==="sr"?"Detalji projekta":t.lang==="en"?"Project details":"Детали проекта"}
           </h3>
+          {intakeSuggestedKeys.length > 0 ? (
+            <div className="intake-note">
+              <p style={{ margin: 0, fontSize: 12.5, color: "var(--ink2)" }}>
+                {t.lang === "sr"
+                  ? "Označeno je šta je AI predložio. Proverite i korigujte po potrebi."
+                  : t.lang === "en"
+                    ? "AI-suggested values are highlighted. Please review and adjust as needed."
+                    : "Подсвечены значения, предложенные AI. Проверьте и при необходимости исправьте."}
+              </p>
+              {intakeCriticalMissing.length > 0 ? (
+                <p style={{ margin: "6px 0 0", fontSize: 12, color: "var(--ink3)" }}>
+                  {t.lang === "sr"
+                    ? "Prioritetno dopunite:"
+                    : t.lang === "en"
+                      ? "Please complete first:"
+                      : "Сначала заполните:"}{" "}
+                  {intakeCriticalMissing.slice(0, 4).join(", ")}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
           {pType === "reno" ? (
             <div style={{ display: "grid", gap: 14 }}>
               <section className="card" style={{ padding: "12px 14px" }}>
@@ -753,21 +1095,22 @@ export function Planner({
                     const missing = isCommonFieldMissing(field.key, value, field.visibleWhen);
                     const requiredMsg =
                       t.lang === "sr" ? "Obavezno polje" : t.lang === "en" ? "Required field" : "Obyazatelnoe pole";
-                    const invalidStyle = missing
-                      ? { borderColor: "#DC2626" as const, boxShadow: "0 0 0 1px rgba(220,38,38,0.35)" }
-                      : undefined;
                     return (
                       <div key={field.key}>
                         <label className="flabel">
                           {localized(field.label)}
                           {field.importance === "required" ? " *" : ""}
+                          {isIntakeSuggested(field.key) ? (
+                            <span className="intake-field-tag">
+                              {t.lang === "sr" ? " predloženo" : t.lang === "en" ? " suggested" : " предложено"}
+                            </span>
+                          ) : null}
                         </label>
                         {field.kind === "select" ? (
                           <select
-                            className="fselect"
+                            className={`fselect${isIntakeSuggested(field.key) ? " intake-suggested" : ""}${isIntakeMissing(field.key) ? " intake-missing" : ""}`}
                             value={String(value ?? "")}
                             title={missing ? requiredMsg : undefined}
-                            style={invalidStyle}
                             onChange={(event) =>
                               setCommonDetails((prev) => ({
                                 ...prev,
@@ -786,12 +1129,11 @@ export function Planner({
                           </select>
                         ) : (
                           <input
-                            className="finput"
+                            className={`finput${isIntakeSuggested(field.key) ? " intake-suggested" : ""}${isIntakeMissing(field.key) ? " intake-missing" : ""}`}
                             type={field.kind === "number" ? "number" : "text"}
                             value={String(value ?? "")}
                             placeholder={field.placeholder ? localized(field.placeholder) : ""}
                             title={missing ? requiredMsg : undefined}
-                            style={invalidStyle}
                             onChange={(event) =>
                               setCommonDetails((prev) => ({
                                 ...prev,
@@ -815,14 +1157,6 @@ export function Planner({
                           : t.lang === "en"
                             ? "Required field"
                             : "Obyazatelnoe pole"
-                        : undefined
-                    }
-                    style={
-                      !location.trim()
-                        ? {
-                            borderRadius: "var(--r)",
-                            boxShadow: "0 0 0 1px rgba(220,38,38,0.45)",
-                          }
                         : undefined
                     }
                   >
@@ -977,17 +1311,7 @@ export function Planner({
                       </div>
                       {task.task === "winreplace" ? (
                         <div
-                          style={{
-                            display: "grid",
-                            gap: 8,
-                            ...(windowGroupsMissingExact
-                              ? {
-                                  borderRadius: "var(--r)",
-                                  outline: "2px solid rgba(220,38,38,0.45)",
-                                  outlineOffset: 2,
-                                }
-                              : {}),
-                          }}
+                          style={{ display: "grid", gap: 8 }}
                           title={
                             windowGroupsMissingExact
                               ? t.lang === "sr"
@@ -1215,9 +1539,6 @@ export function Planner({
                                 t.lang === "sr" ? "Obavezno polje" : t.lang === "en" ? "Required field" : "Obyazatelnoe pole";
                               const helpText = field.help ? localized(field.help) : undefined;
                               const controlTitle = missing ? requiredMsg : helpText;
-                              const invalidStyle = missing
-                                ? { borderColor: "#DC2626" as const, boxShadow: "0 0 0 1px rgba(220,38,38,0.35)" }
-                                : undefined;
                               return (
                                 <div key={`${task.task}-${section.id}-${field.key}`}>
                                   <label className="flabel">
@@ -1229,7 +1550,6 @@ export function Planner({
                                       className="fselect"
                                       value={String(value ?? "")}
                                       title={controlTitle}
-                                      style={invalidStyle}
                                       onChange={(event) =>
                                         setTaskFieldValue(task.task, field.key, event.target.value)
                                       }
@@ -1252,9 +1572,7 @@ export function Planner({
                                         alignItems: "center",
                                         fontSize: 12.5,
                                         color: "var(--ink2)",
-                                        outline: missing ? "1px solid #DC2626" : undefined,
                                         borderRadius: 6,
-                                        padding: missing ? 2 : 0,
                                       }}
                                     >
                                       <input
@@ -1272,7 +1590,6 @@ export function Planner({
                                       value={Array.isArray(value) ? value.join(", ") : ""}
                                       placeholder={field.placeholder ? localized(field.placeholder) : ""}
                                       title={controlTitle}
-                                      style={invalidStyle}
                                       onChange={(event) =>
                                         setTaskFieldValue(
                                           task.task,
@@ -1291,7 +1608,6 @@ export function Planner({
                                       value={String(value ?? "")}
                                       placeholder={field.placeholder ? localized(field.placeholder) : ""}
                                       title={controlTitle}
-                                      style={invalidStyle}
                                       onChange={(event) =>
                                         setTaskFieldValue(task.task, field.key, event.target.value)
                                       }
@@ -1384,11 +1700,7 @@ export function Planner({
               {conditionalDetailCommonFields.length > 0 ? (
                 <section className="card" style={{ padding: "12px 14px", marginBottom: 12 }}>
                   <p style={{ fontSize: 12, fontWeight: 700, color: "var(--ink3)", marginBottom: 10 }}>
-                    {t.lang === "sr"
-                      ? "Detalji obima radova"
-                      : t.lang === "en"
-                        ? "Scope details"
-                        : "Detali obema rabot"}
+                    {t.planner.conditionalDetailsSectionTitle}
                   </p>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }} className="res-2col">
                     {conditionalDetailCommonFields.map((field) => {
@@ -1400,21 +1712,22 @@ export function Planner({
                           : t.lang === "en"
                             ? "Required field"
                             : "Obyazatelnoe pole";
-                      const invalidStyle = missing
-                        ? { borderColor: "#DC2626" as const, boxShadow: "0 0 0 1px rgba(220,38,38,0.35)" }
-                        : undefined;
                       return (
                         <div key={field.id}>
                           <label className="flabel">
                             {localized(field.label)}
                             {field.importance === "required" ? " *" : ""}
+                            {isIntakeSuggested(field.id) ? (
+                              <span className="intake-field-tag">
+                                {t.lang === "sr" ? " predloženo" : t.lang === "en" ? " suggested" : " предложено"}
+                              </span>
+                            ) : null}
                           </label>
                           {field.kind === "select" ? (
                             <select
-                              className="fselect"
+                              className={`fselect${isIntakeSuggested(field.id) ? " intake-suggested" : ""}${isIntakeMissing(field.id) ? " intake-missing" : ""}`}
                               value={String(value ?? "")}
                               title={missing ? requiredMsg : undefined}
-                              style={invalidStyle}
                               onChange={(event) =>
                                 setConditionalDetails((prev) => ({
                                   ...prev,
@@ -1440,9 +1753,7 @@ export function Planner({
                                 alignItems: "center",
                                 fontSize: 12.5,
                                 color: "var(--ink2)",
-                                outline: missing ? "1px solid #DC2626" : undefined,
                                 borderRadius: 6,
-                                padding: missing ? 2 : 0,
                               }}
                             >
                               <input
@@ -1459,11 +1770,10 @@ export function Planner({
                             </label>
                           ) : (
                             <input
-                              className="finput"
+                              className={`finput${isIntakeSuggested(field.id) ? " intake-suggested" : ""}${isIntakeMissing(field.id) ? " intake-missing" : ""}`}
                               type={field.kind === "number" ? "number" : "text"}
                               value={String(value ?? "")}
                               title={missing ? requiredMsg : undefined}
-                              style={invalidStyle}
                               onChange={(event) =>
                                 setConditionalDetails((prev) => ({
                                   ...prev,
@@ -1528,21 +1838,22 @@ export function Planner({
                                 : t.lang === "en"
                                   ? "Required field"
                                   : "Obyazatelnoe pole";
-                            const invalidStyle = missing
-                              ? { borderColor: "#DC2626" as const, boxShadow: "0 0 0 1px rgba(220,38,38,0.35)" }
-                              : undefined;
                             return (
                               <div key={field.id}>
                                 <label className="flabel">
                                   {localized(field.label)}
                                   {field.importance === "required" ? " *" : ""}
+                                  {isIntakeSuggested(field.id) ? (
+                                    <span className="intake-field-tag">
+                                      {t.lang === "sr" ? " predloženo" : t.lang === "en" ? " suggested" : " предложено"}
+                                    </span>
+                                  ) : null}
                                 </label>
                                 {field.kind === "select" ? (
                                   <select
-                                    className="fselect"
+                                    className={`fselect${isIntakeSuggested(field.id) ? " intake-suggested" : ""}${isIntakeMissing(field.id) ? " intake-missing" : ""}`}
                                     value={String(value ?? "")}
                                     title={missing ? requiredMsg : undefined}
-                                    style={invalidStyle}
                                     onChange={(event) =>
                                       setConditionalDetails((prev) => ({
                                         ...prev,
@@ -1568,9 +1879,7 @@ export function Planner({
                                       alignItems: "center",
                                       fontSize: 12.5,
                                       color: "var(--ink2)",
-                                      outline: missing ? "1px solid #DC2626" : undefined,
                                       borderRadius: 6,
-                                      padding: missing ? 2 : 0,
                                     }}
                                   >
                                     <input
@@ -1587,11 +1896,10 @@ export function Planner({
                                   </label>
                                 ) : (
                                   <input
-                                    className="finput"
+                                    className={`finput${isIntakeSuggested(field.id) ? " intake-suggested" : ""}${isIntakeMissing(field.id) ? " intake-missing" : ""}`}
                                     type={field.kind === "number" ? "number" : "text"}
                                     value={String(value ?? "")}
                                     title={missing ? requiredMsg : undefined}
-                                    style={invalidStyle}
                                     onChange={(event) =>
                                       setConditionalDetails((prev) => ({
                                         ...prev,
@@ -1691,6 +1999,25 @@ export function Planner({
               </span>):pw.submit}
             </button>
           </div>
+          {projectState.artifacts.length > 0 ? (
+            <div style={{ marginTop: 16, display: "grid", gap: 8 }}>
+              <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "var(--ink3)" }}>
+                {t.results.agentArtifactsTitle}
+              </p>
+              <p style={{ margin: "6px 0 0", fontSize: 11, color: "var(--ink4)", lineHeight: 1.5 }}>
+                {t.results.agentArtifactsSub}
+              </p>
+              {projectState.artifacts.map((artifact) => (
+                <div
+                  key={artifact.id}
+                  style={{ border: "1px solid var(--bdr)", borderRadius: 10, padding: "10px 12px", background: "var(--bgw)" }}
+                >
+                  <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "var(--ink2)" }}>{artifact.title}</p>
+                  <ArtifactContentRich content={artifact.content} lang={t.lang as Lang} />
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
       )}
     </div>

@@ -559,28 +559,28 @@ export const TASK_FORM_CONFIG: Record<PlannerTaskType, TaskFormConfig> = {
   },
   fullreno: {
     task: "fullreno",
-    title: { sr: "Kompletno renoviranje", en: "Full renovation", ru: "Polniy remont" },
+    title: { sr: "Detalji za procenu (ceo objekat)", en: "Details for a whole-property estimate", ru: "Detali dlya otsenki (vsego obekta)" },
     summary: {
-      sr: "Ovde ukupna kvadratura ima smisla i potrebna je.",
-      en: "Total property area is relevant and required here.",
-      ru: "Zdes obshchaya ploshchad relavantna i obyazatelna.",
+      sr: "Kompletan remont u koraku uvek obuhvata glavne oblasti (elektro, voda, podovi, stolarija itd.) — ova polja ne „biraju” opet isto, nego pomažu proceni i prioritetima.",
+      en: "A full reno here always covers the major trades; these fields do not re-select the whole job — they help refine the estimate and priorities.",
+      ru: "Polnyy remont vsegda vklyuchayet osnovnye kompleksy; eti polya ne povyrazyayut vybor poverkh — oni utochnyayut smetu i prioritety.",
     },
     requiresTotalArea: true,
     sections: [
       {
         id: "overview",
-        title: { sr: "Opsti obim", en: "General scope", ru: "Obshchiy obem" },
+        title: { sr: "Stanje objekta i fokus radova", en: "Property condition and work focus", ru: "Sostoyanie i fokus rabot" },
         description: {
-          sr: "Unesi globalne parametre za ceo prostor.",
-          en: "Enter global inputs for the whole property.",
-          ru: "Vvedite globalnye parametry dlya vsego obekta.",
+          sr: "Stanje prostora utiče na očekivani opseg. Polje ispod nije spisak „šta ulazi u remont” — to je već rešeno izborom kompletnog renoviranja; ovde možete (opciono) naglasiti npr. gde vam je prvi fokus ili šta trenutno nije u planu, radi preciznije uporedne cene.",
+          en: "Condition drives expected scope. The optional field below is not a second definition of the job — you already chose a full reno. Use it to stress priorities (e.g. electrics first) or temporary exclusions, so quotes are more comparable.",
+          ru: "Sostoyanie vliyaet na obyom. Dop. pole ne povyrazyayet srinku remonta — polnyy remont uzhe vybiran; ukazhite prioritety ili isklyucheniya dlya bolee sopravnivayemykh smet.",
         },
         fields: [
           {
             key: "overallCondition",
             kind: "select",
             importance: "required",
-            label: { sr: "Stanje prostora", en: "Current condition", ru: "Sostoyanie obekta" },
+            label: { sr: "Opšte stanje (pre rada)", en: "Overall condition (pre-works)", ru: "Obshcheye sostoyanie (do rabot)" },
             options: [
               { value: "good", label: { sr: "Dobro", en: "Good", ru: "Khoroshee" } },
               { value: "medium", label: { sr: "Srednje", en: "Medium", ru: "Srednee" } },
@@ -590,9 +590,22 @@ export const TASK_FORM_CONFIG: Record<PlannerTaskType, TaskFormConfig> = {
           {
             key: "includeSystems",
             kind: "chips",
-            importance: "optional",
-            label: { sr: "Sistemi koji ulaze u obim", en: "Systems included", ru: "Vklyuchennye sistemy" },
-            help: { sr: "npr. elektro, voda, podovi, stolarija", en: "e.g. electrical, plumbing, flooring, windows", ru: "naprimer, elektro, santekhnika, poly, okna" },
+            importance: "niceToHave",
+            label: {
+              sr: "Prioriteti / akcent (opciono, tagovi)",
+              en: "Priorities or emphasis (optional tags)",
+              ru: "Prioritety / aktsent (po zhelaniyu, tegi)",
+            },
+            help: {
+              sr: "Po želji: npr. elektro prvo, kupatilo prvo, krov kasnije. Prazno = bez dodatnih ograničenja — ne menja to što je remont i dalje „kompletan“.",
+              en: "Optional: e.g. electrics first, bath first. Empty = no extra focus — the job is still a full reno in scope.",
+              ru: "Po zhelaniyu: poryadok/aktsent. Pustо = net dop. ogranicheniy.",
+            },
+            placeholder: {
+              sr: "Kucaj i odvoji zarezom npr. elektro, voda, podovi",
+              en: "Comma-separated, e.g. electrics, plumbing, floors",
+              ru: "Cherez zapyatuyu, naprimer, elektro, voda, poly",
+            },
           },
         ],
       },

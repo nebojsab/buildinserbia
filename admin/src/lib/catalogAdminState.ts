@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { get, put } from "@vercel/blob";
+import { get, list, put } from "@vercel/blob";
 import type { CatalogProduct } from "@shared/types/catalog";
 
 export type CatalogProductOverride = {
@@ -22,6 +22,7 @@ type CatalogAdminState = {
 
 const STATE_FILE = path.join(process.cwd(), "catalog-admin-state.json");
 const STATE_BLOB_PATH = "catalog-admin-state.json";
+const STATE_BLOB_PREFIX = "catalog-admin-state";
 const STATE_BLOB_ACCESS = "public" as const;
 const canUseBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
 
@@ -47,6 +48,19 @@ function loadFromFile(): CatalogAdminState {
 }
 
 async function loadFromBlob(): Promise<CatalogAdminState> {
+  const { blobs } = await list({
+    prefix: STATE_BLOB_PREFIX,
+    limit: 20,
+  });
+  if (Array.isArray(blobs) && blobs.length > 0) {
+    const latest = [...blobs].sort((a, b) => +new Date(b.uploadedAt) - +new Date(a.uploadedAt))[0];
+    const response = await fetch(latest.url, { cache: "no-store" });
+    if (response.ok) {
+      return parseState(await response.text());
+    }
+  }
+
+  // Legacy fallback for the older single-key blob state.
   const result = await get(STATE_BLOB_PATH, { access: STATE_BLOB_ACCESS });
   if (!result || result.statusCode !== 200) throw new Error("missing-blob");
   const stream = result.stream as ReadableStream<Uint8Array>;
@@ -66,7 +80,8 @@ async function saveState(state: CatalogAdminState): Promise<void> {
   if (canUseBlob) {
     await put(STATE_BLOB_PATH, JSON.stringify(state), {
       access: STATE_BLOB_ACCESS,
-      allowOverwrite: true,
+      addRandomSuffix: true,
+      contentType: "application/json; charset=utf-8",
     });
     return;
   }

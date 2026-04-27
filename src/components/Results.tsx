@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useState, type RefObject } from "react";
+import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { AFF } from "../constants/affiliate";
 import { fmt } from "../lib/format";
 import { generateProjectDocuments, type DocLang, type ProjectDocument } from "../lib/generateProjectDocs";
 import { monthlyPayment } from "../lib/loan";
 import { DocumentPreviewModal, downloadProjectDocument } from "./DocumentPreviewModal";
 import { RecommendedProductsSection } from "./catalog/RecommendedProductsSection";
+import { ArtifactContentRich } from "./ArtifactContentRich";
 import { HR } from "./ui";
 import type { GeneratedPlan, PlanForm, ProjectType } from "../types/plan";
+import type { ProjectFact, ProjectState } from "../types/agentic";
 import { translations, type Lang } from "../translations";
 import { getHighlightedPublishedDocuments } from "../content/repository";
 import { localizeContentItem, normalizeLocale } from "../content/localize";
@@ -33,6 +35,36 @@ function inputDecimal(raw: string): string {
   return out;
 }
 
+function hashOpenQuestionKey(question: string): string {
+  let h = 0;
+  for (let i = 0; i < question.length; i++) {
+    h = (Math.imul(31, h) + question.charCodeAt(i)) | 0;
+  }
+  return `openq_${(h >>> 0).toString(36)}`;
+}
+
+function parseOpenQuestionLabel(raw: string): { badge?: string; text: string } {
+  const match = /^\[([^\]]+)\]\s*(.*)$/.exec(raw);
+  if (match) {
+    const rest = match[2]?.trim();
+    return { badge: match[1], text: rest && rest.length > 0 ? rest : match[1] };
+  }
+  return { text: raw };
+}
+
+function parseResolvedOpenQuestionValue(raw: string): { badge?: string; question: string; answer: string } | null {
+  const parts = raw.split("→");
+  const left = parts[0]?.trim();
+  if (!left) return null;
+  const right = parts.slice(1).join("→").trim();
+  const parsed = parseOpenQuestionLabel(left);
+  return {
+    badge: parsed.badge,
+    question: parsed.text,
+    answer: right,
+  };
+}
+
 function finSearchQuery(pt: ProjectType | null): string {
   if (!pt) return "stambeni kredit Srbija";
   const m: Record<ProjectType, string> = {
@@ -52,6 +84,7 @@ export function Results({
   onRestart,
   onSave,
   exportRootRef,
+  onUpdateProjectState,
 }: {
   plan: GeneratedPlan;
   t: T;
@@ -59,6 +92,7 @@ export function Results({
   onRestart: () => void;
   onSave: () => void;
   exportRootRef: RefObject<HTMLDivElement | null>;
+  onUpdateProjectState?: (nextState: ProjectState) => void;
 }) {
   const r  = t.results;
   const sr = t.stageRecs;
@@ -124,6 +158,141 @@ export function Results({
             body: "Explore practical guides and planning documents related to construction, permits, budgeting, and project preparation.",
             viewAll: "View all",
           };
+  const agentProjectState = (form.details as { agentProjectState?: ProjectState } | undefined)
+    ?.agentProjectState;
+  const agentArtifacts = agentProjectState?.artifacts ?? [];
+  const openQuestions = agentProjectState?.openQuestions ?? [];
+  const missingInfoRef = useRef<HTMLDivElement | null>(null);
+  const [openQuestionDrafts, setOpenQuestionDrafts] = useState<Record<string, string>>({});
+  const resolvedAnswersByArtifact = useMemo(() => {
+    const grouped: Record<string, Array<{ question: string; answer: string }>> = {};
+    if (!agentProjectState) return grouped;
+    for (const fact of Object.values(agentProjectState.knownFacts)) {
+      if (typeof fact.value !== "string") continue;
+      const parsed = parseResolvedOpenQuestionValue(fact.value);
+      if (!parsed?.badge) continue;
+      const list = grouped[parsed.badge] ?? [];
+      list.push({ question: parsed.question, answer: parsed.answer });
+      grouped[parsed.badge] = list;
+    }
+    return grouped;
+  }, [agentProjectState]);
+  const openQuestionGroups = useMemo(() => {
+    if (openQuestions.length === 0) return [];
+    const byId = new Map<string, { raw: string; text: string }[]>();
+    const ungrouped: { raw: string; text: string }[] = [];
+    for (const raw of openQuestions) {
+      const parsed = parseOpenQuestionLabel(raw);
+      if (parsed.badge) {
+        const list = byId.get(parsed.badge) ?? [];
+        list.push({ raw, text: parsed.text });
+        byId.set(parsed.badge, list);
+      } else {
+        ungrouped.push({ raw, text: parsed.text });
+      }
+    }
+    const labels = r.artifactTypeLabels as Record<string, string>;
+    const groups: {
+      key: string;
+      displayTitle: string;
+      rows: { raw: string; text: string }[];
+    }[] = [];
+    for (const [artifactId, rows] of byId) {
+      const art = agentArtifacts.find((a) => a.id === artifactId);
+      const typeKey = art?.type ?? "";
+      const fromType = typeKey && typeKey in labels ? labels[typeKey] : null;
+      const displayTitle = fromType ?? art?.title ?? artifactId;
+      groups.push({ key: artifactId, displayTitle, rows });
+    }
+    if (ungrouped.length > 0) {
+      groups.push({
+        key: "ungrouped",
+        displayTitle: r.openQuestionUngroupedTitle,
+        rows: ungrouped,
+      });
+    }
+    return groups;
+  }, [openQuestions, agentArtifacts, r.artifactTypeLabels, r.openQuestionUngroupedTitle]);
+  const statusLabelByKey = {
+    draft: r.artifactStatus.draft,
+    confirmed: r.artifactStatus.confirmed,
+    needs_input: r.artifactStatus.needsInput,
+  } as const;
+
+  const getMissingInfoByArtifactType = (type: string): string[] => {
+    if (t.lang === "sr") {
+      if (type === "rough_budget") return ["Tacnije mere ili kvadratura", "Rok i priblizni budzetski opseg"];
+      if (type === "scope_of_work") return ["Sta ulazi u obim (ukratko)", "Prioriteti / sta kasnije"];
+      if (type === "next_steps") return ["Ko vodi naredne korake", "Rok i potrebna dokumentacija"];
+      return ["Detaljnija lokacija", "Jasniji cilj projekta"];
+    }
+    if (t.lang === "ru") {
+      if (type === "rough_budget") return ["Точные размеры / площадь", "Срок и вилка бюджета"];
+      if (type === "scope_of_work") return ["Что входит в объём (кратко)", "Приоритеты / дальше"];
+      if (type === "next_steps") return ["Кто ведёт следующие шаги", "Сроки и документы"];
+      return ["Точнее локация", "Яснее цель"];
+    }
+    if (type === "rough_budget") return ["Finer measurements or area", "Timeline and budget band"];
+    if (type === "scope_of_work") return ["What is in scope (briefly)", "Priorities / later phases"];
+    if (type === "next_steps") return ["Who owns the next steps", "Timeline and paperwork"];
+    return ["More specific location", "Clearer project goal"];
+  };
+
+  const updateArtifactState = (artifactId: string, status: "draft" | "confirmed" | "needs_input") => {
+    if (!agentProjectState || !onUpdateProjectState) return;
+    const target = agentProjectState.artifacts.find((artifact) => artifact.id === artifactId);
+    if (!target) return;
+
+    const missingItems = status === "needs_input" ? getMissingInfoByArtifactType(target.type) : [];
+    const openQuestions = [
+      ...agentProjectState.openQuestions.filter((question) => !question.startsWith(`[${artifactId}] `)),
+      ...missingItems.map((item) => `[${artifactId}] ${item}`),
+    ];
+
+    onUpdateProjectState({
+      ...agentProjectState,
+      artifacts: agentProjectState.artifacts.map((artifact) =>
+        artifact.id === artifactId
+          ? {
+              ...artifact,
+              status,
+              updatedAt: new Date().toISOString(),
+            }
+          : artifact,
+      ),
+      openQuestions,
+      lastUpdatedAt: new Date().toISOString(),
+    });
+    if (status === "needs_input" && missingItems.length > 0) {
+      window.setTimeout(() => {
+        missingInfoRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 120);
+    }
+  };
+
+  const resolveOpenQuestion = (question: string, answer: string) => {
+    if (!agentProjectState || !onUpdateProjectState) return;
+    const factKey = hashOpenQuestionKey(question);
+    const trimmed = answer.trim();
+    const fact: ProjectFact = {
+      value: trimmed.length > 0 ? `${question} → ${trimmed}` : question,
+      confidence: trimmed.length > 0 ? "high" : "medium",
+    };
+    onUpdateProjectState({
+      ...agentProjectState,
+      openQuestions: agentProjectState.openQuestions.filter((entry) => entry !== question),
+      knownFacts: {
+        ...agentProjectState.knownFacts,
+        [factKey]: fact,
+      },
+      lastUpdatedAt: new Date().toISOString(),
+    });
+    setOpenQuestionDrafts((prev) => {
+      const next = { ...prev };
+      delete next[question];
+      return next;
+    });
+  };
 
   const projectDocs = useMemo(() => {
     if (!form.projectType) return [];
@@ -242,6 +411,184 @@ export function Results({
           </div>
         </div>
       )}
+
+      {agentArtifacts.length > 0 ? (
+        <div className="card" style={{ marginBottom: 28, overflow: "visible" }}>
+          <div style={{ padding: "16px 24px", borderBottom: "1px solid var(--bdr)", background: "var(--bgw)" }}>
+            <p className="res-sec-title res-sec-title--inhead res-sec-title--muted">{r.agentArtifactsTitle}</p>
+            <p style={{ margin: "8px 0 0", fontSize: 12, color: "var(--ink3)", lineHeight: 1.55 }}>{r.agentArtifactsSub}</p>
+          </div>
+          <div style={{ padding: "18px 24px 20px", display: "grid", gap: 10 }}>
+            {agentArtifacts.map((artifact) => (
+              <div
+                key={artifact.id}
+                style={{
+                  border: "1px solid var(--bdr)",
+                  borderRadius: "var(--r)",
+                  padding: "12px 14px",
+                  background: "var(--bgw)",
+                  minWidth: 0,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{artifact.title}</p>
+                  <span
+                    style={{
+                      fontSize: 10.5,
+                      fontWeight: 700,
+                      letterSpacing: ".05em",
+                      textTransform: "uppercase",
+                      color: "var(--ink4)",
+                    }}
+                  >
+                    {statusLabelByKey[artifact.status]}
+                  </span>
+                </div>
+                <ArtifactContentRich content={artifact.content} lang={locale} />
+                {(resolvedAnswersByArtifact[artifact.id]?.length ?? 0) > 0 ? (
+                  <div
+                    style={{
+                      marginTop: 10,
+                      padding: "8px 10px",
+                      borderRadius: 8,
+                      border: "1px solid var(--blumid)",
+                      background: "var(--blubg)",
+                    }}
+                  >
+                    <p style={{ margin: 0, fontSize: 11.5, fontWeight: 700, color: "var(--ink3)" }}>
+                      {t.lang === "sr" ? "Dopunjeno" : t.lang === "ru" ? "Дополнено" : "Added details"}
+                    </p>
+                    <div style={{ marginTop: 6, display: "grid", gap: 6 }}>
+                      {(resolvedAnswersByArtifact[artifact.id] ?? []).map((row, idx) => (
+                        <p key={`${artifact.id}-resolved-${idx}`} style={{ margin: 0, fontSize: 12, color: "var(--ink3)", lineHeight: 1.5 }}>
+                          <strong>{row.question}:</strong>{" "}
+                          {row.answer.length > 0
+                            ? row.answer
+                            : t.lang === "sr"
+                              ? "Adresirano bez dodatnog komentara."
+                              : t.lang === "ru"
+                                ? "Отмечено без дополнительного комментария."
+                                : "Marked as addressed without extra note."}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                {artifact.status === "needs_input" ? (
+                  <div style={{ marginTop: 8 }}>
+                    <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "var(--ink3)" }}>
+                      {r.artifactMissingInfoTitle}
+                    </p>
+                    <ul style={{ margin: "6px 0 0", paddingInlineStart: 18 }}>
+                      {getMissingInfoByArtifactType(artifact.type).map((item) => (
+                        <li key={`${artifact.id}-${item}`} style={{ fontSize: 12, color: "var(--ink3)", lineHeight: 1.5 }}>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+                <div data-pdf-hide style={{ marginTop: 8 }}>
+                  <button
+                    type="button"
+                    className="btn-g"
+                    style={{ fontSize: 12, padding: "8px 12px", marginRight: 8 }}
+                    disabled={artifact.status === "needs_input"}
+                    onClick={() => updateArtifactState(artifact.id, "needs_input")}
+                  >
+                    {r.artifactNeedsInput}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-g"
+                    style={{ fontSize: 12, padding: "8px 12px" }}
+                    disabled={artifact.status === "confirmed"}
+                    onClick={() => updateArtifactState(artifact.id, "confirmed")}
+                  >
+                    {r.artifactConfirm}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {openQuestions.length > 0 && agentProjectState ? (
+        <div className="card" style={{ overflow: "hidden", marginBottom: 28, borderColor: "var(--ambmid)" }}>
+          <div
+            ref={missingInfoRef}
+            style={{
+              padding: "16px 24px",
+              borderBottom: "1px solid var(--bdr)",
+              background: "linear-gradient(135deg, var(--ambbg), var(--bgw))",
+            }}
+          >
+            <p className="res-sec-title res-sec-title--inhead" style={{ marginBottom: 6 }}>
+              {r.missingInfoSectionTitle}
+            </p>
+            <p style={{ margin: 0, fontSize: 12.5, color: "var(--ink3)", lineHeight: 1.55 }}>{r.missingInfoSub}</p>
+          </div>
+          <div style={{ padding: "18px 24px 20px", display: "grid", gap: 16 }}>
+            {openQuestionGroups.some((g) => g.key !== "ungrouped") ? (
+              <p style={{ margin: 0, fontSize: 12, color: "var(--ink4)", lineHeight: 1.55 }}>{r.openQuestionGroupHint}</p>
+            ) : null}
+            {openQuestionGroups.map((group) => (
+              <div
+                key={group.key}
+                style={{
+                  border: "1px solid var(--bdr)",
+                  borderRadius: "var(--r)",
+                  padding: "14px 16px",
+                  background: "var(--bgw)",
+                }}
+              >
+                <p style={{ margin: "0 0 12px", fontSize: 14, fontWeight: 600, color: "var(--ink)" }}>
+                  {group.displayTitle}
+                </p>
+                <div style={{ display: "grid", gap: 12 }}>
+                  {group.rows.map((row, index) => (
+                    <div
+                      key={row.raw}
+                      style={
+                        index > 0
+                          ? { paddingTop: 12, borderTop: "1px dashed var(--bdr2)" }
+                          : undefined
+                      }
+                    >
+                      <p style={{ margin: "0 0 8px", fontSize: 13, color: "var(--ink2)", lineHeight: 1.5 }}>
+                        {row.text}
+                      </p>
+                      <textarea
+                        className="finput"
+                        rows={2}
+                        value={openQuestionDrafts[row.raw] ?? ""}
+                        placeholder={r.openQuestionAnswerPlaceholder}
+                        disabled={!onUpdateProjectState}
+                        onChange={(event) =>
+                          setOpenQuestionDrafts((prev) => ({ ...prev, [row.raw]: event.target.value }))
+                        }
+                        style={{ width: "100%", resize: "vertical", minHeight: 44, marginBottom: 8 }}
+                      />
+                      <div data-pdf-hide>
+                        <button
+                          type="button"
+                          className="btn-p"
+                          style={{ fontSize: 12, padding: "8px 14px" }}
+                          disabled={!onUpdateProjectState}
+                          onClick={() => resolveOpenQuestion(row.raw, openQuestionDrafts[row.raw] ?? "")}
+                        >
+                          {r.openQuestionMarkAddressed}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,marginBottom:28}} className="res-2col">
 

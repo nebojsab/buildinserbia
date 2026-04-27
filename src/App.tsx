@@ -19,6 +19,7 @@ import { getPublicPreviewBypassFromWindow } from "./lib/publicPreviewBypass";
 import { ComingSoonScreen, MaintenanceScreen } from "./components/SystemStateScreens";
 import { translations, type Lang } from "./translations";
 import type { GeneratedPlan, PlanForm } from "./types/plan";
+import type { ProjectState } from "./types/agentic";
 
 const EMPTY_PLAN_FORM: PlanForm = {
   projectType: null,
@@ -97,6 +98,15 @@ export default function App() {
     setResult(null);
     setPlanForm(EMPTY_PLAN_FORM);
     setTimeout(() => plannerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+  };
+  const handleProjectStateUpdate = (nextState: ProjectState) => {
+    setPlanForm((prev) => ({
+      ...prev,
+      details: {
+        ...((prev.details as Record<string, unknown> | undefined) ?? {}),
+        agentProjectState: nextState,
+      },
+    }));
   };
 
   /* Keep generated steps, notes and next actions aligned with the UI language when user switches after submit. */
@@ -323,6 +333,7 @@ export default function App() {
                       onRestart={handleRestart}
                       onSave={()=>setShowSave(true)}
                       exportRootRef={planExportRef}
+                      onUpdateProjectState={handleProjectStateUpdate}
                     />
                   </div>
                 )}
