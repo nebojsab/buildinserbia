@@ -5,11 +5,16 @@ import { useState } from "react";
 export function AssistantInput({
   loading,
   onSubmit,
+  locale = "sr",
 }: {
   loading: boolean;
   onSubmit: (message: string) => void;
+  locale?: "sr" | "en" | "ru";
 }) {
   const [value, setValue] = useState("");
+
+  const placeholder = locale === "en" ? "Ask assistant..." : locale === "ru" ? "Задайте вопрос..." : "Pitaj assistant...";
+  const sendLabel = locale === "en" ? "Send" : locale === "ru" ? "Отправить" : "Pošalji";
 
   return (
     <form
@@ -25,11 +30,11 @@ export function AssistantInput({
         className="finput"
         value={value}
         onChange={(event) => setValue(event.target.value)}
-        placeholder="Pitaj assistant..."
+        placeholder={placeholder}
         disabled={loading}
       />
       <button className="btn-p" type="submit" disabled={loading || !value.trim()} style={{ padding: "10px 14px" }}>
-        {loading ? "..." : "Send"}
+        {loading ? "..." : sendLabel}
       </button>
     </form>
   );

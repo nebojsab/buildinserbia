@@ -2,16 +2,18 @@ import JSZip from "jszip";
 import { isMediaStoreUnavailableError, listMediaItems } from "@/lib/mediaLibraryServer";
 import { safeFileName, zipToDownloadResponse } from "@/lib/backupZip";
 import { getServerContentByType } from "@/lib/contentStoreServer";
+import { getCatalogAdminState } from "@/lib/catalogAdminState";
 
 export const runtime = "nodejs";
 
 export async function GET() {
   try {
     const generatedAt = new Date().toISOString();
-    const [documents, blogPosts, mediaItems] = await Promise.all([
+    const [documents, blogPosts, mediaItems, catalogState] = await Promise.all([
       getServerContentByType("document"),
       getServerContentByType("blog"),
       listMediaItems(),
+      getCatalogAdminState(),
     ]);
 
     const zip = new JSZip();
@@ -61,6 +63,8 @@ export async function GET() {
             mediaItems: mediaItems.length,
             mediaFilesPacked: mediaFetchResults.filter((entry) => !entry.error).length,
             mediaFilesFailed: mediaFetchResults.filter((entry) => Boolean(entry.error)).length,
+            catalogCustomProducts: catalogState.customProducts.length,
+            catalogOverrides: Object.keys(catalogState.productOverrides).length,
           },
         },
         null,
@@ -70,6 +74,7 @@ export async function GET() {
 
     zip.file("content/documents.json", JSON.stringify(documents, null, 2));
     zip.file("content/blog-posts.json", JSON.stringify(blogPosts, null, 2));
+    zip.file("content/catalog-admin-state.json", JSON.stringify(catalogState, null, 2));
     zip.file("media/media-index.json", JSON.stringify(mediaItems, null, 2));
     zip.file("media/fetch-results.json", JSON.stringify(mediaFetchResults, null, 2));
 

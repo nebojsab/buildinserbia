@@ -238,13 +238,22 @@ export default async function CatalogAdminPage({ searchParams }: PageProps) {
       <div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <h2 style={{ fontSize: 20, margin: 0, color: "var(--ink)" }}>Curated catalog admin</h2>
-          <a
-            href="/api/catalog-overrides"
-            className="btn-g"
-            style={{ textDecoration: "none", fontSize: 12, padding: "8px 12px" }}
-          >
-            Export overrides (JSON)
-          </a>
+          <div style={{ display: "flex", gap: 8 }}>
+            <a
+              href="/api/backup/catalog"
+              className="btn-g"
+              style={{ textDecoration: "none", fontSize: 12, padding: "8px 12px" }}
+            >
+              ⬇ Backup (.zip)
+            </a>
+            <a
+              href="/api/catalog-overrides"
+              className="btn-g"
+              style={{ textDecoration: "none", fontSize: 12, padding: "8px 12px" }}
+            >
+              Export overrides (JSON)
+            </a>
+          </div>
         </div>
         <p style={{ marginTop: 8, fontSize: 13, color: "var(--ink3)", lineHeight: 1.6, maxWidth: 820 }}>
           Rucno kurirani katalog proizvoda povezan sa planner taskovima. Ovaj panel sluzi za operativnu kontrolu

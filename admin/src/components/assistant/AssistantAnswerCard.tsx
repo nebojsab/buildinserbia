@@ -93,7 +93,9 @@ export function AssistantAnswerCard({
           onClick={() => void onFeedback(true)}
           disabled={feedbackSent !== null}
         >
-          {feedbackSent === "up" ? "✓ Helpful" : "Helpful"}
+          {feedbackSent === "up"
+            ? (locale === "sr" ? "✓ Korisno" : locale === "ru" ? "✓ Полезно" : "✓ Helpful")
+            : (locale === "sr" ? "Korisno" : locale === "ru" ? "Полезно" : "Helpful")}
         </button>
         <button
           type="button"
@@ -102,7 +104,9 @@ export function AssistantAnswerCard({
           onClick={() => void onFeedback(false)}
           disabled={feedbackSent !== null}
         >
-          {feedbackSent === "down" ? "✓ Not helpful" : "Not helpful"}
+          {feedbackSent === "down"
+            ? (locale === "sr" ? "✓ Nije korisno" : locale === "ru" ? "✓ Не полезно" : "✓ Not helpful")
+            : (locale === "sr" ? "Nije korisno" : locale === "ru" ? "Не полезно" : "Not helpful")}
         </button>
       </div>
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
+import { useMemo, useState, Suspense } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import type { AssistantLocale } from "@/lib/assistant/types";
 import { AssistantLauncher } from "./AssistantLauncher";
 import { AssistantPanel } from "./AssistantPanel";
@@ -11,21 +11,14 @@ function toLocale(input: string | null): AssistantLocale {
   return "sr";
 }
 
-export function SiteAssistantRoot() {
+function AssistantRootInner() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
-  const [localeParam, setLocaleParam] = useState<string | null>(null);
   const locale = useMemo(
-    () => toLocale(localeParam),
-    [localeParam],
+    () => toLocale(searchParams.get("lang")),
+    [searchParams],
   );
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      setLocaleParam(params.get("lang"));
-    }
-  }, []);
 
   if (pathname.startsWith("/admin") || pathname.startsWith("/login")) {
     return null;
@@ -36,5 +29,13 @@ export function SiteAssistantRoot() {
       <AssistantLauncher onClick={() => setOpen(true)} />
       <AssistantPanel locale={locale} open={open} onClose={() => setOpen(false)} />
     </>
+  );
+}
+
+export function SiteAssistantRoot() {
+  return (
+    <Suspense fallback={null}>
+      <AssistantRootInner />
+    </Suspense>
   );
 }

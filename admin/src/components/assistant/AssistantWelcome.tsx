@@ -22,11 +22,14 @@ export function AssistantWelcome({ locale }: { locale: AssistantLocale }) {
         border: "1px solid var(--bdr)",
         borderRadius: "var(--r)",
         background: "var(--bgw)",
-        padding: "10px 12px",
+        padding: "7px 10px",
+        display: "flex",
+        alignItems: "baseline",
+        gap: 8,
       }}
     >
-      <p style={{ fontSize: 12.5, fontWeight: 700, color: "var(--ink)" }}>{title}</p>
-      <p style={{ marginTop: 4, fontSize: 12.5, color: "var(--ink3)", lineHeight: 1.5 }}>{body}</p>
+      <p style={{ fontSize: 12, fontWeight: 700, color: "var(--ink)", flexShrink: 0 }}>{title}</p>
+      <p style={{ fontSize: 11.5, color: "var(--ink3)", lineHeight: 1.4 }}>{body}</p>
     </div>
   );
 }

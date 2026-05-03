@@ -395,3 +395,25 @@ button{cursor:pointer;font-family:var(--sans);border:none;background:none}
 /* Progress bar */
 .pbar{height:3px;background:var(--bdr);border-radius:3px;overflow:hidden;margin-bottom:32px}
 .pfill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--acc),#E87A4E);transition:width .4s}
+
+/* ── KućaPlan Wizard ───────────────────────────────────────── */
+/* Inputs already use .finput / .fselect / .btn-p / .btn-g / .card from above */
+
+/* Accordion open/close animation */
+@keyframes wiz-slide-down {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.wiz-acc-open {
+  animation: wiz-slide-down .18s ease;
+}
+
+/* Grid breakpoints for project-type and category cards */
+@media(max-width:560px){
+  .wiz-2col { grid-template-columns: 1fr !important; }
+}
+
+/* Responsive nav button text */
+@media(max-width:400px){
+  .wiz-nav-label { display: none; }
+}

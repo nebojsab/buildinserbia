@@ -305,7 +305,7 @@ button {
 .back-to-top-floater {
   position: fixed;
   right: 24px;
-  bottom: 28px;
+  bottom: 84px;
   z-index: 90;
   width: 46px;
   height: 46px;
@@ -337,7 +337,7 @@ button {
 @media(max-width:560px) {
   .back-to-top-floater {
     right: 16px;
-    bottom: 20px;
+    bottom: 80px;
     width: 44px;
     height: 44px
   }

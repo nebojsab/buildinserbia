@@ -189,10 +189,10 @@ export function AssistantPanel({
         <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--bdr)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <p style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>BuildInSerbia Assistant</p>
           <button type="button" className="btn-g" style={{ padding: "6px 10px", fontSize: 12 }} onClick={onClose}>
-            Close
+            {locale === "en" ? "Close" : locale === "ru" ? "Закрыть" : "Zatvori"}
           </button>
         </div>
-        <div style={{ padding: "12px", overflowY: "auto", display: "grid", gap: 10 }}>
+        <div style={{ padding: "12px", overflowY: "auto", display: "grid", gap: 10, alignContent: "start" }}>
           <AssistantWelcome locale={locale} />
           {messages.length === 0 ? (
             <QuickActionChips items={quickActions} onSelect={(value) => void sendMessage(value)} />
@@ -201,7 +201,7 @@ export function AssistantPanel({
           {error ? <p style={{ fontSize: 12, color: "#991B1B" }}>{error}</p> : null}
         </div>
         <div style={{ padding: 12, borderTop: "1px solid var(--bdr)" }}>
-          <AssistantInput loading={loading} onSubmit={(value) => void sendMessage(value)} />
+          <AssistantInput loading={loading} locale={locale} onSubmit={(value) => void sendMessage(value)} />
         </div>
       </aside>
     </div>
