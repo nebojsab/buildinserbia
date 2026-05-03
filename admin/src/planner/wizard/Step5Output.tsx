@@ -328,6 +328,47 @@ export function Step5Output({ lang, state, tree, i18n, onRestart }: Props) {
         </div>
       )}
 
+      {/* Works summary chips */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, color: "var(--ink3)", marginBottom: 10 }}>
+          {i18n.summaryWorks}
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6 }}>
+          {selectedSubs.map((sub) => (
+            <span
+              key={sub.id}
+              style={{ padding: "4px 12px", borderRadius: 100, background: "var(--bgw)", border: "1px solid var(--bdr)", fontSize: "0.8125rem", color: "var(--ink2)" }}
+            >
+              {sub.label[l]}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* CTA — directly after cost estimate */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, flexWrap: "wrap" as const, marginBottom: 28 }}>
+        <button
+          className="btn-g"
+          style={{ display: "flex", alignItems: "center", gap: 7, fontWeight: 700 }}
+          onClick={() => {
+            const html = buildPlanHtml(state, tree, lang);
+            const w = window.open("", "_blank");
+            if (w) { w.document.write(html); w.document.close(); }
+          }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          {l === "sr" ? "Skini plan (PDF)" : "Download plan (PDF)"}
+        </button>
+        <button
+          onClick={onRestart}
+          style={{ padding: "9px 22px", borderRadius: "var(--r)", border: "1.5px solid var(--bdr2)", background: "var(--card)", color: "var(--ink2)", fontSize: "0.875rem", fontWeight: 600, cursor: "pointer" }}
+        >
+          {i18n.restart}
+        </button>
+      </div>
+
       {/* Generated documents */}
       {docs.length > 0 && (
         <div style={{ marginBottom: 28 }}>
@@ -462,45 +503,6 @@ export function Step5Output({ lang, state, tree, i18n, onRestart }: Props) {
         </div>
       )}
 
-      {/* Works summary chips */}
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, color: "var(--ink3)", marginBottom: 10 }}>
-          {i18n.summaryWorks}
-        </div>
-        <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6 }}>
-          {selectedSubs.map((sub) => (
-            <span
-              key={sub.id}
-              style={{ padding: "4px 12px", borderRadius: 100, background: "var(--bgw)", border: "1px solid var(--bdr)", fontSize: "0.8125rem", color: "var(--ink2)" }}
-            >
-              {sub.label[l]}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, flexWrap: "wrap" as const }}>
-        <button
-          className="btn-g"
-          style={{ display: "flex", alignItems: "center", gap: 7, fontWeight: 700 }}
-          onClick={() => {
-            const html = buildPlanHtml(state, tree, lang);
-            const w = window.open("", "_blank");
-            if (w) { w.document.write(html); w.document.close(); }
-          }}
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          {l === "sr" ? "Skini plan (PDF)" : "Download plan (PDF)"}
-        </button>
-        <button
-          onClick={onRestart}
-          style={{ padding: "9px 22px", borderRadius: "var(--r)", border: "1.5px solid var(--bdr2)", background: "var(--card)", color: "var(--ink2)", fontSize: "0.875rem", fontWeight: 600, cursor: "pointer" }}
-        >
-          {i18n.restart}
-        </button>
-      </div>
     </div>
   );
 }

@@ -475,6 +475,42 @@ export function Results({
         </div>
       </div>
 
+      {/* Donja traka: iste akcije kao u headeru (sačuvaj + PDF + novi plan) */}
+      <div
+        data-pdf-hide
+        className="result-cta-row"
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 10,
+          justifyContent: "flex-end",
+          alignItems: "center",
+          marginTop: 12,
+          paddingTop: 22,
+          borderTop: "1px solid var(--bdr)",
+        }}
+      >
+        <div style={{display:"flex",flexDirection:"row",alignItems:"center",gap:10,flexWrap:"wrap",justifyContent:"flex-end"}}>
+          <button type="button" className="btn-save btn-save--light" onClick={onSave} disabled={planZipLoading}>
+            <span>💾</span>
+            {r.savePlan}
+          </button>
+          <p style={{fontSize:11,color:"var(--ink4)",fontFamily:"var(--sans)",lineHeight:1.35,margin:0,maxWidth:"min(280px, 50vw)",textAlign:"left"}}>{r.savePlanHint}</p>
+        </div>
+        <button
+          type="button"
+          className="btn-p"
+          onClick={() => void handleDownloadPlanZip()}
+          disabled={planZipLoading}
+          style={{ fontSize: 13, padding: "11px 20px" }}
+        >
+          {planZipLoading ? r.planZipPreparing : `📦 ${r.downloadPlan}`}
+        </button>
+        <button type="button" className="btn-g" onClick={onRestart} disabled={planZipLoading}>
+          ← {r.restart}
+        </button>
+      </div>
+
       {/* ── AFFILIATE: What you'll need next ── */}
       <div data-pdf-hide className="card" style={{overflow:"hidden",marginBottom:28}}>
         <div style={{padding:"20px 24px 14px",borderBottom:"1px solid var(--bdr)"}}>
@@ -663,41 +699,6 @@ export function Results({
         </div>
       </div>
 
-      {/* Donja traka: iste akcije kao u headeru (sačuvaj + PDF + novi plan) */}
-      <div
-        data-pdf-hide
-        className="result-cta-row"
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 10,
-          justifyContent: "flex-end",
-          alignItems: "center",
-          marginTop: 12,
-          paddingTop: 22,
-          borderTop: "1px solid var(--bdr)",
-        }}
-      >
-        <div style={{display:"flex",flexDirection:"row",alignItems:"center",gap:10,flexWrap:"wrap",justifyContent:"flex-end"}}>
-          <button type="button" className="btn-save btn-save--light" onClick={onSave} disabled={planZipLoading}>
-            <span>💾</span>
-            {r.savePlan}
-          </button>
-          <p style={{fontSize:11,color:"var(--ink4)",fontFamily:"var(--sans)",lineHeight:1.35,margin:0,maxWidth:"min(280px, 50vw)",textAlign:"left"}}>{r.savePlanHint}</p>
-        </div>
-        <button
-          type="button"
-          className="btn-p"
-          onClick={() => void handleDownloadPlanZip()}
-          disabled={planZipLoading}
-          style={{ fontSize: 13, padding: "11px 20px" }}
-        >
-          {planZipLoading ? r.planZipPreparing : `📦 ${r.downloadPlan}`}
-        </button>
-        <button type="button" className="btn-g" onClick={onRestart} disabled={planZipLoading}>
-          ← {r.restart}
-        </button>
-      </div>
     </div>
   );
 }
