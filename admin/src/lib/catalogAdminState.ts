@@ -125,3 +125,18 @@ export async function removeCustomCatalogProduct(productId: string): Promise<voi
     await saveState(state);
   }
 }
+
+export async function bulkRemoveCatalogProducts(
+  items: Array<{ id: string; isCustom: boolean }>
+): Promise<void> {
+  if (items.length === 0) return;
+  const state = await getCatalogAdminState();
+  const customIds = new Set(items.filter((i) => i.isCustom).map((i) => i.id));
+  const baseIds = items.filter((i) => !i.isCustom).map((i) => i.id);
+  state.customProducts = state.customProducts.filter((p) => !customIds.has(p.id));
+  for (const id of baseIds) {
+    const current = state.productOverrides[id] ?? { updatedAt: new Date().toISOString() };
+    state.productOverrides[id] = { ...current, isDeleted: true, updatedAt: new Date().toISOString() };
+  }
+  await saveState(state);
+}

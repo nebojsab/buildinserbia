@@ -59,6 +59,7 @@ export function PublicSiteChrome({
 }) {
   const copy = LANG_COPY[locale];
   const [langOpen, setLangOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -70,6 +71,17 @@ export function PublicSiteChrome({
     document.addEventListener("mousedown", onMouseDown);
     return () => document.removeEventListener("mousedown", onMouseDown);
   }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileMenuOpen]);
+
+  const navLinks = [
+    { href: withLang("/", locale), label: copy.home, path: "/" },
+    { href: withLang("/documents", locale), label: copy.documents, path: "/documents" },
+    { href: withLang("/blog", locale), label: copy.blog, path: "/blog" },
+  ];
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
@@ -99,84 +111,123 @@ export function PublicSiteChrome({
           <Link href="/" style={{ display: "inline-flex", alignItems: "center" }}>
             <img src="/Logo.svg" alt="BuildInSerbia" style={{ height: 24, width: "auto", display: "block" }} />
           </Link>
-          <nav style={{ display: "flex", alignItems: "center", gap: 24 }}>
-            <Link
-              href={withLang("/", locale)}
-              style={isNavActive("/", currentPath) ? { ...navLinkStyle, ...navLinkActiveStyle } : navLinkStyle}
-              aria-current={isNavActive("/", currentPath) ? "page" : undefined}
-            >
-              {copy.home}
-            </Link>
-            <Link
-              href={withLang("/documents", locale)}
-              style={
-                isNavActive("/documents", currentPath)
-                  ? { ...navLinkStyle, ...navLinkActiveStyle }
-                  : navLinkStyle
-              }
-              aria-current={isNavActive("/documents", currentPath) ? "page" : undefined}
-            >
-              {copy.documents}
-            </Link>
-            <Link
-              href={withLang("/blog", locale)}
-              style={
-                isNavActive("/blog", currentPath)
-                  ? { ...navLinkStyle, ...navLinkActiveStyle }
-                  : navLinkStyle
-              }
-              aria-current={isNavActive("/blog", currentPath) ? "page" : undefined}
-            >
-              {copy.blog}
-            </Link>
+
+          {/* Desktop nav */}
+          <nav className="pc-nav-desktop" style={{ display: "flex", alignItems: "center", gap: 24 }}>
+            {navLinks.map((link) => (
+              <Link
+                key={link.path}
+                href={link.href}
+                style={isNavActive(link.path, currentPath) ? { ...navLinkStyle, ...navLinkActiveStyle } : navLinkStyle}
+                aria-current={isNavActive(link.path, currentPath) ? "page" : undefined}
+              >
+                {link.label}
+              </Link>
+            ))}
           </nav>
-          <div ref={langRef} className="lang-wrap">
+
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {/* Lang switcher */}
+            <div ref={langRef} className="lang-wrap">
+              <button
+                type="button"
+                onClick={() => setLangOpen((prev) => !prev)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 7,
+                  padding: "7px 12px",
+                  border: "1.5px solid var(--bdr)",
+                  borderRadius: "var(--r)",
+                  background: "var(--card)",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--ink2)",
+                  cursor: "pointer",
+                  transition: "border-color .15s",
+                  fontFamily: "var(--sans)",
+                }}
+              >
+                <span>{FLAGS[locale]}</span>
+                <span>{locale.toUpperCase()}</span>
+                <span style={{ fontSize: 10, opacity: 0.45, marginLeft: 2 }}>▾</span>
+              </button>
+              {langOpen && (
+                <div className="lang-menu">
+                  {LANG_OPTIONS.map((option) => (
+                    <Link
+                      key={option.id}
+                      href={withLang(currentPath, option.id)}
+                      className={`lang-btn${option.id === locale ? " active" : ""}`}
+                      onClick={() => setLangOpen(false)}
+                    >
+                      <span style={{ fontSize: 15 }}>{FLAGS[option.id]}</span>
+                      <span>{option.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Hamburger button — mobile only */}
             <button
               type="button"
-              onClick={() => setLangOpen((prev) => !prev)}
+              className="pc-hamburger"
+              aria-label={mobileMenuOpen ? "Zatvori meni" : "Otvori meni"}
+              aria-expanded={mobileMenuOpen}
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
               style={{
-                display: "flex",
+                display: "none",
+                flexDirection: "column",
+                justifyContent: "center",
                 alignItems: "center",
-                gap: 7,
-                padding: "7px 12px",
+                gap: 5,
+                width: 40,
+                height: 40,
                 border: "1.5px solid var(--bdr)",
                 borderRadius: "var(--r)",
                 background: "var(--card)",
-                fontSize: 13,
-                fontWeight: 600,
-                color: "var(--ink2)",
                 cursor: "pointer",
-                transition: "border-color .15s",
-                fontFamily: "var(--sans)",
-              }}
-              onMouseEnter={(event) => {
-                event.currentTarget.style.borderColor = "var(--bdr2)";
-              }}
-              onMouseLeave={(event) => {
-                event.currentTarget.style.borderColor = "var(--bdr)";
+                padding: 0,
               }}
             >
-              <span>{FLAGS[locale]}</span>
-              <span>{locale.toUpperCase()}</span>
-              <span style={{ fontSize: 10, opacity: 0.45, marginLeft: 2 }}>▾</span>
+              <span style={{ display: "block", width: 18, height: 1.5, background: "var(--ink2)", borderRadius: 2, transition: "transform .2s, opacity .2s", transform: mobileMenuOpen ? "translateY(6.5px) rotate(45deg)" : "none" }} />
+              <span style={{ display: "block", width: 18, height: 1.5, background: "var(--ink2)", borderRadius: 2, transition: "opacity .2s", opacity: mobileMenuOpen ? 0 : 1 }} />
+              <span style={{ display: "block", width: 18, height: 1.5, background: "var(--ink2)", borderRadius: 2, transition: "transform .2s, opacity .2s", transform: mobileMenuOpen ? "translateY(-6.5px) rotate(-45deg)" : "none" }} />
             </button>
-            {langOpen ? (
-              <div className="lang-menu">
-                {LANG_OPTIONS.map((option) => (
-                  <Link
-                    key={option.id}
-                    href={withLang(currentPath, option.id)}
-                    className={`lang-btn${option.id === locale ? " active" : ""}`}
-                    onClick={() => setLangOpen(false)}
-                  >
-                    <span style={{ fontSize: 15 }}>{FLAGS[option.id]}</span>
-                    <span>{option.label}</span>
-                  </Link>
-                ))}
-              </div>
-            ) : null}
           </div>
         </div>
+
+        {/* Mobile menu dropdown */}
+        {mobileMenuOpen && (
+          <div
+            className="pc-mobile-menu"
+            style={{
+              borderTop: "1px solid var(--bdr)",
+              background: "rgba(250,250,249,.98)",
+              padding: "8px 0 16px",
+            }}
+          >
+            {navLinks.map((link) => (
+              <Link
+                key={link.path}
+                href={link.href}
+                onClick={() => setMobileMenuOpen(false)}
+                style={{
+                  display: "block",
+                  padding: "13px 24px",
+                  fontSize: 15,
+                  fontWeight: isNavActive(link.path, currentPath) ? 700 : 500,
+                  color: isNavActive(link.path, currentPath) ? "var(--acc)" : "var(--ink2)",
+                  fontFamily: "var(--sans)",
+                  borderLeft: isNavActive(link.path, currentPath) ? "3px solid var(--acc)" : "3px solid transparent",
+                }}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        )}
       </header>
 
       <main style={{ flex: 1 }}>{children}</main>

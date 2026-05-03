@@ -57,6 +57,10 @@ export function MediaLibraryManager() {
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
   const replaceInputRef = useRef<HTMLInputElement | null>(null);
   const [replaceTarget, setReplaceTarget] = useState<MediaItem | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const selectAllRef = useRef<HTMLInputElement>(null);
 
   const refreshItems = useCallback(async () => {
     try {
@@ -431,6 +435,37 @@ export function MediaLibraryManager() {
     setCategoryPickerOpen(true);
   }
 
+  useEffect(() => {
+    if (selectAllRef.current) {
+      selectAllRef.current.indeterminate = selectedIds.size > 0 && selectedIds.size < sorted.length;
+    }
+  }, [selectedIds, sorted.length]);
+
+  async function doBulkDeleteMedia() {
+    setBulkDeleting(true);
+    const ids = [...selectedIds];
+    try {
+      const res = await fetch("/api/media/bulk-delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      const data = (await res.json()) as { ok?: boolean; deleted?: number; failed?: number };
+      if (res.ok) {
+        setSelectedIds(new Set());
+        await refreshItems();
+        toast.success(`Obrisano ${data.deleted ?? ids.length} fajlova.`);
+      } else {
+        toast.error("Greška pri bulk brisanju.");
+      }
+    } catch {
+      toast.error("Greška pri bulk brisanju.");
+    } finally {
+      setConfirmBulkDelete(false);
+      setBulkDeleting(false);
+    }
+  }
+
   return (
     <div style={{ display: "grid", gap: 16 }}>
       <section className="card" style={{ padding: "16px 18px" }}>
@@ -728,6 +763,19 @@ export function MediaLibraryManager() {
         <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--bdr)" }}>
           <h3 style={{ fontFamily: "var(--heading)", fontSize: 17 }}>Svi fajlovi</h3>
         </div>
+        {selectedIds.size > 0 && (
+          <div style={{ padding: "10px 14px", background: "#FEF2F2", borderBottom: "1px solid #FECACA", display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 13, color: "#991B1B", fontWeight: 600 }}>
+              {selectedIds.size} {selectedIds.size === 1 ? "fajl izabran" : "fajlova izabrano"}
+            </span>
+            <button type="button" className="btn-g" style={{ fontSize: 12, padding: "5px 12px", color: "#DC2626", borderColor: "#FCA5A5" }} onClick={() => setConfirmBulkDelete(true)}>
+              Obriši izabrane
+            </button>
+            <button type="button" className="btn-g" style={{ fontSize: 12, padding: "5px 12px" }} onClick={() => setSelectedIds(new Set())}>
+              Poništi selekciju
+            </button>
+          </div>
+        )}
         {sorted.length === 0 ? (
           <div style={{ padding: "22px 18px", color: "var(--ink3)", fontSize: 13 }}>
             {loadingItems ? "Ucitavam media fajlove..." : "Media library je prazna. Dodaj prvi fajl iz forme iznad."}
@@ -737,6 +785,21 @@ export function MediaLibraryManager() {
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
               <thead>
                 <tr style={{ background: "var(--bgw)" }}>
+                  <th style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)", width: 36 }}>
+                    <input
+                      ref={selectAllRef}
+                      type="checkbox"
+                      checked={sorted.length > 0 && selectedIds.size === sorted.length}
+                      onChange={() => {
+                        if (selectedIds.size === sorted.length) {
+                          setSelectedIds(new Set());
+                        } else {
+                          setSelectedIds(new Set(sorted.map((i) => i.id)));
+                        }
+                      }}
+                      aria-label="Izaberi sve"
+                    />
+                  </th>
                   {["Thumb", "Ime", "Tip", "Kategorije", "Datum dodavanja", "Akcije"].map((head) => (
                     <th
                       key={head}
@@ -757,7 +820,21 @@ export function MediaLibraryManager() {
               </thead>
               <tbody>
                 {sorted.map((item) => (
-                  <tr key={item.id}>
+                  <tr key={item.id} style={{ background: selectedIds.has(item.id) ? "var(--accbg)" : undefined }}>
+                    <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(item.id)}
+                        onChange={() => {
+                          setSelectedIds((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(item.id)) next.delete(item.id); else next.add(item.id);
+                            return next;
+                          });
+                        }}
+                        aria-label={`Izaberi ${item.name}`}
+                      />
+                    </td>
                     <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>
                       <div
                         style={{
@@ -875,6 +952,21 @@ export function MediaLibraryManager() {
           </div>
         )}
       </section>
+      {confirmBulkDelete && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)" }} onClick={() => !bulkDeleting && setConfirmBulkDelete(false)} />
+          <div style={{ position: "relative", background: "var(--card)", borderRadius: 12, padding: 28, maxWidth: 420, width: "90%", boxShadow: "0 8px 32px rgba(0,0,0,0.2)", border: "1px solid var(--bdr)" }}>
+            <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 10, color: "var(--ink)" }}>Brisanje {selectedIds.size} {selectedIds.size === 1 ? "fajla" : "fajlova"}</p>
+            <p style={{ fontSize: 13, color: "var(--ink3)", lineHeight: 1.6, marginBottom: 22 }}>Fajlovi će biti trajno obrisani sa Vercel Blob-a i iz baze. Ova akcija je nepovratna.</p>
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+              <button type="button" className="btn-g" style={{ fontSize: 13 }} onClick={() => setConfirmBulkDelete(false)} disabled={bulkDeleting}>Otkaži</button>
+              <button type="button" className="btn-p" style={{ fontSize: 13, background: "#DC2626", borderColor: "#DC2626" }} onClick={() => void doBulkDeleteMedia()} disabled={bulkDeleting}>
+                {bulkDeleting ? "Brišem..." : `Obriši ${selectedIds.size}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

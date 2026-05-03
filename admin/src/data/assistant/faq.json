@@ -19,7 +19,7 @@
     "id": "faq-sr-3",
     "locale": "sr",
     "question": "Da li su procene troškova konačne?",
-    "answer": "Ne. Procene su informativne i služe za planiranje budžeta. Konačne cene zavise od izvođača, materijala i lokacije.",
+    "answer": "Procene su informativne i služe za planiranje budžeta. Konačne cene zavise od izvođača, materijala i lokacije.",
     "tags": ["trošak", "budžet", "cena"],
     "relatedLinkIds": ["site-planner"]
   },

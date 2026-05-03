@@ -34,6 +34,7 @@ const EMPTY_PLAN_FORM: PlanForm = {
 export default function App() {
   const MISTAKES_IMAGE_SRC = "/api/assets/mistakes-image";
   const [lang, setLang] = useState<Lang>("sr");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [result, setResult] = useState<GeneratedPlan | null>(null);
   const [planForm, setPlanForm] = useState<PlanForm>(EMPTY_PLAN_FORM);
   const [showSave, setShowSave] = useState(false);
@@ -145,8 +146,44 @@ export default function App() {
           <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
             <LangSwitch lang={lang} setLang={setLang}/>
             <button className="btn-p hide-xs" onClick={()=>scrollTo("planner")} style={{fontSize:13,padding:"9px 18px"}}>{t.nav.cta}</button>
+            {/* Hamburger — mobile only */}
+            <button
+              className="hamburger-btn"
+              aria-label={mobileMenuOpen ? "Zatvori meni" : "Otvori meni"}
+              aria-expanded={mobileMenuOpen}
+              onClick={()=>setMobileMenuOpen(p=>!p)}
+              style={{flexDirection:"column",justifyContent:"center",alignItems:"center",gap:5,width:40,height:40,border:"1.5px solid var(--bdr)",borderRadius:"var(--r)",background:"var(--card)",cursor:"pointer",padding:0}}
+            >
+              <span style={{display:"block",width:18,height:1.5,background:"var(--ink2)",borderRadius:2,transition:"transform .2s, opacity .2s",transform:mobileMenuOpen?"translateY(6.5px) rotate(45deg)":"none"}}/>
+              <span style={{display:"block",width:18,height:1.5,background:"var(--ink2)",borderRadius:2,transition:"opacity .2s",opacity:mobileMenuOpen?0:1}}/>
+              <span style={{display:"block",width:18,height:1.5,background:"var(--ink2)",borderRadius:2,transition:"transform .2s, opacity .2s",transform:mobileMenuOpen?"translateY(-6.5px) rotate(-45deg)":"none"}}/>
+            </button>
           </div>
         </div>
+        {/* Mobile menu */}
+        {mobileMenuOpen&&(
+          <div style={{borderTop:"1px solid var(--bdr)",background:"rgba(250,250,249,.98)",padding:"8px 0 16px"}}>
+            {[["how","0"],["planner","1"],["faq","3"]].map(([id,li])=>(
+              <button key={id} onClick={()=>{scrollTo(id);setMobileMenuOpen(false);}}
+                style={{display:"block",width:"100%",textAlign:"left",padding:"13px 24px",fontSize:15,fontWeight:500,color:"var(--ink2)",fontFamily:"var(--sans)",background:"none",border:"none",borderLeft:"3px solid transparent",cursor:"pointer"}}>
+                {t.nav.links[Number(li)]}
+              </button>
+            ))}
+            <a href={`/documents?lang=${lang}`} onClick={()=>setMobileMenuOpen(false)}
+              style={{display:"block",padding:"13px 24px",fontSize:15,fontWeight:500,color:"var(--ink2)",fontFamily:"var(--sans)",borderLeft:"3px solid transparent"}}>
+              {docsLabel}
+            </a>
+            <a href={`/blog?lang=${lang}`} onClick={()=>setMobileMenuOpen(false)}
+              style={{display:"block",padding:"13px 24px",fontSize:15,fontWeight:500,color:"var(--ink2)",fontFamily:"var(--sans)",borderLeft:"3px solid transparent"}}>
+              {blogLabel}
+            </a>
+            <div style={{padding:"12px 24px 0"}}>
+              <button className="btn-p" onClick={()=>{scrollTo("planner");setMobileMenuOpen(false);}} style={{fontSize:14,padding:"12px 24px",width:"100%",justifyContent:"center"}}>
+                {t.nav.cta} →
+              </button>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* ── HERO ── */}

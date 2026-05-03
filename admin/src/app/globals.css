@@ -1140,6 +1140,12 @@ button {
   }
 }
 
+/* PublicSiteChrome mobile nav */
+@media (max-width: 560px) {
+  .pc-nav-desktop { display: none !important; }
+  .pc-hamburger { display: flex !important; }
+}
+
 @media print {
   .public-chrome-header,
   .public-chrome-footer,

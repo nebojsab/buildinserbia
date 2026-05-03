@@ -3,7 +3,6 @@ import { plannerMappings } from "@shared/data/catalog/plannerMappings";
 import { products } from "@shared/data/catalog/products";
 import type { CatalogCategoryId, CatalogProduct } from "@shared/types/catalog";
 import { revalidatePath } from "next/cache";
-import { ConfirmSubmitButton } from "@/components/ui/ConfirmSubmitButton";
 import {
   addCustomCatalogProduct,
   clearCatalogProductOverride,
@@ -11,6 +10,7 @@ import {
   removeCustomCatalogProduct,
   updateCatalogProductOverride,
 } from "@/lib/catalogAdminState";
+import { CatalogProductsTable, type TableProduct } from "@/components/catalog/CatalogProductsTable";
 
 function daysSince(dateIso: string): number {
   const now = Date.now();
@@ -19,9 +19,6 @@ function daysSince(dateIso: string): number {
   return Math.max(0, Math.floor((now - then) / (1000 * 60 * 60 * 24)));
 }
 
-const IMAGE_PLACEHOLDER =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='80' viewBox='0 0 120 80'%3E%3Crect width='120' height='80' fill='%23f3f4f6'/%3E%3Ctext x='60' y='44' font-size='10' text-anchor='middle' fill='%236b7280' font-family='Arial,sans-serif'%3ENo image%3C/text%3E%3C/svg%3E";
-
 function isValidHttpUrl(value: string): boolean {
   try {
     const url = new URL(value);
@@ -29,10 +26,6 @@ function isValidHttpUrl(value: string): boolean {
   } catch {
     return false;
   }
-}
-
-function resolveImageUrl(value: string): string {
-  return isValidHttpUrl(value) ? value : IMAGE_PLACEHOLDER;
 }
 
 async function toggleActiveAction(formData: FormData) {
@@ -460,188 +453,33 @@ export default async function CatalogAdminPage({ searchParams }: PageProps) {
             Proizvodi (rucno kurirani) - prikaz: {filteredProducts.length}
           </h3>
         </div>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-            <thead>
-              <tr style={{ background: "var(--bgw)", color: "var(--ink3)" }}>
-                <th style={{ textAlign: "left", padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>ID</th>
-                <th style={{ textAlign: "left", padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>Slika</th>
-                <th style={{ textAlign: "left", padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>Naslov</th>
-                <th style={{ textAlign: "left", padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>Kategorija</th>
-                <th style={{ textAlign: "left", padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>Featured</th>
-                <th style={{ textAlign: "left", padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>Last checked</th>
-                <th style={{ textAlign: "left", padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>Status</th>
-                <th style={{ textAlign: "left", padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>Override</th>
-                <th style={{ textAlign: "left", padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>Akcije</th>
-                <th style={{ textAlign: "left", padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>Inline edit</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredProducts.map((product) => {
-                const staleDays = daysSince(product.lastCheckedAt);
-                const hasOverride = Boolean(state.productOverrides[product.id]);
-                const isCustom = product.id.startsWith("custom_");
-                const imageSrc = resolveImageUrl(product.imageUrl);
-                return (
-                  <tr key={product.id}>
-                    <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>{product.id}</td>
-                    <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>
-                      <img
-                        src={imageSrc}
-                        alt={product.title}
-                        width={54}
-                        height={36}
-                        style={{ objectFit: "cover", borderRadius: 6, border: "1px solid var(--bdr)" }}
-                      />
-                    </td>
-                    <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>{product.title}</td>
-                    <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>{product.category}</td>
-                    <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>
-                      {product.isFeatured ? "Yes" : "No"}
-                    </td>
-                    <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>
-                      {product.lastCheckedAt} ({staleDays}d)
-                    </td>
-                    <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>
-                      <span
-                        style={{
-                          padding: "2px 8px",
-                          borderRadius: 999,
-                          fontSize: 11,
-                          background: product.isDeleted ? "#FEE2E2" : staleDays > 45 ? "#FEF3C7" : "#DCFCE7",
-                          color: product.isDeleted ? "#991B1B" : staleDays > 45 ? "#92400E" : "#166534",
-                          border: `1px solid ${product.isDeleted ? "#FCA5A5" : staleDays > 45 ? "#FCD34D" : "#86EFAC"}`,
-                        }}
-                      >
-                        {product.isDeleted ? "removed" : staleDays > 45 ? "stale" : "fresh"}
-                      </span>
-                    </td>
-                    <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>
-                      <span
-                        style={{
-                          padding: "2px 8px",
-                          borderRadius: 999,
-                          fontSize: 11,
-                          background: hasOverride || isCustom ? "#DBEAFE" : "#F3F4F6",
-                          color: hasOverride || isCustom ? "#1D4ED8" : "#6B7280",
-                          border: `1px solid ${hasOverride || isCustom ? "#93C5FD" : "#E5E7EB"}`,
-                        }}
-                      >
-                        {isCustom ? "custom item" : hasOverride ? "override" : "base"}
-                      </span>
-                    </td>
-                    <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>
-                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                        <form action={toggleActiveAction}>
-                          <input type="hidden" name="productId" value={product.id} />
-                          <input type="hidden" name="current" value={String(product.isActive)} />
-                          <button type="submit" className="btn-g" style={{ padding: "4px 8px", fontSize: 11 }}>
-                            {product.isActive ? "Disable" : "Enable"}
-                          </button>
-                        </form>
-                        <form action={toggleFeaturedAction}>
-                          <input type="hidden" name="productId" value={product.id} />
-                          <input type="hidden" name="current" value={String(product.isFeatured)} />
-                          <button type="submit" className="btn-g" style={{ padding: "4px 8px", fontSize: 11 }}>
-                            {product.isFeatured ? "Unfeature" : "Feature"}
-                          </button>
-                        </form>
-                        <form action={markCheckedTodayAction}>
-                          <input type="hidden" name="productId" value={product.id} />
-                          <button type="submit" className="btn-g" style={{ padding: "4px 8px", fontSize: 11 }}>
-                            Mark checked
-                          </button>
-                        </form>
-                        {product.isDeleted ? (
-                          <form action={restoreToListAction}>
-                            <input type="hidden" name="productId" value={product.id} />
-                            <button type="submit" className="btn-g" style={{ padding: "4px 8px", fontSize: 11 }}>
-                              Vrati na listu
-                            </button>
-                          </form>
-                        ) : (
-                          <form action={removeFromListAction}>
-                            <input type="hidden" name="productId" value={product.id} />
-                            <input type="hidden" name="isCustom" value={String(isCustom)} />
-                            <ConfirmSubmitButton
-                              message="Da li ste sigurni da zelite da uklonite ovaj item sa liste?"
-                              className="btn-g"
-                              style={{ padding: "4px 8px", fontSize: 11 }}
-                            >
-                              Obrisi sa liste
-                            </ConfirmSubmitButton>
-                          </form>
-                        )}
-                        {isCustom && !product.isDeleted ? (
-                          <form action={deleteCustomItemAction}>
-                            <input type="hidden" name="productId" value={product.id} />
-                            <ConfirmSubmitButton
-                              message="Da li ste sigurni da zelite trajno da obrisete custom item?"
-                              className="btn-g"
-                              style={{ padding: "4px 8px", fontSize: 11 }}
-                            >
-                              Delete custom
-                            </ConfirmSubmitButton>
-                          </form>
-                        ) : hasOverride ? (
-                          <form action={revertOverrideAction}>
-                            <input type="hidden" name="productId" value={product.id} />
-                            <ConfirmSubmitButton
-                              message="Da li ste sigurni da zelite da revertujete override za ovaj item?"
-                              className="btn-g"
-                              style={{ padding: "4px 8px", fontSize: 11 }}
-                            >
-                              Revert override
-                            </ConfirmSubmitButton>
-                          </form>
-                        ) : null}
-                      </div>
-                    </td>
-                    <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)", minWidth: 300 }}>
-                      <form action={saveInlineMetadataAction} style={{ display: "grid", gap: 6 }}>
-                        <input type="hidden" name="productId" value={product.id} />
-                        <input
-                          type="text"
-                          name="merchantName"
-                          defaultValue={product.merchantName}
-                          className="finput"
-                          style={{ padding: "6px 8px", fontSize: 11 }}
-                          placeholder="Merchant name"
-                        />
-                        <input
-                          type="text"
-                          name="priceLabel"
-                          defaultValue={product.priceLabel ?? ""}
-                          className="finput"
-                          style={{ padding: "6px 8px", fontSize: 11 }}
-                          placeholder="Price label"
-                        />
-                        <input
-                          type="url"
-                          name="productUrl"
-                          defaultValue={product.productUrl}
-                          className="finput"
-                          style={{ padding: "6px 8px", fontSize: 11 }}
-                          placeholder="Product URL"
-                        />
-                        <input
-                          type="url"
-                          name="imageUrl"
-                          defaultValue={product.imageUrl}
-                          className="finput"
-                          style={{ padding: "6px 8px", fontSize: 11 }}
-                          placeholder="Image URL"
-                        />
-                        <button type="submit" className="btn-p" style={{ padding: "6px 10px", fontSize: 11 }}>
-                          Save metadata
-                        </button>
-                      </form>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div style={{ padding: "12px 14px" }}>
+          <CatalogProductsTable
+            products={filteredProducts.map((product): TableProduct => ({
+              id: product.id,
+              title: product.title,
+              category: product.category,
+              isActive: product.isActive,
+              isFeatured: product.isFeatured,
+              isDeleted: product.isDeleted,
+              lastCheckedAt: product.lastCheckedAt,
+              staleDays: daysSince(product.lastCheckedAt),
+              imageUrl: product.imageUrl,
+              hasOverride: Boolean(state.productOverrides[product.id]),
+              isCustom: product.id.startsWith("custom_"),
+              merchantName: product.merchantName,
+              productUrl: product.productUrl,
+              priceLabel: product.priceLabel,
+            }))}
+            toggleActiveAction={toggleActiveAction}
+            toggleFeaturedAction={toggleFeaturedAction}
+            markCheckedTodayAction={markCheckedTodayAction}
+            saveInlineMetadataAction={saveInlineMetadataAction}
+            revertOverrideAction={revertOverrideAction}
+            deleteCustomItemAction={deleteCustomItemAction}
+            removeFromListAction={removeFromListAction}
+            restoreToListAction={restoreToListAction}
+          />
         </div>
       </section>
     </div>

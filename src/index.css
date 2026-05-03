@@ -97,6 +97,12 @@ button{cursor:pointer;font-family:var(--sans);border:none;background:none}
   }
 }
 
+/* Hamburger — hidden on desktop, shown on mobile */
+.hamburger-btn{display:none}
+@media(max-width:560px){
+  .hamburger-btn{display:flex!important}
+}
+
 /* Lang menu */
 .lang-wrap{position:relative}
 .lang-menu{position:absolute;top:calc(100%+8px);right:0;background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);box-shadow:var(--sh2);overflow:hidden;z-index:200;min-width:165px}
