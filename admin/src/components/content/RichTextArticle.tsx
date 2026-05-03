@@ -200,8 +200,8 @@ export function DetailShell({
   children: ReactNode;
 }) {
   return (
-    <div style={{ background: "var(--bg)", minHeight: "100vh", padding: "34px 24px 64px" }}>
-      <div style={{ maxWidth: 900, margin: "0 auto" }}>
+    <div style={{ background: "var(--bg)", minHeight: "100vh", padding: "34px 24px 64px", overflowX: "hidden" }}>
+      <div style={{ maxWidth: 900, margin: "0 auto", minWidth: 0 }}>
         <div style={{ marginBottom: 16, fontSize: 13, color: "var(--ink4)" }}>{breadcrumb}</div>
         <h1
           style={{

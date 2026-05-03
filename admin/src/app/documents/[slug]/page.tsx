@@ -160,18 +160,18 @@ export default async function DocumentDetailPage({
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
+                      flexWrap: "wrap",
                       gap: 10,
                     }}
                   >
-                    <div style={{ minWidth: 0 }}>
+                    <div style={{ minWidth: 0, flex: "1 1 180px" }}>
                       <p
                         style={{
                           fontSize: 13,
                           fontWeight: 600,
                           color: "var(--ink)",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
+                          overflowWrap: "break-word",
+                          wordBreak: "break-all",
                         }}
                       >
                         {isPdf ? "📄" : "📝"} {attachment.name}
@@ -186,6 +186,7 @@ export default async function DocumentDetailPage({
                       className="btn-g"
                       target="_blank"
                       rel="noopener noreferrer"
+                      style={{ flexShrink: 0 }}
                     >
                       {ctaLabel}
                     </a>
