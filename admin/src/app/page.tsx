@@ -17,6 +17,8 @@ import { SiteLogo } from "@shared/components/SiteLogo";
 import { ComingSoonScreen, MaintenanceScreen } from "@shared/components/SystemStateScreens";
 import { Ey, HR } from "@shared/components/ui";
 import { PlannerWizard } from "@/planner/wizard";
+import { BetaBanner } from "@/components/contact/BetaBanner";
+import { ContactDrawer } from "@/components/contact/ContactDrawer";
 
 const HeroPlanVisual = dynamic(
   () => import("@shared/components/HeroPlanVisual").then((m) => ({ default: m.HeroPlanVisual })),
@@ -85,6 +87,7 @@ function HomePageContent() {
     ["sr", "en", "ru"].includes(initialLang) ? initialLang : "sr"
   );
 
+  const [contactOpen, setContactOpen] = useState(false);
   const MISTAKES_IMAGE_SRC = "/api/assets/mistakes-image";
   const [maint, setMaint] = useState<MaintenancePayload | null>(null);
   const previewBypassRef = useRef<boolean>(false);
@@ -152,8 +155,10 @@ function HomePageContent() {
 
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
-      {/* ── NAV ── */}
-      <header style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(250,250,249,.94)", backdropFilter: "blur(14px)", borderBottom: "1px solid var(--bdr)" }}>
+      {/* ── BETA BANNER + NAV (sticky unit) ── */}
+      <div style={{ position: "sticky", top: 0, zIndex: 100 }}>
+        <BetaBanner lang={lang} onContact={() => setContactOpen(true)} />
+      <header style={{ background: "rgba(250,250,249,.94)", backdropFilter: "blur(14px)", borderBottom: "1px solid var(--bdr)" }}>
         <div style={{ ...MX, padding: "0 24px", height: 62, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14 }}>
           <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
             <SiteLogo priority />
@@ -173,6 +178,9 @@ function HomePageContent() {
           </div>
         </div>
       </header>
+      </div>
+
+      <ContactDrawer open={contactOpen} onClose={() => setContactOpen(false)} lang={lang} />
 
       {/* ── HERO ── */}
       <section style={{ padding: "80px 24px 64px", background: "linear-gradient(175deg,#FDFBF8 0%,var(--bg) 100%)", borderBottom: "1px solid var(--bdr)" }}>
