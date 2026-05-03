@@ -1,9 +1,17 @@
 "use client";
 
+const LABEL: Record<string, string> = {
+  sr: "Pomoć",
+  en: "Assistant",
+  ru: "Помощник",
+};
+
 export function AssistantLauncher({
   onClick,
+  locale = "sr",
 }: {
   onClick: () => void;
+  locale?: string;
 }) {
   return (
     <button
@@ -29,7 +37,7 @@ export function AssistantLauncher({
       }}
     >
       <span aria-hidden>?</span>
-      <span>Assistant</span>
+      <span>{LABEL[locale] ?? LABEL.sr}</span>
     </button>
   );
 }

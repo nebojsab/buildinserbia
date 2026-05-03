@@ -26,7 +26,7 @@ function AssistantRootInner() {
 
   return (
     <>
-      <AssistantLauncher onClick={() => setOpen(true)} />
+      <AssistantLauncher onClick={() => setOpen(true)} locale={locale} />
       <AssistantPanel locale={locale} open={open} onClose={() => setOpen(false)} />
     </>
   );
