@@ -397,6 +397,15 @@ export const izgradnjaTree: WizardProjectTree = {
           label: { sr: "Krovni pokrivač", en: "Roof covering", ru: "Кровельное покрытие" },
           fields: [
             {
+              key: "povrsina_krova",
+              kind: "area",
+              label: { sr: "Površina krova", en: "Roof area", ru: "Площадь кровли" },
+              importance: "required",
+              unit: "m²",
+              predefined: [80, 100, 120, 160, 200],
+              unknownAllowed: true,
+            },
+            {
               key: "pokrivac",
               kind: "select",
               label: { sr: "Tip pokrivača", en: "Covering type", ru: "Тип покрытия" },
