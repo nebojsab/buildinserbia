@@ -20,7 +20,8 @@ export const subPriceRanges: Record<string, PriceRange> = {
   temelji_ojacanje:             { low: 2000, high: 8000,  unit: "pausal" },
 
   // ─── IZGRADNJA: Konstruktivni sistem ─────────────────────────────────────────
-  konstrukcija_zidanje:         { low: 25,   high: 55,    unit: "m2",   quantityField: "povrsina_objekta" },
+  // quantityFields covers izgradnja ("povrsina_objekta") and dogradnja ("povrsina")
+  konstrukcija_zidanje:         { low: 25,   high: 55,    unit: "m2",   quantityFields: ["povrsina_objekta", "povrsina"] },
   konstrukcija_ploce:           { low: 35,   high: 75,    unit: "m2",   quantityField: "povrsina_ploce" },
   // konstrukcija_stepenice — pausal, zavisi od tipa i broja etaža
   konstrukcija_stepenice:       { low: 1500, high: 6000,  unit: "pausal" },
@@ -65,7 +66,8 @@ export const subPriceRanges: Record<string, PriceRange> = {
   // Dogradnja finishing
   zavrse_radovi:                { low: 8,    high: 20,    unit: "m2",   quantityField: "povrsina" },
   zavrse_stolarija:             { low: 60,   high: 180,   unit: "kom",  quantityField: "broj_vrata" },
-  zavrse_podovi:                { low: 10,   high: 28,    unit: "m2",   quantityField: "povrsina" },
+  // quantityFields covers izgradnja ("povrsina_ukupna") and dogradnja ("povrsina")
+  zavrse_podovi:                { low: 10,   high: 28,    unit: "m2",   quantityFields: ["povrsina_ukupna", "povrsina"] },
 
   // ─── DOGRADNJA: Krov dogradnje ───────────────────────────────────────────────
   // Combined construction + covering; rate per m² of roof area
