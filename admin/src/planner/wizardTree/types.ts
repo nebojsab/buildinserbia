@@ -34,7 +34,7 @@ export type WizardField = {
 export type PriceRange = {
   low: number;
   high: number;
-  unit: "m2" | "kom" | "pausal";
+  unit: "m2" | "kom" | "pausal" | "lm";
   quantityField?: string;
   quantityFields?: string[];
 };

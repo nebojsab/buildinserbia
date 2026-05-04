@@ -113,12 +113,13 @@ export const dogradnjaTree: WizardProjectTree = {
             },
             {
               key: "tip_temelja",
-              kind: "select",
-              label: { sr: "Tip temelja", en: "Foundation type" },
+              kind: "chips",
+              label: { sr: "Tip temelja (može više)", en: "Foundation type (multi-select)" },
               importance: "required",
               options: [
-                { value: "temeljne_trake", label: { sr: "Temeljne trake (armirani beton)", en: "Strip foundations (RC)" } },
-                { value: "temeljna_ploca", label: { sr: "Temeljna ploča", en: "Raft foundation" } },
+                { value: "temeljne_trake", label: { sr: "Temeljne trake (AB)", en: "Strip foundations (RC)" } },
+                { value: "temeljna_ploca", label: { sr: "Temeljna ploča (AB)", en: "Raft foundation (RC)" } },
+                { value: "stubovi_samci", label: { sr: "Stupni temelji / samci", en: "Pad / isolated footings" } },
               ],
             },
             {

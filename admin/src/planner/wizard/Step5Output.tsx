@@ -61,7 +61,8 @@ type SubRow = {
   low:      number | null;
   high:     number | null;
   qty:      number | null;
-  unit:     "m2" | "kom" | "pausal";
+  unit:     "m2" | "kom" | "pausal" | "lm";
+  details:  string[];
 };
 
 type CatGroup = {
@@ -175,7 +176,25 @@ export function Step5Output({ lang, state, tree, i18n, onRestart }: Props) {
         grandIncomplete = true;
       }
 
-      rows.push({ subId: sub.id, label: sub.label[l], low, high, qty, unit: pr.unit });
+      // Collect human-readable summaries of selected options/toggles
+      const details: string[] = [];
+      for (const field of sub.fields) {
+        const val = vals[field.key];
+        if (val === undefined || val === null || val === "") continue;
+        if (field.kind === "select" && field.options) {
+          const opt = field.options.find((o) => o.value === val);
+          if (opt) details.push(opt.label[l] ?? opt.label["sr"]);
+        } else if (field.kind === "chips" && field.options && Array.isArray(val) && val.length > 0) {
+          const selected = (val as string[])
+            .map((v) => field.options!.find((o) => o.value === v)?.label[l ?? "sr"])
+            .filter(Boolean) as string[];
+          if (selected.length > 0) details.push(selected.join(", "));
+        } else if (field.kind === "toggle" && val === true) {
+          details.push(field.label[l] ?? field.label["sr"]);
+        }
+      }
+
+      rows.push({ subId: sub.id, label: sub.label[l], low, high, qty, unit: pr.unit, details });
     }
 
     if (rows.length > 0) {
@@ -193,9 +212,10 @@ export function Step5Output({ lang, state, tree, i18n, onRestart }: Props) {
     }
   }
 
-  const unitLabel = (unit: "m2" | "kom" | "pausal", qty: number | null) => {
+  const unitLabel = (unit: "m2" | "kom" | "pausal" | "lm", qty: number | null) => {
     if (unit === "pausal") return l === "sr" ? "fiksno" : "fixed";
     if (unit === "m2") return `${qty} m²`;
+    if (unit === "lm") return `${qty} m`;
     if (unit === "kom") return `${qty} ${l === "sr" ? "kom" : "pcs"}`;
     return "";
   };
@@ -283,14 +303,25 @@ export function Step5Output({ lang, state, tree, i18n, onRestart }: Props) {
                         borderBottom: i < grp.rows.length - 1 ? "1px solid var(--bdr)" : "none",
                       }}
                     >
-                      <span style={{ fontSize: "0.8125rem", color: "var(--ink2)" }}>{row.label}</span>
+                      <div>
+                        <span style={{ fontSize: "0.8125rem", color: "var(--ink2)" }}>{row.label}</span>
+                        {row.details.length > 0 && (
+                          <p style={{ margin: "2px 0 0", fontSize: "0.7rem", color: "var(--ink4)", lineHeight: 1.4 }}>
+                            {row.details.join(" · ")}
+                          </p>
+                        )}
+                      </div>
                       <span style={{ fontSize: "0.75rem", color: "var(--ink4)", whiteSpace: "nowrap" as const }}>
                         {row.low !== null ? unitLabel(row.unit, row.qty) : "—"}
                       </span>
                       <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: row.low !== null ? "var(--ink)" : "var(--ink4)", whiteSpace: "nowrap" as const, textAlign: "right" as const }}>
                         {row.low !== null
                           ? fmtRange(row.low, row.high!)
-                          : (l === "sr" ? "unesi površinu" : "enter area")}
+                          : row.unit === "kom"
+                            ? (l === "sr" ? "unesi broj" : l === "ru" ? "введите количество" : "enter count")
+                            : row.unit === "lm"
+                              ? (l === "sr" ? "unesi dužinu" : l === "ru" ? "введите длину" : "enter length")
+                              : (l === "sr" ? "unesi površinu" : l === "ru" ? "введите площадь" : "enter area")}
                       </span>
                     </div>
                   ))}
@@ -308,7 +339,7 @@ export function Step5Output({ lang, state, tree, i18n, onRestart }: Props) {
                 </div>
                 {grandIncomplete && (
                   <div style={{ fontSize: "0.75rem", color: "var(--ink4)", marginTop: 2 }}>
-                    {l === "sr" ? "* neke stavke bez unesene površine" : "* some items missing area input"}
+                    {l === "sr" ? "* neke stavke bez unesenih podataka" : l === "ru" ? "* некоторые позиции без данных" : "* some items missing input"}
                   </div>
                 )}
               </div>
