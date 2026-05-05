@@ -9,11 +9,41 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const VALID_CATEGORIES = new Set<string>([
-  "windows", "shutters", "mosquito_nets", "shower_cabins", "tiles", "faucets",
-  "sinks", "toilets", "bathroom_furniture", "kitchen_elements", "kitchen_sinks",
-  "kitchen_faucets", "lighting", "outdoor_lighting", "fences", "gates",
-  "gate_motors", "paving", "irrigation", "lawn",
-  "interior_doors", "entrance_doors", "terrace_doors", "garage_doors", "power_tools",
+  // Stolarija
+  "windows", "shutters", "mosquito_nets",
+  "interior_doors", "entrance_doors", "terrace_doors", "garage_doors",
+  // Kupatilo i sanitarije
+  "shower_cabins", "toilets", "sinks", "faucets", "bathroom_furniture",
+  "bidets", "bathtubs", "mirrors", "towel_radiators", "bathroom_accessories",
+  // Kuhinja
+  "kitchen_elements", "kitchen_sinks", "kitchen_faucets",
+  // Keramika i podne obloge
+  "tiles", "granite_tiles", "marble_tiles", "tile_adhesives", "tile_tools",
+  "floor_trims", "parquet", "laminate", "vinyl_flooring",
+  // Boje i fasada
+  "paints", "primers", "decorative_plaster", "etics_systems",
+  // Građevinski materijali
+  "masonry_blocks", "cement_mortar", "reinforcement", "drywall", "drywall_profiles",
+  // Drvo i ploče
+  "timber_lumber", "osb_boards", "panel_boards",
+  // Krov
+  "roofing_tiles", "roof_membranes", "gutters",
+  // Izolacija
+  "insulation_thermal", "insulation_acoustic", "waterproofing",
+  // Hemija
+  "adhesives_sealants", "construction_chemicals",
+  // ViK
+  "pipes_fittings", "water_heaters", "septic_tanks", "valves", "pumps",
+  // Grejanje i klima
+  "boilers_heating", "radiators", "underfloor_heating", "air_conditioning",
+  "heat_pumps", "ventilation",
+  // Elektro
+  "electrical_cables", "electrical_panels", "switches_outlets", "smart_home",
+  // Alati
+  "power_tools", "hand_tools", "measuring_tools", "safety_equipment",
+  // Rasveta i dvorište
+  "lighting", "outdoor_lighting",
+  "fences", "gates", "gate_motors", "paving", "irrigation", "lawn",
 ]);
 const VALID_TIERS = new Set<string>(["lower", "mid", "higher"]);
 

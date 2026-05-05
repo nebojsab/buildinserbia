@@ -29,7 +29,70 @@ export type CatalogCategoryId =
   | "entrance_doors"
   | "terrace_doors"
   | "garage_doors"
-  | "power_tools";
+  | "power_tools"
+  // ── Keramika i podne obloge ───────────────────────────────────────────────
+  | "tile_adhesives"
+  | "granite_tiles"
+  | "marble_tiles"
+  | "floor_trims"
+  | "tile_tools"
+  | "parquet"
+  | "laminate"
+  | "vinyl_flooring"
+  // ── Boje, malteri i fasada ────────────────────────────────────────────────
+  | "paints"
+  | "primers"
+  | "decorative_plaster"
+  | "etics_systems"
+  // ── Građevinski materijali ────────────────────────────────────────────────
+  | "masonry_blocks"
+  | "cement_mortar"
+  | "reinforcement"
+  | "drywall"
+  | "drywall_profiles"
+  // ── Drvo, ploče i nosači ──────────────────────────────────────────────────
+  | "timber_lumber"
+  | "osb_boards"
+  | "panel_boards"
+  // ── Krov ─────────────────────────────────────────────────────────────────
+  | "roofing_tiles"
+  | "roof_membranes"
+  | "gutters"
+  // ── Izolacija i hidroizolacija ────────────────────────────────────────────
+  | "insulation_thermal"
+  | "insulation_acoustic"
+  | "waterproofing"
+  // ── Hemija i lepkovi ──────────────────────────────────────────────────────
+  | "adhesives_sealants"
+  | "construction_chemicals"
+  // ── ViK instalacije ───────────────────────────────────────────────────────
+  | "pipes_fittings"
+  | "water_heaters"
+  | "septic_tanks"
+  | "valves"
+  | "pumps"
+  // ── Sanitarije ────────────────────────────────────────────────────────────
+  | "bidets"
+  | "bathtubs"
+  | "mirrors"
+  | "towel_radiators"
+  | "bathroom_accessories"
+  // ── Grejanje i klima ──────────────────────────────────────────────────────
+  | "boilers_heating"
+  | "radiators"
+  | "underfloor_heating"
+  | "air_conditioning"
+  | "heat_pumps"
+  | "ventilation"
+  // ── Elektro ───────────────────────────────────────────────────────────────
+  | "electrical_cables"
+  | "electrical_panels"
+  | "switches_outlets"
+  | "smart_home"
+  // ── Alati ─────────────────────────────────────────────────────────────────
+  | "hand_tools"
+  | "measuring_tools"
+  | "safety_equipment";
 
 export type LocalizedCatalogText = Record<Lang, string>;
 
