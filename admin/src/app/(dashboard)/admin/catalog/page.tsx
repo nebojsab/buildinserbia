@@ -410,11 +410,26 @@ export default async function CatalogAdminPage({ searchParams }: PageProps) {
         </div>
       </section>
 
-      <section style={{ background: "var(--card)", border: "1px solid var(--bdr)", borderRadius: 10 }}>
-        <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--bdr)" }}>
-          <h3 style={{ margin: 0, fontSize: 14, color: "var(--ink)" }}>Kategorije i pokrivenost</h3>
-        </div>
-        <div style={{ overflowX: "auto" }}>
+      <details style={{ background: "var(--card)", border: "1px solid var(--bdr)", borderRadius: 10 }}>
+        <summary style={{
+          padding: "12px 14px",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+          listStyle: "none",
+          userSelect: "none",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <h3 style={{ margin: 0, fontSize: 14, color: "var(--ink)" }}>Kategorije i pokrivenost</h3>
+            <span style={{ fontSize: 11, color: "var(--ink4)" }}>
+              {categoryUsage.filter((c) => c.activeProducts >= 2).length} / {categoryUsage.length} pokriveno
+            </span>
+          </div>
+          <span style={{ fontSize: 11, color: "var(--ink4)", flexShrink: 0 }}>▼</span>
+        </summary>
+        <div style={{ borderTop: "1px solid var(--bdr)", overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
             <thead>
               <tr style={{ background: "var(--bgw)", color: "var(--ink3)" }}>
@@ -429,14 +444,7 @@ export default async function CatalogAdminPage({ searchParams }: PageProps) {
                   <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>{category.id}</td>
                   <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>{category.title.sr}</td>
                   <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                        color: category.activeProducts >= 2 ? "var(--grn)" : "#B45309",
-                      }}
-                    >
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, color: category.activeProducts >= 2 ? "var(--grn)" : "#B45309" }}>
                       <span>{category.activeProducts}</span>
                       <span style={{ fontSize: 10 }}>
                         {category.activeProducts >= 2 ? "OK" : "dopuniti"}
@@ -448,7 +456,7 @@ export default async function CatalogAdminPage({ searchParams }: PageProps) {
             </tbody>
           </table>
         </div>
-      </section>
+      </details>
 
       <section style={{ background: "var(--card)", border: "1px solid var(--bdr)", borderRadius: 10 }}>
         <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--bdr)" }}>
