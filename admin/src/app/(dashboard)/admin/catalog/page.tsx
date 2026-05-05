@@ -11,6 +11,7 @@ import {
   updateCatalogProductOverride,
 } from "@/lib/catalogAdminState";
 import { CatalogProductsTable, type TableProduct } from "@/components/catalog/CatalogProductsTable";
+import { CatalogCsvImport } from "@/components/catalog/CatalogCsvImport";
 
 function daysSince(dateIso: string): number {
   const now = Date.now();
@@ -253,6 +254,8 @@ export default async function CatalogAdminPage({ searchParams }: PageProps) {
           pokrivenosti, kvaliteta i svežine podataka pre nego što se proizvodi prikažu na sajtu.
         </p>
       </div>
+
+      <CatalogCsvImport />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: 12 }}>
         {[
