@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import ExcelJS from "exceljs";
+import * as XLSX from "xlsx";
 import { addCustomCatalogProduct, getCatalogAdminState } from "@/lib/catalogAdminState";
 import { products as baseProducts } from "@shared/data/catalog/products";
 import type { CatalogProduct, CatalogCategoryId, QualityTier } from "@shared/types/catalog";
@@ -64,33 +64,30 @@ function splitCsvRow(line: string): string[] {
 }
 
 async function parseXlsx(blob: Blob): Promise<Record<string, string>[]> {
-  const nodeBuf = Buffer.from(new Uint8Array(await blob.arrayBuffer()));
-  const wb = new ExcelJS.Workbook();
-  // ExcelJS types lag behind Node.js Buffer generics — cast needed
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await wb.xlsx.load(nodeBuf as any);
-  const ws = wb.worksheets.find((s) => !s.name.startsWith("_"));
-  if (!ws) return [];
+  const arrayBuf = await blob.arrayBuffer();
+  const wb = XLSX.read(arrayBuf, { type: "array" });
 
-  const rows: Record<string, string>[] = [];
-  let headers: string[] = [];
+  // Use first non-hidden sheet (skip our _categories / _tiers helper sheets)
+  const sheetName = wb.SheetNames.find((n) => !n.startsWith("_"));
+  if (!sheetName) return [];
+  const ws = wb.Sheets[sheetName];
 
-  ws.eachRow((row, rowNum) => {
-    const values = (row.values as (ExcelJS.CellValue | undefined)[]).slice(1); // col index starts at 1
-    const strValues = values.map((v) => (v == null ? "" : String(v).trim()));
+  // sheet_to_json returns rows as objects keyed by header; defval ensures no undefined
+  const raw = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: "" });
 
-    if (rowNum === 1) {
-      headers = strValues.map(normalizeHeader);
-      return;
-    }
-    // Skip legend/comment rows (empty title or starts with *)
-    if (!strValues[0] || strValues[0].startsWith("*")) return;
-    const row2: Record<string, string> = {};
-    headers.forEach((h, idx) => { row2[h] = strValues[idx] ?? ""; });
-    rows.push(row2);
-  });
-
-  return rows;
+  return raw
+    .map((row) => {
+      const normalized: Record<string, string> = {};
+      for (const [k, v] of Object.entries(row)) {
+        normalized[normalizeHeader(String(k))] = String(v ?? "").trim();
+      }
+      return normalized;
+    })
+    .filter((row) => {
+      // Skip legend/comment rows (empty title or starts with *)
+      const title = row["title"] ?? "";
+      return title !== "" && !title.startsWith("*");
+    });
 }
 
 type ImportResult = {
