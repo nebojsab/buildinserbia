@@ -31,4 +31,9 @@ export const categories: CatalogCategory[] = [
   { id: "paving", title: { sr: "Poplocavanje", en: "Paving", ru: "Moshchenie" }, sortOrder: 180, isActive: true },
   { id: "irrigation", title: { sr: "Navodnjavanje", en: "Irrigation", ru: "Oroshenie" }, sortOrder: 190, isActive: true },
   { id: "lawn", title: { sr: "Travnjak", en: "Lawn", ru: "Gazonn" }, sortOrder: 200, isActive: true },
+  { id: "interior_doors", title: { sr: "Sobna vrata", en: "Interior doors", ru: "Mezhkomnatnye dveri" }, sortOrder: 210, isActive: true },
+  { id: "entrance_doors", title: { sr: "Ulazna vrata", en: "Entrance doors", ru: "Vkhodnye dveri" }, sortOrder: 220, isActive: true },
+  { id: "terrace_doors", title: { sr: "Terasna vrata", en: "Terrace doors", ru: "Terrasnye dveri" }, sortOrder: 230, isActive: true },
+  { id: "garage_doors", title: { sr: "Garazna vrata", en: "Garage doors", ru: "Garazhnye vorota" }, sortOrder: 240, isActive: true },
+  { id: "power_tools", title: { sr: "Elektricni alat", en: "Power tools", ru: "Elektrichesky instrument" }, sortOrder: 250, isActive: true },
 ];

@@ -8,6 +8,7 @@ const CATEGORIES = [
   "sinks", "toilets", "bathroom_furniture", "kitchen_elements", "kitchen_sinks",
   "kitchen_faucets", "lighting", "outdoor_lighting", "fences", "gates",
   "gate_motors", "paving", "irrigation", "lawn",
+  "interior_doors", "entrance_doors", "terrace_doors", "garage_doors", "power_tools",
 ];
 
 const QUALITY_TIERS = ["lower", "mid", "higher"];

@@ -24,7 +24,12 @@ export type CatalogCategoryId =
   | "gate_motors"
   | "paving"
   | "irrigation"
-  | "lawn";
+  | "lawn"
+  | "interior_doors"
+  | "entrance_doors"
+  | "terrace_doors"
+  | "garage_doors"
+  | "power_tools";
 
 export type LocalizedCatalogText = Record<Lang, string>;
 
