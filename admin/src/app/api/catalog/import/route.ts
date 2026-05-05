@@ -64,9 +64,11 @@ function splitCsvRow(line: string): string[] {
 }
 
 async function parseXlsx(blob: Blob): Promise<Record<string, string>[]> {
-  const arrayBuf = await blob.arrayBuffer();
+  const nodeBuf = Buffer.from(new Uint8Array(await blob.arrayBuffer()));
   const wb = new ExcelJS.Workbook();
-  await wb.xlsx.load(arrayBuf);
+  // ExcelJS types lag behind Node.js Buffer generics — cast needed
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await wb.xlsx.load(nodeBuf as any);
   const ws = wb.worksheets.find((s) => !s.name.startsWith("_"));
   if (!ws) return [];
 
