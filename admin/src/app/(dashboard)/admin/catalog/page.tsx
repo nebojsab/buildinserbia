@@ -176,6 +176,8 @@ export default async function CatalogAdminPage({ searchParams }: PageProps) {
   const filterStatus = readSearchParam(resolvedParams, "status") || "all";
   const filterTask = readSearchParam(resolvedParams, "task") || "all";
   const filterCategory = readSearchParam(resolvedParams, "category") || "all";
+  const PAGE_SIZE = 50;
+  const currentPage = Math.max(1, parseInt(readSearchParam(resolvedParams, "page") || "1", 10));
 
   const state = await getCatalogAdminState();
   const baseProducts: EffectiveCatalogProduct[] = products.map((product) => {
@@ -226,6 +228,10 @@ export default async function CatalogAdminPage({ searchParams }: PageProps) {
 
   const knownTasks = [...new Set(plannerMappings.map((mapping) => mapping.taskId))]
     .sort((a, b) => a.localeCompare(b));
+
+  const totalPages = Math.ceil(filteredProducts.length / PAGE_SIZE);
+  const safePage = Math.min(currentPage, Math.max(1, totalPages));
+  const pagedProducts = filteredProducts.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   return (
     <div style={{ display: "grid", gap: 18 }}>
@@ -459,14 +465,26 @@ export default async function CatalogAdminPage({ searchParams }: PageProps) {
       </details>
 
       <section style={{ background: "var(--card)", border: "1px solid var(--bdr)", borderRadius: 10 }}>
-        <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--bdr)" }}>
+        <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--bdr)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <h3 style={{ margin: 0, fontSize: 14, color: "var(--ink)" }}>
-            Proizvodi (rucno kurirani) - prikaz: {filteredProducts.length}
+            Proizvodi (rucno kurirani)
+            <span style={{ marginLeft: 8, fontSize: 12, fontWeight: 400, color: "var(--ink4)" }}>
+              {(safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, filteredProducts.length)} od {filteredProducts.length}
+            </span>
           </h3>
+          {totalPages > 1 && (
+            <PaginationControls
+              currentPage={safePage}
+              totalPages={totalPages}
+              filterStatus={filterStatus}
+              filterTask={filterTask}
+              filterCategory={filterCategory}
+            />
+          )}
         </div>
         <div style={{ padding: "12px 14px" }}>
           <CatalogProductsTable
-            products={filteredProducts.map((product): TableProduct => ({
+            products={pagedProducts.map((product): TableProduct => ({
               id: product.id,
               title: product.title,
               category: product.category,
@@ -492,7 +510,85 @@ export default async function CatalogAdminPage({ searchParams }: PageProps) {
             restoreToListAction={restoreToListAction}
           />
         </div>
+        {totalPages > 1 && (
+          <div style={{ padding: "12px 14px", borderTop: "1px solid var(--bdr)", display: "flex", justifyContent: "center" }}>
+            <PaginationControls
+              currentPage={safePage}
+              totalPages={totalPages}
+              filterStatus={filterStatus}
+              filterTask={filterTask}
+              filterCategory={filterCategory}
+            />
+          </div>
+        )}
       </section>
+    </div>
+  );
+}
+
+function PaginationControls({
+  currentPage,
+  totalPages,
+  filterStatus,
+  filterTask,
+  filterCategory,
+}: {
+  currentPage: number;
+  totalPages: number;
+  filterStatus: string;
+  filterTask: string;
+  filterCategory: string;
+}) {
+  function pageUrl(page: number) {
+    const p = new URLSearchParams();
+    if (filterStatus !== "all") p.set("status", filterStatus);
+    if (filterTask !== "all") p.set("task", filterTask);
+    if (filterCategory !== "all") p.set("category", filterCategory);
+    if (page > 1) p.set("page", String(page));
+    const qs = p.toString();
+    return `/admin/catalog${qs ? `?${qs}` : ""}`;
+  }
+
+  // Show at most 7 page buttons: first, last, current ±2, ellipsis
+  const pages: (number | "…")[] = [];
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 2) {
+      pages.push(i);
+    } else if (pages[pages.length - 1] !== "…") {
+      pages.push("…");
+    }
+  }
+
+  const btnBase: React.CSSProperties = {
+    display: "inline-flex", alignItems: "center", justifyContent: "center",
+    minWidth: 32, height: 32, padding: "0 8px",
+    borderRadius: 6, fontSize: 12, fontWeight: 500,
+    textDecoration: "none", border: "1px solid var(--bdr2)",
+    background: "var(--bgw)", color: "var(--ink2)", cursor: "pointer",
+  };
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+      {currentPage > 1 && (
+        <a href={pageUrl(currentPage - 1)} style={btnBase}>‹</a>
+      )}
+      {pages.map((p, idx) =>
+        p === "…"
+          ? <span key={`ellipsis-${idx}`} style={{ padding: "0 4px", fontSize: 12, color: "var(--ink4)" }}>…</span>
+          : <a
+              key={p}
+              href={pageUrl(p)}
+              style={{
+                ...btnBase,
+                ...(p === currentPage ? { background: "var(--acc)", color: "#fff", borderColor: "var(--acc)", fontWeight: 700 } : {}),
+              }}
+            >
+              {p}
+            </a>
+      )}
+      {currentPage < totalPages && (
+        <a href={pageUrl(currentPage + 1)} style={btnBase}>›</a>
+      )}
     </div>
   );
 }
