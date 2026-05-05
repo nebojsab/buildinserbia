@@ -98,6 +98,7 @@ type ImportResult = {
 
 export async function POST(req: Request): Promise<NextResponse> {
   let rows: Record<string, string>[];
+  let parseMode = "unknown";
   try {
     const form = await req.formData();
     const file = form.get("file");
@@ -106,15 +107,26 @@ export async function POST(req: Request): Promise<NextResponse> {
     }
     const blob = file as Blob;
     const fileName = (blob as File).name ?? "";
-    rows = fileName.endsWith(".xlsx") || blob.type.includes("spreadsheet")
-      ? await parseXlsx(blob)
-      : parseCsv(await blob.text());
-  } catch {
-    return NextResponse.json({ error: "Failed to read file" }, { status: 400 });
+    const isXlsx = fileName.toLowerCase().endsWith(".xlsx") || blob.type.includes("spreadsheet");
+    parseMode = isXlsx ? "xlsx" : "csv";
+
+    if (isXlsx) {
+      try {
+        rows = await parseXlsx(blob);
+      } catch (xlsxErr) {
+        const msg = xlsxErr instanceof Error ? xlsxErr.message : String(xlsxErr);
+        return NextResponse.json({ error: `Failed to parse xlsx: ${msg}` }, { status: 400 });
+      }
+    } else {
+      rows = parseCsv(await blob.text());
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: `Failed to read file (${parseMode}): ${msg}` }, { status: 400 });
   }
 
   if (rows.length === 0) {
-    return NextResponse.json({ error: "Empty or invalid file" }, { status: 400 });
+    return NextResponse.json({ error: `No data rows found (parsed as ${parseMode}). Check that the file has data below the header row and is not all example/comment rows.` }, { status: 400 });
   }
 
   // Build set of all existing productUrls to prevent duplicates / overwriting
