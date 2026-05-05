@@ -111,6 +111,19 @@ export async function clearCatalogProductOverride(productId: string): Promise<vo
   }
 }
 
+export async function bulkAddCustomCatalogProducts(products: CatalogProduct[]): Promise<void> {
+  if (products.length === 0) return;
+  const state = await getCatalogAdminState();
+  const existingIds = new Set(state.customProducts.map((p) => p.id));
+  for (const product of products) {
+    if (!existingIds.has(product.id)) {
+      state.customProducts.unshift(product);
+      existingIds.add(product.id);
+    }
+  }
+  await saveState(state);
+}
+
 export async function addCustomCatalogProduct(product: CatalogProduct): Promise<void> {
   const state = await getCatalogAdminState();
   state.customProducts = [product, ...state.customProducts.filter((entry) => entry.id !== product.id)];

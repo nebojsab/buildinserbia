@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import * as XLSX from "xlsx";
-import { addCustomCatalogProduct, getCatalogAdminState } from "@/lib/catalogAdminState";
+import { bulkAddCustomCatalogProducts, getCatalogAdminState } from "@/lib/catalogAdminState";
 import { products as baseProducts } from "@shared/data/catalog/products";
 import type { CatalogProduct, CatalogCategoryId, QualityTier } from "@shared/types/catalog";
 
@@ -166,20 +166,22 @@ export async function POST(req: Request): Promise<NextResponse> {
   ]);
 
   const result: ImportResult = { imported: 0, skipped: [] };
+  const toAdd: CatalogProduct[] = [];
+  const now = new Date().toISOString().slice(0, 10);
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     const rowNum = i + 2;
 
-    const title           = row["title"]             ?? "";
-    const category        = row["category"]          ?? "";
+    const title            = row["title"]             ?? "";
+    const category         = row["category"]          ?? "";
     const shortDescription = row["short_description"] ?? "";
-    const merchantName    = row["merchant_name"]      ?? "";
-    const productUrl      = row["product_url"]        ?? "";
-    const imageUrl        = row["image_url"]          ?? "";
-    const priceLabel      = row["price_label"]        ?? "";
-    const qualityTierRaw  = row["quality_tier"]       || "mid";
-    const isFeaturedRaw   = (row["is_featured"] ?? "").toLowerCase();
+    const merchantName     = row["merchant_name"]     ?? "";
+    const productUrl       = row["product_url"]       ?? "";
+    const imageUrl         = row["image_url"]         ?? "";
+    const priceLabel       = row["price_label"]       ?? "";
+    const qualityTierRaw   = row["quality_tier"]      || "mid";
+    const isFeaturedRaw    = (row["is_featured"] ?? "").toLowerCase();
 
     if (!title)                          { result.skipped.push({ row: rowNum, reason: "Missing: title" }); continue; }
     if (!VALID_CATEGORIES.has(category)) { result.skipped.push({ row: rowNum, reason: `Invalid category: "${category}"` }); continue; }
@@ -192,7 +194,7 @@ export async function POST(req: Request): Promise<NextResponse> {
     const qualityTier: QualityTier = VALID_TIERS.has(qualityTierRaw) ? (qualityTierRaw as QualityTier) : "mid";
     const isFeatured = isFeaturedRaw === "true" || isFeaturedRaw === "1" || isFeaturedRaw === "yes";
 
-    const product: CatalogProduct = {
+    toAdd.push({
       id: `custom_${Date.now()}_${i}`,
       title,
       category: category as CatalogCategoryId,
@@ -205,16 +207,18 @@ export async function POST(req: Request): Promise<NextResponse> {
       qualityTier,
       tags: ["csv-import"],
       plannerMappings: [],
-      lastCheckedAt: new Date().toISOString().slice(0, 10),
+      lastCheckedAt: now,
       isFeatured,
       isActive: true,
       sourceType: "manual",
-    };
+    });
 
-    await addCustomCatalogProduct(product);
     existingUrls.add(productUrl);
     result.imported++;
   }
+
+  // Single read + write for the entire batch
+  await bulkAddCustomCatalogProducts(toAdd);
 
   revalidatePath("/admin/catalog");
   return NextResponse.json(result);
