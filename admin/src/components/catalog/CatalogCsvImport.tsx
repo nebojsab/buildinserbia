@@ -47,10 +47,10 @@ export function CatalogCsvImport({ onDone }: { onDone?: () => void }) {
         <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>CSV import</span>
         <a
           href="/api/catalog/import/template"
-          download="catalog-template.csv"
+          download="catalog-template.xlsx"
           style={{ fontSize: 11, color: "var(--acc)", textDecoration: "none", fontWeight: 600 }}
         >
-          ⬇ Skini template
+          ⬇ Skini template (.xlsx)
         </a>
       </div>
 
@@ -58,7 +58,7 @@ export function CatalogCsvImport({ onDone }: { onDone?: () => void }) {
         <input
           ref={inputRef}
           type="file"
-          accept=".csv,text/csv"
+          accept=".xlsx,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           required
           style={{ flex: 1, fontSize: 12, color: "var(--ink2)" }}
         />
@@ -73,7 +73,8 @@ export function CatalogCsvImport({ onDone }: { onDone?: () => void }) {
       </form>
 
       <p style={{ margin: "6px 0 0", fontSize: 11, color: "var(--ink4)" }}>
-        Obavezne kolone: <code>title, category, short_description, merchant_name, product_url, image_url</code>
+        Prihvata <code>.xlsx</code> (preporučeno) i <code>.csv</code>.
+        {" "}Obavezno: <code>title *, category *, short_description *, merchant_name *, product_url *, image_url *</code>
         {" · "}Opciono: <code>price_label, quality_tier, is_featured</code>
       </p>
 
