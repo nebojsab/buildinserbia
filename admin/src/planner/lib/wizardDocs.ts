@@ -47,6 +47,33 @@ const SUB_TO_TASK: Record<string, string> = {
   krov_zamena_pokrivaca:          "roof",
   krov_termoizolacija_potkrovlja: "roof",
   krov_reparatura:                "roof",
+
+  // Izgradnja (new build) subcategories
+  dok_idejni:                     "projektna_dok",
+  dok_gradevinska_dozvola:        "projektna_dok",
+  dok_izvodjacki:                 "projektna_dok",
+  iskop:                          "masinski_iskop",
+  temelji_temeljne_trake:         "foundations",
+  konstrukcija_zidanje:           "walls",
+  konstrukcija_ploce:             "ab_ploce",
+  konstrukcija_stepenice:         "stepenice",
+  krov_konstrukcija:              "roof",
+  krov_pokrivac:                  "roof",
+  fasada_etics:                   "insulation",
+  fasada_malterisanje:            "spoljasnje_malterisanje",
+  stolarija_prozori:              "winreplace",
+  stolarija_ulazna_vrata:         "stolarija_ulazna",
+  stolarija_garazna_vrata:        "garazna_vrata",
+  elektro_kompletna:              "electrical",
+  elektro_slaba_struja:           "slaba_struja",
+  elektro_solar:                  "solarni_sistem",
+  vik_kompletna:                  "plumbing",
+  grejanje_klima:                 "klima",
+  grejanje_rekuperacija:          "rekuperacija",
+  zavrse_malterisanje:            "unutr_malterisanje",
+  zavrse_podovi:                  "flooring",
+  zavrse_krecenje:                "finishing",
+  zavrse_unutrasnja_stolarija:    "unutr_stolarija",
 };
 
 function getFirstAreaM2(fieldValues: Record<string, Record<string, unknown>>): string {

@@ -227,6 +227,73 @@ function boqLines(
       en: ["Outdoor lighting:", "  • Cables, bollards, fittings"],
       ru: ["Уличный свет:", "  • Кабели, светильники"],
     },
+
+    // ── Izgradnja (new build) task keys ──────────────────────
+    projektna_dok: {
+      sr: ["Projektna dokumentacija:", "  • Idejno rešenje / arhitektonski projekat", "  • Lokacijski uslovi i prijava radova", "  • Saglasnosti komunalnih preduzeća", "  • Izvođački projekat (PGP) — struke po ugovoru"],
+      en: ["Design & permits:", "  • Concept design / architectural drawings", "  • Location conditions and building notification", "  • Utility authority approvals", "  • Construction drawings (tender package) — by discipline"],
+      ru: ["Проектная документация:", "  • Концептуальное / архитектурное решение", "  • Градостроительные условия и уведомление", "  • Согласования коммунальных служб", "  • Рабочий проект (тендерный пакет) — по разделам"],
+    },
+    masinski_iskop: {
+      sr: ["Mašinski iskop:", "  • Skidanje humusnog sloja (m²)", "  • Mašinski iskop do projektovane kote (m³)", "  • Odvoz i deponovanje viška zemlje", "  • Planiranje dna iskopa"],
+      en: ["Mechanical excavation:", "  • Topsoil strip (m²)", "  • Bulk excavation to formation level (m³)", "  • Spoil removal and disposal", "  • Trim and compact formation"],
+      ru: ["Механическая выемка грунта:", "  • Срезка растительного слоя (м²)", "  • Разработка котлована до проектной отметки (м³)", "  • Вывоз и складирование излишков грунта", "  • Планировка дна котлована"],
+    },
+    ab_ploce: {
+      sr: ["Armiranobetonske ploče (međuspratne):", "  • Oplata (m²)", "  • Armatura (t)", "  • Betoniranje — beton klase C25/30 (m³)", "  • Njegovanje betona i skidanje oplate"],
+      en: ["RC slabs (intermediate floors):", "  • Formwork (m²)", "  • Reinforcement (t)", "  • Concrete pour — class C25/30 (m³)", "  • Curing and striking formwork"],
+      ru: ["ЖБ плиты (межэтажные перекрытия):", "  • Опалубка (м²)", "  • Арматура (т)", "  • Бетонирование — класс C25/30 (м³)", "  • Уход за бетоном и снятие опалубки"],
+    },
+    stepenice: {
+      sr: ["Stepenice:", "  • Oplata stepenica", "  • Armatura i betoniranje (AB monolitne)", "  • Završna obrada površine stepenica"],
+      en: ["Stairs:", "  • Stair formwork", "  • Reinforcement and concrete (RC monolithic)", "  • Stair surface finish"],
+      ru: ["Лестница:", "  • Опалубка лестничного марша", "  • Армирование и бетонирование (монолитный ЖБ)", "  • Финишная отделка поверхности лестницы"],
+    },
+    spoljasnje_malterisanje: {
+      sr: ["Spoljašnje malterisanje:", "  • Priprema podloge (čišćenje, kvašenje)", "  • Produžni cementni malter — grubi sloj (m²)", "  • Završni fasadni malter / silikatni sloj (m²)"],
+      en: ["External rendering:", "  • Substrate preparation (clean, wet)", "  • Lime-cement render — base coat (m²)", "  • Finish render / silicate coat (m²)"],
+      ru: ["Внешняя штукатурка:", "  • Подготовка основания (очистка, увлажнение)", "  • Известково-цементная штукатурка — базовый слой (м²)", "  • Финишная / силикатная штукатурка (м²)"],
+    },
+    stolarija_ulazna: {
+      sr: ["Ulazna vrata:", "  • Demontaža privremene zaštite otvora", "  • Isporuka i ugradnja ulaznih vrata (kom)", "  • Pena, trake, brtvljenje", "  • Boja / kov i okovi"],
+      en: ["Entrance door:", "  • Remove temporary opening protection", "  • Supply and fit entrance door (pcs)", "  • Foam, tapes, weatherseal", "  • Paint / hardware and ironmongery"],
+      ru: ["Входная дверь:", "  • Демонтаж временной защиты проёма", "  • Поставка и установка входной двери (шт.)", "  • Пена, ленты, уплотнение", "  • Покраска / фурнитура"],
+    },
+    garazna_vrata: {
+      sr: ["Garažna vrata:", "  • Isporuka i montaža garažnih vrata (kom)", "  • Ugradnja motora / automatike (opciono)", "  • Podešavanje i probni rad"],
+      en: ["Garage door:", "  • Supply and fit garage door (pcs)", "  • Motor / automation installation (optional)", "  • Adjustment and commissioning"],
+      ru: ["Гаражные ворота:", "  • Поставка и установка гаражных ворот (шт.)", "  • Монтаж привода / автоматики (опционально)", "  • Регулировка и пробный запуск"],
+    },
+    slaba_struja: {
+      sr: ["Slaba struja (IT / alarm / AV):", "  • LAN mreža — polaganje Cat6/Cat7 kablova", "  • Alarmni sistem — detektori, centrala", "  • Video nadzor — kamere, snimač", "  • Interfon / video portir", "  • TV/SAT antenska instalacija"],
+      en: ["Low voltage (IT / alarm / AV):", "  • LAN network — Cat6/Cat7 cabling", "  • Burglar alarm — detectors, panel", "  • CCTV — cameras, recorder", "  • Video intercom / door entry", "  • TV/SAT aerial installation"],
+      ru: ["Слаботочные системы (IT / сигнализация / AV):", "  • LAN сеть — прокладка Cat6/Cat7", "  • Охранная сигнализация — датчики, панель", "  • Видеонаблюдение — камеры, видеорегистратор", "  • Видеодомофон / система доступа", "  • ТВ/спутниковая антенная установка"],
+    },
+    solarni_sistem: {
+      sr: ["Solarni sistem (fotonaponski):", "  • Konstrukcija za montažu panela na krovu", "  • Solarni paneli (kWp po projektu)", "  • Inverter / hibridni inverter", "  • Baterija za akumulaciju (opciono)", "  • Priključak na mrežu / merilo (EPS)"],
+      en: ["Solar PV system:", "  • Roof mounting structure", "  • Solar panels (kWp to design)", "  • Inverter / hybrid inverter", "  • Battery storage (optional)", "  • Grid connection / meter (utility)"],
+      ru: ["Солнечная фотоэлектрическая система:", "  • Монтажная конструкция на крыше", "  • Солнечные панели (кВтп по проекту)", "  • Инвертор / гибридный инвертор", "  • Аккумуляторный накопитель (опционально)", "  • Подключение к сети / счётчик"],
+    },
+    klima: {
+      sr: ["Klima uređaji (split sistem):", "  • Isporuka i montaža unutrašnjih jedinica (kom)", "  • Montaža spoljašnje (ih) jedinice (kom)", "  • Polaganje cevovoda freona i drenažnih cevi", "  • Električno priključenje i probni rad"],
+      en: ["Air conditioning (split units):", "  • Supply and fit indoor units (pcs)", "  • Outdoor unit(s) installation (pcs)", "  • Refrigerant pipework and condensate drain", "  • Electrical connection and commissioning"],
+      ru: ["Кондиционеры (сплит-системы):", "  • Поставка и монтаж внутренних блоков (шт.)", "  • Монтаж наружного блока (шт.)", "  • Трубопроводы фреона и дренаж", "  • Электроподключение и пуско-наладка"],
+    },
+    rekuperacija: {
+      sr: ["Mehanička ventilacija s rekuperacijom (MVR):", "  • Centralna jedinica / rekuperator", "  • Razvod kanala po prostorijama", "  • Priključni elementi, regulatori protoka", "  • Balansiranje sistema i predaja"],
+      en: ["MVHR (mechanical ventilation with heat recovery):", "  • Central MVHR unit", "  • Ductwork distribution", "  • Valves, diffusers, flow regulators", "  • System balancing and commissioning"],
+      ru: ["Механическая вентиляция с рекуперацией тепла (МВРТ):", "  • Центральный рекуператор", "  • Разводка воздуховодов", "  • Клапаны, диффузоры, регуляторы расхода", "  • Балансировка системы и сдача"],
+    },
+    unutr_malterisanje: {
+      sr: ["Unutrašnje malterisanje i gletovanje:", "  • Mašinski gips malter — zidovi (m²)", "  • Gletovanje plafona (m²)", "  • Ugaone i profilne lajsne"],
+      en: ["Internal plastering & skim:", "  • Machine gypsum plaster — walls (m²)", "  • Skim coat — ceilings (m²)", "  • Corner beads and profiles"],
+      ru: ["Внутренняя штукатурка и шпаклёвка:", "  • Машинная гипсовая штукатурка — стены (м²)", "  • Шпаклёвка потолков (м²)", "  • Угловые и профильные элементы"],
+    },
+    unutr_stolarija: {
+      sr: ["Unutrašnja stolarija (vrata):", "  • Isporuka i ugradnja unutrašnjih vrata (kom)", "  • Krila, dovratnici, šarke, brave", "  • Podešavanje i regulacija"],
+      en: ["Internal joinery (doors):", "  • Supply and fit internal doors (pcs)", "  • Leaves, frames, hinges, locks", "  • Adjustment and final fit"],
+      ru: ["Внутренние столярные изделия (двери):", "  • Поставка и установка межкомнатных дверей (шт.)", "  • Полотна, коробки, петли, замки", "  • Регулировка и финальная установка"],
+    },
   };
 
   const seen = new Set<string>();
