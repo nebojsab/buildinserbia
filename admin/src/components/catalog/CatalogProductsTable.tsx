@@ -9,7 +9,9 @@ const IMAGE_PLACEHOLDER =
 function resolveImageUrl(value: string): string {
   try {
     const url = new URL(value);
-    if (url.protocol === "http:" || url.protocol === "https:") return value;
+    if (url.protocol !== "http:" && url.protocol !== "https:") return IMAGE_PLACEHOLDER;
+    if (url.hostname.includes("vercel-storage.com")) return value;
+    return `/api/img-proxy?url=${encodeURIComponent(value)}`;
   } catch {}
   return IMAGE_PLACEHOLDER;
 }
@@ -229,7 +231,6 @@ export function CatalogProductsTable({
                       alt={product.title}
                       width={54}
                       height={36}
-                      referrerPolicy="no-referrer"
                       style={{ objectFit: "cover", borderRadius: 6, border: "1px solid var(--bdr)" }}
                       onError={(e) => { (e.currentTarget as HTMLImageElement).src = IMAGE_PLACEHOLDER; }}
                     />
