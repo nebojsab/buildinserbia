@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { get, put } from "@vercel/blob";
+import { unstable_noStore as noStore } from "next/cache";
 import type { CatalogProduct } from "@shared/types/catalog";
 
 export type CatalogProductOverride = {
@@ -50,6 +51,13 @@ function loadFromFile(): CatalogAdminState {
 async function loadFromBlob(): Promise<CatalogAdminState> {
   const result = await get(STATE_BLOB_PATH, { access: STATE_BLOB_ACCESS });
   if (!result || result.statusCode !== 200) throw new Error("missing-blob");
+  // Fetch the blob URL directly with cache: 'no-store' to bypass both
+  // Next.js Data Cache and Vercel CDN edge cache after writes.
+  const blobUrl: string | undefined = (result as Record<string, unknown>).url as string | undefined;
+  if (blobUrl) {
+    const res = await fetch(blobUrl, { cache: "no-store" });
+    if (res.ok) return parseState(await res.text());
+  }
   const stream = result.stream as ReadableStream<Uint8Array>;
   const text = await new Response(stream).text();
   return parseState(text);
@@ -75,6 +83,7 @@ async function saveState(state: CatalogAdminState): Promise<void> {
 }
 
 export async function getCatalogAdminState(): Promise<CatalogAdminState> {
+  noStore();
   if (canUseBlob) {
     try {
       return await loadFromBlob();
