@@ -47,7 +47,13 @@ export function ProductCard({
         src={product.imageUrl}
         alt={product.title}
         loading="lazy"
-        style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: 10 }}
+        referrerPolicy="no-referrer"
+        style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: 10, background: "#F1F5F9" }}
+        onError={(e) => {
+          const img = e.currentTarget;
+          img.onerror = null;
+          img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='140' viewBox='0 0 400 140'%3E%3Crect width='400' height='140' fill='%23F1F5F9'/%3E%3Ctext x='200' y='76' font-size='13' text-anchor='middle' fill='%2394A3B8' font-family='Arial,sans-serif'%3ENo image%3C/text%3E%3C/svg%3E";
+        }}
       />
       <h4 style={{ margin: 0, fontSize: 14, color: "var(--ink)" }}>{product.title}</h4>
       <p style={{ margin: 0, fontSize: 12, color: "var(--ink3)", lineHeight: 1.55 }}>

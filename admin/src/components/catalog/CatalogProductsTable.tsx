@@ -229,7 +229,9 @@ export function CatalogProductsTable({
                       alt={product.title}
                       width={54}
                       height={36}
+                      referrerPolicy="no-referrer"
                       style={{ objectFit: "cover", borderRadius: 6, border: "1px solid var(--bdr)" }}
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = IMAGE_PLACEHOLDER; }}
                     />
                   </td>
                   <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>{product.title}</td>
