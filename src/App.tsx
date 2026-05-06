@@ -208,9 +208,9 @@ export default function App() {
               </h1>
               <p style={{fontSize:16,color:"var(--ink3)",lineHeight:1.72,maxWidth:490,marginBottom:24,fontFamily:"var(--sans)"}}>{t.hero.sub}</p>
               {/* Cost preview */}
-              <div style={{display:"inline-flex",alignItems:"center",gap:9,background:"var(--ambbg)",border:"1px solid var(--ambmid)",borderRadius:8,padding:"8px 15px",marginBottom:26}}>
+              <div style={{display:"inline-flex",alignItems:"center",gap:9,background:"var(--accbg)",border:"1px solid var(--accmid)",borderRadius:8,padding:"8px 15px",marginBottom:26}}>
                 <span style={{fontSize:14}}>💡</span>
-                <span style={{fontSize:13,fontWeight:500,color:"var(--amb)",fontFamily:"var(--sans)"}}>{t.hero.preview}</span>
+                <span style={{fontSize:13,fontWeight:500,color:"var(--acc)",fontFamily:"var(--sans)"}}>{t.hero.preview}</span>
               </div>
               {/* CTA */}
               <div style={{display:"flex",flexWrap:"wrap",gap:12,alignItems:"center",marginBottom:12}}>
@@ -529,8 +529,8 @@ export default function App() {
       <section style={{padding:PY,background:"var(--ink)"}}>
         <div style={{...MX}}>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
-            <div style={{width:22,height:1.5,background:"rgba(196,92,46,.7)",borderRadius:2}}/>
-            <p style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(196,92,46,.85)",fontFamily:"var(--sans)"}}>{t.trust.eyebrow}</p>
+            <div style={{width:22,height:1.5,background:"rgba(19,66,121,.7)",borderRadius:2}}/>
+            <p style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(19,66,121,.85)",fontFamily:"var(--sans)"}}>{t.trust.eyebrow}</p>
           </div>
           <h2 style={{fontFamily:"var(--heading)",fontSize:"clamp(22px,2.8vw,32px)",fontWeight:500,color:"#FAFAF9",lineHeight:1.3,letterSpacing:"-.01em",marginBottom:40}}>
             {t.trust.title}

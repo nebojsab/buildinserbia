@@ -41,7 +41,7 @@ export function ContentCard({
         style={{
           aspectRatio: "16 / 9",
           background: !effectiveCoverImage
-            ? "linear-gradient(145deg, rgba(196,92,46,.13) 0%, rgba(29,78,216,.08) 100%)"
+            ? "linear-gradient(145deg, rgba(19,66,121,.10) 0%, rgba(19,66,121,.08) 100%)"
             : undefined,
           borderBottom: "1px solid var(--bdr)",
           display: "flex",

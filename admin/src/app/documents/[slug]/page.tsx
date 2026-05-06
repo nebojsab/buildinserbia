@@ -123,7 +123,7 @@ export default async function DocumentDetailPage({
               border: "1px solid var(--bdr)",
               background: item.coverImage
                 ? `center / cover no-repeat url(${item.coverImage})`
-                : "linear-gradient(145deg, rgba(196,92,46,.13), rgba(29,78,216,.08))",
+                : "linear-gradient(145deg, rgba(19,66,121,.10), rgba(19,66,121,.08))",
               marginBottom: 18,
             }}
           />

@@ -908,7 +908,7 @@ export function Planner({
                           borderRadius: "var(--r)",
                           padding: 3,
                           background: "var(--acc)",
-                          boxShadow: "0 2px 8px rgba(196,92,46,.28)",
+                          boxShadow: "0 2px 8px rgba(19,66,121,.28)",
                         }}
                       >
                         <span

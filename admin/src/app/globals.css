@@ -2,23 +2,23 @@
    Based on src/index.css but without Tailwind import (Next app has its own pipeline). */
 
 :root {
-  --ink: #18181B;
-  --ink2: #3F3F46;
-  --ink3: #71717A;
-  --ink4: #A1A1AA;
-  --bg: #FAFAF9;
-  --bgw: #F4F4F0;
+  --ink: #0F172A;
+  --ink2: #334155;
+  --ink3: #64748B;
+  --ink4: #94A3B8;
+  --bg: #F8FAFC;
+  --bgw: #F1F5F9;
   --card: #FFFFFF;
-  --bdr: #E4E4E7;
-  --bdr2: #D4D4D8;
-  --acc: #C45C2E;
-  --acc2: #A34A22;
-  --accbg: #FEF3EE;
-  --accmid: #F5C5AD;
+  --bdr: #E2E8F0;
+  --bdr2: #CBD5E1;
+  --acc: #134279;
+  --acc2: #0f3260;
+  --accbg: #EFF6FF;
+  --accmid: #BFDBFE;
   --grn: #166534;
   --grnbg: #F0FDF4;
   --grnmid: #BBF7D0;
-  --blu: #1D4ED8;
+  --blu: #134279;
   --blubg: #EFF6FF;
   --blumid: #BFDBFE;
   --amb: #92400E;
@@ -425,7 +425,7 @@ button {
 
 .result-view .res-sec-title--acc {
   color: var(--acc);
-  border-bottom-color: rgba(196, 92, 46, .38)
+  border-bottom-color: rgba(37, 99, 235, .30)
 }
 
 .result-view .res-sec-title--muted {
@@ -516,13 +516,13 @@ button {
   border: none;
   cursor: pointer;
   transition: all .2s;
-  box-shadow: 0 2px 8px rgba(196, 92, 46, .28)
+  box-shadow: 0 2px 8px rgba(37, 99, 235, .28)
 }
 
 .btn-p:hover {
   background: var(--acc2);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(196, 92, 46, .32)
+  box-shadow: 0 4px 16px rgba(37, 99, 235, .32)
 }
 
 .btn-p:disabled {
@@ -646,7 +646,7 @@ button {
 .fselect:focus {
   border-color: var(--acc);
   background: var(--card);
-  box-shadow: 0 0 0 3px rgba(196, 92, 46, .1)
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .12)
 }
 
 .finput::placeholder {
@@ -1164,3 +1164,10 @@ button {
   }
 }
 
+
+@media (max-width: 600px) {
+  .beta-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

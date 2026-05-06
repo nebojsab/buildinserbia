@@ -190,7 +190,7 @@ export function Results({
             <p style={{fontSize:11,color:"rgba(255,255,255,.45)",fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",fontFamily:"var(--sans)"}}>
               {r.title}
             </p>
-            <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:4,background:plan.isMicro?"rgba(196,92,46,.35)":"rgba(29,78,216,.35)",color:plan.isMicro?"#FECBAB":"#BFDBFE",fontFamily:"var(--sans)",letterSpacing:".06em"}}>
+            <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:4,background:plan.isMicro?"rgba(19,66,121,.35)":"rgba(19,66,121,.35)",color:plan.isMicro?"#BFDBFE":"#BFDBFE",fontFamily:"var(--sans)",letterSpacing:".06em"}}>
               {plan.isMicro?r.microTag:r.multiTag}
             </span>
           </div>
@@ -211,7 +211,7 @@ export function Results({
             className="btn-p"
             onClick={() => void handleDownloadPlanZip()}
             disabled={planZipLoading}
-            style={{fontSize:13,padding:"10px 18px",background:"rgba(196,92,46,.95)",border:"none"}}
+            style={{fontSize:13,padding:"10px 18px",background:"rgba(19,66,121,.95)",border:"none"}}
           >
             {planZipLoading ? r.planZipPreparing : `📦 ${r.downloadPlan}`}
           </button>
@@ -226,7 +226,7 @@ export function Results({
 
       {/* ── START HERE BLOCK ── */}
       {plan.steps.length>0&&(
-        <div style={{background:"linear-gradient(135deg,var(--accbg),#FFF8F5)",border:"2px solid var(--accmid)",borderRadius:"var(--rl)",padding:"24px 26px",marginBottom:28}}>
+        <div style={{background:"linear-gradient(135deg,var(--accbg),#F0F7FF)",border:"2px solid var(--accmid)",borderRadius:"var(--rl)",padding:"24px 26px",marginBottom:28}}>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
             <span style={{fontSize:16}}>🚀</span>
             <p className="start-here-title">{r.startHereLabel}</p>
@@ -246,7 +246,7 @@ export function Results({
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,marginBottom:28}} className="res-2col">
 
         {/* Cost card */}
-        <div className="card" style={{background:"linear-gradient(135deg,#FEF3EE,#FFFAF8)",borderColor:"var(--accmid)"}}>
+        <div className="card" style={{background:"linear-gradient(135deg,#EFF6FF,#F5F9FF)",borderColor:"var(--accmid)"}}>
           <div style={{padding:"22px 24px"}}>
             <p className="res-sec-title res-sec-title--acc">{r.costsLabel}</p>
             <p style={{fontSize:32,fontWeight:400,color:"var(--ink)",fontFamily:"var(--heading)",lineHeight:1.05,marginBottom:4}}>
@@ -431,7 +431,7 @@ export function Results({
                   border:`1.5px solid ${i<3?"var(--acc)":i<5?"var(--ambmid)":"var(--bdr)"}`,
                   color:i<3?"#fff":i<5?"var(--amb)":"var(--ink3)",
                 }}>{i+1}</div>
-                {i<plan.steps.length-1&&<div style={{width:1.5,height:i<3?32:24,background:i<3?"rgba(196,92,46,.25)":"var(--bdr)",marginTop:3,marginBottom:3}}/>}
+                {i<plan.steps.length-1&&<div style={{width:1.5,height:i<3?32:24,background:i<3?"rgba(19,66,121,.20)":"var(--bdr)",marginTop:3,marginBottom:3}}/>}
               </div>
               <div style={{paddingTop:3,paddingBottom:i<plan.steps.length-1?22:0,flex:1}}>
                 <p style={{fontSize:i<3?14:13.5,fontWeight:i<3?500:400,color:i<3?"var(--ink)":"var(--ink2)",lineHeight:1.55,fontFamily:"var(--sans)"}}>{step}</p>

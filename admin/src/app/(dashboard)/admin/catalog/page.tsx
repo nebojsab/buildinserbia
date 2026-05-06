@@ -9,6 +9,7 @@ import {
   getCatalogAdminState,
   removeCustomCatalogProduct,
   updateCatalogProductOverride,
+  updateCustomCatalogProduct,
 } from "@/lib/catalogAdminState";
 import { CatalogProductsTable, type TableProduct } from "@/components/catalog/CatalogProductsTable";
 import { CatalogCsvImport } from "@/components/catalog/CatalogCsvImport";
@@ -60,19 +61,32 @@ async function saveInlineMetadataAction(formData: FormData) {
   const productId = String(formData.get("productId") ?? "");
   if (!productId) return;
 
+  const isCustom = formData.get("isCustom") === "true";
+  const titleRaw = String(formData.get("title") ?? "").trim();
   const merchantNameRaw = String(formData.get("merchantName") ?? "").trim();
   const productUrlRaw = String(formData.get("productUrl") ?? "").trim();
   const imageUrlRaw = String(formData.get("imageUrl") ?? "").trim();
   const priceLabelRaw = String(formData.get("priceLabel") ?? "").trim();
-  const productUrl = productUrlRaw && isValidHttpUrl(productUrlRaw) ? productUrlRaw : "";
-  const imageUrl = imageUrlRaw && isValidHttpUrl(imageUrlRaw) ? imageUrlRaw : "";
+  const productUrl = productUrlRaw && isValidHttpUrl(productUrlRaw) ? productUrlRaw : undefined;
+  const imageUrl = imageUrlRaw && isValidHttpUrl(imageUrlRaw) ? imageUrlRaw : undefined;
 
-  await updateCatalogProductOverride(productId, {
-    merchantName: merchantNameRaw || undefined,
-    productUrl: productUrl || undefined,
-    imageUrl: imageUrl || undefined,
-    priceLabel: priceLabelRaw || undefined,
-  });
+  if (isCustom) {
+    await updateCustomCatalogProduct(productId, {
+      ...(titleRaw ? { title: titleRaw } : {}),
+      ...(merchantNameRaw ? { merchantName: merchantNameRaw } : {}),
+      ...(productUrl ? { productUrl, merchantUrl: productUrl } : {}),
+      ...(imageUrl ? { imageUrl } : {}),
+      ...(priceLabelRaw ? { priceLabel: priceLabelRaw } : {}),
+    });
+  } else {
+    await updateCatalogProductOverride(productId, {
+      ...(titleRaw ? { title: titleRaw } : {}),
+      ...(merchantNameRaw ? { merchantName: merchantNameRaw } : {}),
+      ...(productUrl ? { productUrl } : {}),
+      ...(imageUrl ? { imageUrl } : {}),
+      ...(priceLabelRaw ? { priceLabel: priceLabelRaw } : {}),
+    });
+  }
   revalidatePath("/admin/catalog");
 }
 
@@ -185,6 +199,7 @@ export default async function CatalogAdminPage({ searchParams }: PageProps) {
     if (!override) return { ...product, isDeleted: false };
     return {
       ...product,
+      title: override.title ?? product.title,
       isActive: override.isActive ?? product.isActive,
       isFeatured: override.isFeatured ?? product.isFeatured,
       lastCheckedAt: override.lastCheckedAt ?? product.lastCheckedAt,

@@ -191,6 +191,10 @@ export function Step5Output({ lang, state, tree, i18n, onRestart }: Props) {
           if (selected.length > 0) details.push(selected.join(", "));
         } else if (field.kind === "toggle" && val === true) {
           details.push(field.label[l] ?? field.label["sr"]);
+        } else if ((field.kind === "area" || field.kind === "number" || field.kind === "length") && typeof val === "number" && val > 0) {
+          details.push(`${val}${field.unit ? ` ${field.unit}` : ""}`);
+        } else if ((field.kind === "area" || field.kind === "number" || field.kind === "length") && val === "unknown") {
+          details.push(l === "sr" ? "površina nepoznata" : l === "ru" ? "площадь неизвестна" : "area unknown");
         }
       }
 
@@ -261,7 +265,7 @@ export function Step5Output({ lang, state, tree, i18n, onRestart }: Props) {
 
           {/* Zone note */}
           {location?.zoneType && location.zoneType !== "gradska" && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 13px", background: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: "var(--r)", fontSize: "0.8125rem", color: "#1D4ED8", marginBottom: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 13px", background: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: "var(--r)", fontSize: "0.8125rem", color: "#134279", marginBottom: 12 }}>
               <span style={{ flexShrink: 0, fontSize: 14 }}>ℹ️</span>
               {l === "sr"
                 ? `Primenjen korekcioni faktor za ${zoneLabels[location.zoneType]?.sr} (×${zm.toFixed(1)})`

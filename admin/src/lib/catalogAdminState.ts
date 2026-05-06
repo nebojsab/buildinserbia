@@ -8,6 +8,7 @@ export type CatalogProductOverride = {
   isFeatured?: boolean;
   isDeleted?: boolean;
   lastCheckedAt?: string;
+  title?: string;
   merchantName?: string;
   productUrl?: string;
   imageUrl?: string;
@@ -121,6 +122,17 @@ export async function bulkAddCustomCatalogProducts(products: CatalogProduct[]): 
       existingIds.add(product.id);
     }
   }
+  await saveState(state);
+}
+
+export async function updateCustomCatalogProduct(
+  productId: string,
+  patch: Partial<Pick<CatalogProduct, "title" | "merchantName" | "productUrl" | "merchantUrl" | "imageUrl" | "priceLabel">>,
+): Promise<void> {
+  const state = await getCatalogAdminState();
+  const idx = state.customProducts.findIndex((p) => p.id === productId);
+  if (idx === -1) return;
+  state.customProducts[idx] = { ...state.customProducts[idx], ...patch };
   await saveState(state);
 }
 

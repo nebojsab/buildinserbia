@@ -34,9 +34,10 @@ export function BetaBanner({ lang, onContact }: { lang: Lang; onContact: () => v
 
   return (
     <div
+      className="beta-banner"
       style={{
-        background: "#1D4ED8",
-        color: "#fff",
+        background: "#FDE047",
+        color: "#1a1a1a",
         padding: "7px 16px",
         display: "flex",
         alignItems: "center",
@@ -45,47 +46,46 @@ export function BetaBanner({ lang, onContact }: { lang: Lang; onContact: () => v
         lineHeight: 1.4,
       }}
     >
-      <span style={{ flexShrink: 0 }}>🚧</span>
-      <span style={{ flex: 1 }}>{m.text}</span>
-      <button
-        type="button"
-        onClick={onContact}
-        style={{
-          background: "rgba(255,255,255,.15)",
-          border: "1px solid rgba(255,255,255,.3)",
-          borderRadius: 6,
-          color: "#fff",
-          fontSize: 11.5,
-          fontWeight: 600,
-          padding: "4px 10px",
-          cursor: "pointer",
-          whiteSpace: "nowrap",
-          fontFamily: "var(--sans)",
-          flexShrink: 0,
-        }}
-      >
-        {m.cta}
-      </button>
-      <button
-        type="button"
-        onClick={() => {
-          localStorage.setItem(STORAGE_KEY, "1");
-          setVisible(false);
-        }}
-        aria-label="Dismiss"
-        style={{
-          background: "none",
-          border: "none",
-          color: "rgba(255,255,255,.6)",
-          cursor: "pointer",
-          fontSize: 18,
-          lineHeight: 1,
-          padding: "0 2px",
-          flexShrink: 0,
-        }}
-      >
-        ×
-      </button>
+      <span style={{ flex: 1, minWidth: 0 }}>{m.text}</span>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+        <button
+          type="button"
+          onClick={onContact}
+          style={{
+            background: "rgba(0,0,0,.12)",
+            border: "1px solid rgba(0,0,0,.2)",
+            borderRadius: 6,
+            color: "#1a1a1a",
+            fontSize: 11.5,
+            fontWeight: 600,
+            padding: "4px 10px",
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+            fontFamily: "var(--sans)",
+          }}
+        >
+          {m.cta}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            localStorage.setItem(STORAGE_KEY, "1");
+            setVisible(false);
+          }}
+          aria-label="Dismiss"
+          style={{
+            background: "none",
+            border: "none",
+            color: "rgba(0,0,0,.45)",
+            cursor: "pointer",
+            fontSize: 18,
+            lineHeight: 1,
+            padding: "0 2px",
+          }}
+        >
+          ×
+        </button>
+      </div>
     </div>
   );
 }

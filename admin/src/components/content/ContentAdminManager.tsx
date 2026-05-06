@@ -613,7 +613,7 @@ export function ContentAdminManager({
                           borderRadius: 8,
                           border: "1px solid var(--bdr)",
                           background: !resolvedCoverImage
-                            ? "linear-gradient(145deg, rgba(196,92,46,.13), rgba(29,78,216,.08))"
+                            ? "linear-gradient(145deg, rgba(19,66,121,.10), rgba(19,66,121,.08))"
                             : undefined,
                           overflow: "hidden",
                         }}

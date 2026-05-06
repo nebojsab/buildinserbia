@@ -15,7 +15,7 @@ const projectMeta: Record<
 > = {
   reno: {
     icon: "paintbrush",
-    color: "#C45C2E",
+    color: "#134279",
     desc: {
       sr: "Renovacija kupatila, podova, fasade, instalacija i više.",
       en: "Bathroom, flooring, facade, installations and more.",
@@ -24,7 +24,7 @@ const projectMeta: Record<
   },
   newbuild: {
     icon: "building",
-    color: "#1D4ED8",
+    color: "#134279",
     desc: {
       sr: "Izgradnja porodične kuće, vikendice ili poslovnog objekta od temelja.",
       en: "Build a family house, cottage or commercial building from scratch.",

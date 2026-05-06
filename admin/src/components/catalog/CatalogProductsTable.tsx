@@ -254,7 +254,7 @@ export function CatalogProductsTable({
                     <span style={{
                       padding: "2px 8px", borderRadius: 999, fontSize: 11,
                       background: product.hasOverride || product.isCustom ? "#DBEAFE" : "#F3F4F6",
-                      color: product.hasOverride || product.isCustom ? "#1D4ED8" : "#6B7280",
+                      color: product.hasOverride || product.isCustom ? "#134279" : "#6B7280",
                       border: `1px solid ${product.hasOverride || product.isCustom ? "#93C5FD" : "#E5E7EB"}`,
                     }}>
                       {product.isCustom ? "custom item" : product.hasOverride ? "override" : "base"}
@@ -330,14 +330,16 @@ export function CatalogProductsTable({
                       ) : null}
                     </div>
                   </td>
-                  <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)", minWidth: 300 }}>
+                  <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)", minWidth: 320 }}>
                     <form action={saveInlineMetadataAction} style={{ display: "grid", gap: 6 }}>
                       <input type="hidden" name="productId" value={product.id} />
+                      <input type="hidden" name="isCustom" value={String(product.isCustom)} />
+                      <input type="text" name="title" defaultValue={product.title} className="finput" style={{ padding: "6px 8px", fontSize: 11 }} placeholder="Naziv" />
                       <input type="text" name="merchantName" defaultValue={product.merchantName} className="finput" style={{ padding: "6px 8px", fontSize: 11 }} placeholder="Merchant name" />
                       <input type="text" name="priceLabel" defaultValue={product.priceLabel ?? ""} className="finput" style={{ padding: "6px 8px", fontSize: 11 }} placeholder="Price label" />
                       <input type="url" name="productUrl" defaultValue={product.productUrl} className="finput" style={{ padding: "6px 8px", fontSize: 11 }} placeholder="Product URL" />
                       <input type="url" name="imageUrl" defaultValue={product.imageUrl} className="finput" style={{ padding: "6px 8px", fontSize: 11 }} placeholder="Image URL" />
-                      <button type="submit" className="btn-p" style={{ padding: "6px 10px", fontSize: 11 }}>Save metadata</button>
+                      <button type="submit" className="btn-p" style={{ padding: "6px 10px", fontSize: 11 }}>Sačuvaj</button>
                     </form>
                   </td>
                 </tr>
