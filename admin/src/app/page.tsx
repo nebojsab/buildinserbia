@@ -393,7 +393,7 @@ function HomePageContent() {
               style={{ display: "flex", alignItems: "center", gap: 14, padding: "17px 20px", borderBottom: "1px solid var(--bdr)", transition: "background .15s", cursor: "pointer", textDecoration: "none" }}
               onMouseEnter={(e) => e.currentTarget.style.background = "var(--bgw)"}
               onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
-              <span style={{ fontSize: 20, flexShrink: 0, lineHeight: 1 }}>{a.icon}</span>
+              <img src={a.image} alt="" aria-hidden="true" width={40} height={40} style={{ flexShrink: 0, borderRadius: 8, objectFit: "cover", display: "block" }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink)", fontFamily: "var(--sans)" }}>{sr.name}</span>
                 {isRec && (
