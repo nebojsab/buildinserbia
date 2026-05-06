@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 const IMAGE_PLACEHOLDER =
@@ -9,9 +9,7 @@ const IMAGE_PLACEHOLDER =
 function resolveImageUrl(value: string): string {
   try {
     const url = new URL(value);
-    if (url.protocol !== "http:" && url.protocol !== "https:") return IMAGE_PLACEHOLDER;
-    if (url.hostname.includes("vercel-storage.com")) return value;
-    return `/api/img-proxy?url=${encodeURIComponent(value)}`;
+    if (url.protocol === "http:" || url.protocol === "https:") return value;
   } catch {}
   return IMAGE_PLACEHOLDER;
 }
@@ -61,6 +59,33 @@ export function CatalogProductsTable({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
   const selectAllRef = useRef<HTMLInputElement>(null);
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [, startTransition] = useTransition();
+
+  function showToast(msg: string, ok: boolean) {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToast({ msg, ok });
+    toastTimer.current = setTimeout(() => setToast(null), 3500);
+  }
+
+  function handleSave(e: React.FormEvent<HTMLFormElement>, productId: string) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    setSavingId(productId);
+    startTransition(async () => {
+      try {
+        await saveInlineMetadataAction(fd);
+        showToast("Izmene su sačuvane", true);
+      } catch {
+        showToast("Greška pri čuvanju", false);
+      } finally {
+        setSavingId(null);
+        router.refresh();
+      }
+    });
+  }
 
   const allSelected = products.length > 0 && selectedIds.size === products.length;
   const someSelected = selectedIds.size > 0 && selectedIds.size < products.length;
@@ -187,6 +212,27 @@ export function CatalogProductsTable({
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          position: "fixed",
+          bottom: 28,
+          right: 28,
+          zIndex: 500,
+          padding: "12px 20px",
+          borderRadius: 10,
+          fontSize: 13,
+          fontWeight: 600,
+          color: "#fff",
+          background: toast.ok ? "#166534" : "#991B1B",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
+          pointerEvents: "none",
+          transition: "opacity .2s",
+        }}>
+          {toast.msg}
         </div>
       )}
 
@@ -334,7 +380,7 @@ export function CatalogProductsTable({
                     </div>
                   </td>
                   <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)", minWidth: 320 }}>
-                    <form action={saveInlineMetadataAction} style={{ display: "grid", gap: 6 }}>
+                    <form onSubmit={(e) => handleSave(e, product.id)} style={{ display: "grid", gap: 6 }}>
                       <input type="hidden" name="productId" value={product.id} />
                       <input type="hidden" name="isCustom" value={String(product.isCustom)} />
                       <input type="text" name="title" defaultValue={product.title} className="finput" style={{ padding: "6px 8px", fontSize: 11 }} placeholder="Naziv" />
@@ -342,7 +388,14 @@ export function CatalogProductsTable({
                       <input type="text" name="priceLabel" defaultValue={product.priceLabel ?? ""} className="finput" style={{ padding: "6px 8px", fontSize: 11 }} placeholder="Price label" />
                       <input type="url" name="productUrl" defaultValue={product.productUrl} className="finput" style={{ padding: "6px 8px", fontSize: 11 }} placeholder="Product URL" />
                       <input type="url" name="imageUrl" defaultValue={product.imageUrl} className="finput" style={{ padding: "6px 8px", fontSize: 11 }} placeholder="Image URL" />
-                      <button type="submit" className="btn-p" style={{ padding: "6px 10px", fontSize: 11 }}>Sačuvaj</button>
+                      <button
+                        type="submit"
+                        className="btn-p"
+                        style={{ padding: "6px 10px", fontSize: 11 }}
+                        disabled={savingId === product.id}
+                      >
+                        {savingId === product.id ? "Čuvam..." : "Sačuvaj"}
+                      </button>
                     </form>
                   </td>
                 </tr>

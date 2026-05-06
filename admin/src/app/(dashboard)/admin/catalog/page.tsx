@@ -11,6 +11,7 @@ import {
   updateCatalogProductOverride,
   updateCustomCatalogProduct,
 } from "@/lib/catalogAdminState";
+import { mirrorImageToBlob } from "@/lib/mirrorImageToBlob";
 import { CatalogProductsTable, type TableProduct } from "@/components/catalog/CatalogProductsTable";
 import { CatalogCsvImport } from "@/components/catalog/CatalogCsvImport";
 
@@ -68,7 +69,11 @@ async function saveInlineMetadataAction(formData: FormData) {
   const imageUrlRaw = String(formData.get("imageUrl") ?? "").trim();
   const priceLabelRaw = String(formData.get("priceLabel") ?? "").trim();
   const productUrl = productUrlRaw && isValidHttpUrl(productUrlRaw) ? productUrlRaw : undefined;
-  const imageUrl = imageUrlRaw && isValidHttpUrl(imageUrlRaw) ? imageUrlRaw : undefined;
+  let imageUrl = imageUrlRaw && isValidHttpUrl(imageUrlRaw) ? imageUrlRaw : undefined;
+
+  if (imageUrl) {
+    try { imageUrl = await mirrorImageToBlob(imageUrl, productId); } catch { /* keep original url */ }
+  }
 
   if (isCustom) {
     await updateCustomCatalogProduct(productId, {
@@ -119,12 +124,15 @@ async function addCatalogItemAction(formData: FormData) {
     .filter(Boolean);
 
   const id = `custom_${Date.now()}`;
+  let resolvedImageUrl = imageUrl;
+  try { resolvedImageUrl = await mirrorImageToBlob(imageUrl, id); } catch { /* keep original */ }
+
   const customProduct: CatalogProduct = {
     id,
     title,
     category,
     shortDescription,
-    imageUrl,
+    imageUrl: resolvedImageUrl,
     merchantName,
     merchantUrl: productUrl,
     productUrl,

@@ -1,10 +1,6 @@
 import type { CatalogProduct, QualityTier } from "../../types/catalog";
 import type { Lang } from "../../translations";
 
-function proxied(url: string): string {
-  if (!url || url.startsWith("data:") || url.includes("vercel-storage.com")) return url;
-  return `/api/img?url=${encodeURIComponent(url)}`;
-}
 
 const tierLabel: Record<Lang, Record<NonNullable<QualityTier>, string>> = {
   sr: {
@@ -49,7 +45,7 @@ export function ProductCard({
   return (
     <article className="card" style={{ padding: 12, display: "grid", gap: 8 }}>
       <img
-        src={proxied(product.imageUrl)}
+        src={product.imageUrl}
         alt={product.title}
         loading="lazy"
         style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: 10, background: "#F1F5F9" }}
