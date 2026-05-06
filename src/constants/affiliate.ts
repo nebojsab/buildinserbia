@@ -25,23 +25,23 @@ function href(slug: string) {
 
 export const AFF: Record<
   string,
-  { icon: string; href: string }
+  { icon: string; image: string; href: string }
 > = {
-  insulation: { icon: "🧱", href: href("insulation") },
-  windows: { icon: "🪟", href: href("windows") },
-  flooring: { icon: "🪵", href: href("flooring") },
-  lighting: { icon: "💡", href: href("lighting") },
-  bathroom: { icon: "🛁", href: href("bathroom") },
-  kitchen: { icon: "🍳", href: href("kitchen") },
-  furniture: { icon: "🛋️", href: href("furniture") },
-  tools: { icon: "🔧", href: href("tools") },
-  roofing: { icon: "🏚️", href: href("roofing") },
-  garden: { icon: "🌿", href: href("garden") },
-  solar: { icon: "☀️", href: href("solar") },
-  heating: { icon: "🔥", href: href("heating") },
-  septic: { icon: "💧", href: href("septic") },
-  fence: { icon: "🚧", href: href("fence") },
-  paint: { icon: "🎨", href: href("paint") },
+  insulation: { icon: "🧱", image: "/catalog-categories/insulation.jpeg",        href: href("insulation") },
+  windows:    { icon: "🪟", image: "/catalog-categories/windows.jpeg",           href: href("windows") },
+  flooring:   { icon: "🪵", image: "/catalog-categories/parquet.jpeg",           href: href("flooring") },
+  lighting:   { icon: "💡", image: "/catalog-categories/lighting.jpeg",          href: href("lighting") },
+  bathroom:   { icon: "🛁", image: "/catalog-categories/bathroom-furniture.jpeg", href: href("bathroom") },
+  kitchen:    { icon: "🍳", image: "/catalog-categories/kitchen.jpeg",           href: href("kitchen") },
+  furniture:  { icon: "🛋️", image: "/catalog-categories/bathroom-furniture.jpeg", href: href("furniture") },
+  tools:      { icon: "🔧", image: "/catalog-categories/tools.jpeg",             href: href("tools") },
+  roofing:    { icon: "🏚️", image: "/catalog-categories/roofing.jpeg",           href: href("roofing") },
+  garden:     { icon: "🌿", image: "/catalog-categories/lawn.jpeg",              href: href("garden") },
+  solar:      { icon: "☀️", image: "/catalog-categories/electrical.jpeg",        href: href("solar") },
+  heating:    { icon: "🔥", image: "/catalog-categories/heating.jpeg",           href: href("heating") },
+  septic:     { icon: "💧", image: "/catalog-categories/septic.jpeg",            href: href("septic") },
+  fence:      { icon: "🚧", image: "/catalog-categories/fence.jpeg",             href: href("fence") },
+  paint:      { icon: "🎨", image: "/catalog-categories/paint.jpeg",             href: href("paint") },
 };
 
 /* Task→affiliate mapping */

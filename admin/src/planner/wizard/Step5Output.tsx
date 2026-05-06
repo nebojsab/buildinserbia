@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { getCategoryFallback } from "@/lib/categoryFallbackImages";
 import type { WizardProjectTree } from "../wizardTree/types";
 import type { WizardState } from "./wizardState";
 import type { WizardI18n } from "./wizardI18n";
@@ -506,11 +507,27 @@ export function Step5Output({ lang, state, tree, i18n, onRestart }: Props) {
                         onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "var(--acc)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 12px rgba(0,0,0,.08)"; }}
                         onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "var(--bdr)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "none"; }}
                       >
-                        {p.imageUrl && (
-                          <div style={{ height: 140, overflow: "hidden", background: "var(--bgw)" }}>
-                            <img src={p.imageUrl} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                          </div>
-                        )}
+                        <div style={{ height: 140, overflow: "hidden", background: "var(--bgw)" }}>
+                          <img
+                            src={p.imageUrl || getCategoryFallback(grp.categoryId)}
+                            alt={p.title}
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                            onError={(e) => {
+                              const img = e.currentTarget;
+                              img.onerror = null;
+                              img.onload = null;
+                              img.src = getCategoryFallback(grp.categoryId);
+                            }}
+                            onLoad={(e) => {
+                              const img = e.currentTarget;
+                              if (img.naturalWidth === 0) {
+                                img.onerror = null;
+                                img.onload = null;
+                                img.src = getCategoryFallback(grp.categoryId);
+                              }
+                            }}
+                          />
+                        </div>
                         <div style={{ padding: "12px 14px 14px" }}>
                           <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--ink)", lineHeight: 1.35, marginBottom: 4 }}>{p.title}</div>
                           <div style={{ fontSize: "0.75rem", color: "var(--ink3)", lineHeight: 1.4, marginBottom: 8 }}>{p.shortDescription}</div>
