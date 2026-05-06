@@ -174,8 +174,8 @@ export function AssistantPanel({
         style={{
           position: "absolute",
           right: 0,
-          top: 0,
-          height: "100%",
+          top: "var(--banner-h, 0px)" as string,
+          height: "calc(100% - var(--banner-h, 0px))" as string,
           width: "min(420px, 100vw)",
           background: "var(--card)",
           borderLeft: "1px solid var(--bdr)",

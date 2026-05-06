@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import type { WizardI18n } from "./wizardI18n";
 
 type Props = {
@@ -15,10 +16,9 @@ export function WizardProgress({ step, i18n }: Props) {
           const done = idx < step;
           const active = idx === step;
           return (
-            <>
+            <Fragment key={idx}>
               {/* Step bubble + label */}
               <div
-                key={idx}
                 style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flexShrink: 0 }}
               >
                 <div
@@ -65,7 +65,7 @@ export function WizardProgress({ step, i18n }: Props) {
                   }}
                 />
               )}
-            </>
+            </Fragment>
           );
         })}
       </div>

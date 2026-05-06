@@ -149,7 +149,7 @@ export function ContactDrawer({
       />
       <aside
         style={{
-          position: "absolute", right: 0, top: 0, height: "100%",
+          position: "absolute", right: 0, top: "var(--banner-h, 0px)" as string, height: "calc(100% - var(--banner-h, 0px))" as string,
           width: "min(480px, 100vw)",
           background: "var(--card)", borderLeft: "1px solid var(--bdr)",
           boxShadow: "var(--sh2)",

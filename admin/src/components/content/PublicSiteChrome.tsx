@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import type { ContentLocale } from "@shared/content/types";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 
 const navLinkStyle: CSSProperties = {
   fontSize: 13,
@@ -89,7 +90,7 @@ export function PublicSiteChrome({
         className="public-chrome-header"
         style={{
           position: "sticky",
-          top: 0,
+          top: "var(--banner-h, 0px)" as string,
           zIndex: 100,
           background: "rgba(250,250,249,.94)",
           backdropFilter: "blur(14px)",
@@ -232,15 +233,7 @@ export function PublicSiteChrome({
 
       <main style={{ flex: 1 }}>{children}</main>
 
-      <footer className="public-chrome-footer" style={{ borderTop: "1px solid var(--bdr)", background: "var(--bgw)", padding: "20px 24px" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-          <p style={{ fontSize: 12, color: "var(--ink4)" }}>BuildInSerbia content hub</p>
-          <div style={{ display: "flex", gap: 14, fontSize: 12, color: "var(--ink3)" }}>
-            <Link href={withLang("/documents", locale)}>{copy.documents}</Link>
-            <Link href={withLang("/blog", locale)}>{copy.blog}</Link>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter locale={locale} currentPath={currentPath} />
     </div>
   );
 }

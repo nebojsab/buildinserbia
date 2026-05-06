@@ -12,13 +12,11 @@ import { fetchMaintenance, type MaintenancePayload } from "@shared/api/maintenan
 import { getPublicPreviewBypassFromWindow } from "@shared/lib/publicPreviewBypass";
 import { FAQ } from "@shared/components/FAQ";
 import { BackToTop } from "@shared/components/BackToTop";
-import { FooterLocalTime } from "@shared/components/FooterLocalTime";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteLogo } from "@shared/components/SiteLogo";
 import { ComingSoonScreen, MaintenanceScreen } from "@shared/components/SystemStateScreens";
 import { Ey, HR } from "@shared/components/ui";
 import { PlannerWizard } from "@/planner/wizard";
-import { BetaBanner } from "@/components/contact/BetaBanner";
-import { ContactDrawer } from "@/components/contact/ContactDrawer";
 
 const HeroPlanVisual = dynamic(
   () => import("@shared/components/HeroPlanVisual").then((m) => ({ default: m.HeroPlanVisual })),
@@ -87,7 +85,7 @@ function HomePageContent() {
     ["sr", "en", "ru"].includes(initialLang) ? initialLang : "sr"
   );
 
-  const [contactOpen, setContactOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const MISTAKES_IMAGE_SRC = "/api/assets/mistakes-image";
   const [maint, setMaint] = useState<MaintenancePayload | null>(null);
   const previewBypassRef = useRef<boolean>(false);
@@ -155,9 +153,8 @@ function HomePageContent() {
 
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
-      {/* ── BETA BANNER + NAV (sticky unit) ── */}
-      <div style={{ position: "sticky", top: 0, zIndex: 100 }}>
-        <BetaBanner lang={lang} onContact={() => setContactOpen(true)} />
+      {/* ── NAV (sticky) ── */}
+      <div style={{ position: "sticky", top: "var(--banner-h, 0px)" as string, zIndex: 100 }}>
       <header style={{ background: "rgba(250,250,249,.94)", backdropFilter: "blur(14px)", borderBottom: "1px solid var(--bdr)" }}>
         <div style={{ ...MX, padding: "0 24px", height: 62, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14 }}>
           <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
@@ -175,12 +172,41 @@ function HomePageContent() {
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
             <LangDropdown lang={lang} onChange={handleSetLang} />
             <button className="btn-p hide-xs" onClick={() => scrollTo("planner")} style={{ fontSize: 13, padding: "9px 18px" }}>{t.nav.cta}</button>
+            {/* Hamburger — mobile only */}
+            <button
+              type="button"
+              className="pc-hamburger"
+              aria-label={mobileMenuOpen ? "Zatvori meni" : "Otvori meni"}
+              aria-expanded={mobileMenuOpen}
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              style={{ display: "none", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 5, width: 40, height: 40, border: "1.5px solid var(--bdr)", borderRadius: "var(--r)", background: "var(--card)", cursor: "pointer", padding: 0 }}
+            >
+              <span style={{ display: "block", width: 18, height: 1.5, background: "var(--ink2)", borderRadius: 2, transition: "transform .2s", transform: mobileMenuOpen ? "translateY(6.5px) rotate(45deg)" : "none" }} />
+              <span style={{ display: "block", width: 18, height: 1.5, background: "var(--ink2)", borderRadius: 2, transition: "opacity .2s", opacity: mobileMenuOpen ? 0 : 1 }} />
+              <span style={{ display: "block", width: 18, height: 1.5, background: "var(--ink2)", borderRadius: 2, transition: "transform .2s", transform: mobileMenuOpen ? "translateY(-6.5px) rotate(-45deg)" : "none" }} />
+            </button>
           </div>
         </div>
+        {/* Mobile dropdown */}
+        {mobileMenuOpen && (
+          <div style={{ borderTop: "1px solid var(--bdr)", background: "rgba(250,250,249,.98)", padding: "8px 0 16px" }}>
+            {(["how", "planner", "faq"] as const).map((id, i) => (
+              <button key={id} onClick={() => { scrollTo(id); setMobileMenuOpen(false); }}
+                style={{ display: "block", width: "100%", textAlign: "left", padding: "13px 24px", fontSize: 15, fontWeight: 500, color: "var(--ink2)", fontFamily: "var(--sans)", background: "none", border: "none", cursor: "pointer" }}>
+                {t.nav.links[i]}
+              </button>
+            ))}
+            <a href={`/documents?lang=${lang}`} onClick={() => setMobileMenuOpen(false)}
+              style={{ display: "block", padding: "13px 24px", fontSize: 15, fontWeight: 500, color: "var(--ink2)", fontFamily: "var(--sans)" }}>{docsLabel}</a>
+            <a href={`/blog?lang=${lang}`} onClick={() => setMobileMenuOpen(false)}
+              style={{ display: "block", padding: "13px 24px", fontSize: 15, fontWeight: 500, color: "var(--ink2)", fontFamily: "var(--sans)" }}>{blogLabel}</a>
+            <div style={{ padding: "8px 24px 0" }}>
+              <button className="btn-p" onClick={() => { scrollTo("planner"); setMobileMenuOpen(false); }} style={{ width: "100%", fontSize: 14, padding: "11px 18px", justifyContent: "center" }}>{t.nav.cta}</button>
+            </div>
+          </div>
+        )}
       </header>
       </div>
-
-      <ContactDrawer open={contactOpen} onClose={() => setContactOpen(false)} lang={lang} />
 
       {/* ── HERO ── */}
       <section style={{ padding: "80px 24px 64px", background: "linear-gradient(175deg,#FDFBF8 0%,var(--bg) 100%)", borderBottom: "1px solid var(--bdr)" }}>
@@ -471,65 +497,7 @@ function HomePageContent() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer style={{ background: "var(--bgw)", borderTop: "1px solid var(--bdr)", padding: "52px 24px 32px" }}>
-        <div style={{ ...MX }}>
-          <div className="how-g footer-g" style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr", gap: 44, marginBottom: 44 }}>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
-                <SiteLogo compact loading="lazy" />
-              </div>
-              <p style={{ fontSize: 13, color: "var(--ink3)", lineHeight: 1.7, maxWidth: 270, marginBottom: 12, fontFamily: "var(--sans)" }}>{t.footer.tagline}</p>
-              <p style={{ fontSize: 11, color: "var(--ink4)", lineHeight: 1.6, maxWidth: 290, fontFamily: "var(--sans)" }}>{t.footer.disclaimer}</p>
-            </div>
-            <div>
-              <p style={{ fontSize: 10.5, fontWeight: 700, color: "var(--ink3)", letterSpacing: ".09em", textTransform: "uppercase", marginBottom: 14, fontFamily: "var(--sans)" }}>
-                {lang === "sr" ? "Navigacija" : lang === "en" ? "Navigation" : "Навигация"}
-              </p>
-              {(["how", "planner", "faq"] as const).map((id, i) => (
-                <button key={id} onClick={() => scrollTo(id)}
-                  style={{ display: "block", fontSize: 13.5, color: "var(--ink3)", background: "none", border: "none", marginBottom: 10, padding: 0, fontFamily: "var(--sans)", cursor: "pointer", transition: "color .15s" }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = "var(--ink)"}
-                  onMouseLeave={(e) => e.currentTarget.style.color = "var(--ink3)"}>
-                  {t.nav.links[i]}
-                </button>
-              ))}
-              <a href={`/documents?lang=${lang}`} style={{ display: "block", fontSize: 13.5, color: "var(--ink3)", marginBottom: 10, fontFamily: "var(--sans)" }}>{docsLabel}</a>
-              <a href={`/blog?lang=${lang}`} style={{ display: "block", fontSize: 13.5, color: "var(--ink3)", fontFamily: "var(--sans)" }}>{blogLabel}</a>
-            </div>
-            <div>
-              <p style={{ fontSize: 10.5, fontWeight: 700, color: "var(--ink3)", letterSpacing: ".09em", textTransform: "uppercase", marginBottom: 14, fontFamily: "var(--sans)" }}>
-                {lang === "sr" ? "Kontakt" : lang === "en" ? "Contact" : "Контакт"}
-              </p>
-              <a href={`mailto:${t.footer.contact}`} style={{ fontSize: 13.5, color: "var(--ink3)", fontFamily: "var(--sans)", transition: "color .15s" }}
-                onMouseEnter={(e) => e.currentTarget.style.color = "var(--acc)"}
-                onMouseLeave={(e) => e.currentTarget.style.color = "var(--ink3)"}>
-                {t.footer.contact}
-              </a>
-              <div style={{ marginTop: 18 }}>
-                <p style={{ fontSize: 10.5, fontWeight: 700, color: "var(--ink3)", letterSpacing: ".09em", textTransform: "uppercase", marginBottom: 8, fontFamily: "var(--sans)" }}>
-                  {lang === "sr" ? "Jezik" : lang === "en" ? "Language" : "Язык"}
-                </p>
-                <div style={{ display: "flex", gap: 6 }}>
-                  {(["sr", "en", "ru"] as const).map((l) => (
-                    <button key={l} type="button" onClick={() => handleSetLang(l)}
-                      style={{ fontSize: 11, fontWeight: 700, padding: "5px 10px", borderRadius: 6, border: "1.5px solid", letterSpacing: ".06em", textTransform: "uppercase", fontFamily: "var(--sans)", cursor: "pointer", transition: "all .15s", borderColor: lang === l ? "var(--acc)" : "var(--bdr)", background: lang === l ? "var(--accbg)" : "transparent", color: lang === l ? "var(--acc)" : "var(--ink4)" }}>
-                      {l}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-          <HR />
-          <div style={{ paddingTop: 18, display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 16, alignItems: "flex-start" }}>
-            <div>
-              <p style={{ fontSize: 12, color: "var(--ink4)", fontFamily: "var(--sans)" }}>{t.footer.copy}</p>
-              <FooterLocalTime lang={lang} label={t.footer.localTimePrefix} />
-            </div>
-            <p style={{ fontSize: 11.5, color: "var(--ink4)", fontFamily: "var(--sans)", maxWidth: 460, textAlign: "right" }}>{t.footer.legal}</p>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter locale={lang} currentPath="/" />
 
       <BackToTop label={t.nav.backToTop} />
       <Analytics />

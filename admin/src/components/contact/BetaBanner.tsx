@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const STORAGE_KEY = "bis-beta-banner-dismissed";
 
@@ -23,10 +23,22 @@ type Lang = "sr" | "en" | "ru";
 
 export function BetaBanner({ lang, onContact }: { lang: Lang; onContact: () => void }) {
   const [visible, setVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setVisible(localStorage.getItem(STORAGE_KEY) !== "1");
+    const show = localStorage.getItem(STORAGE_KEY) !== "1";
+    setVisible(show);
+    if (!show) document.documentElement.style.setProperty("--banner-h", "0px");
   }, []);
+
+  useEffect(() => {
+    if (!visible || !ref.current) {
+      document.documentElement.style.setProperty("--banner-h", "0px");
+      return;
+    }
+    const h = ref.current.getBoundingClientRect().height;
+    document.documentElement.style.setProperty("--banner-h", `${h}px`);
+  }, [visible]);
 
   if (!visible) return null;
 
@@ -34,10 +46,14 @@ export function BetaBanner({ lang, onContact }: { lang: Lang; onContact: () => v
 
   return (
     <div
+      ref={ref}
       className="beta-banner"
       style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 200,
         background: "#FDE047",
-        color: "#1a1a1a",
+        color: "#134279",
         padding: "7px 16px",
         display: "flex",
         alignItems: "center",
@@ -52,10 +68,10 @@ export function BetaBanner({ lang, onContact }: { lang: Lang; onContact: () => v
           type="button"
           onClick={onContact}
           style={{
-            background: "rgba(0,0,0,.12)",
-            border: "1px solid rgba(0,0,0,.2)",
+            background: "transparent",
+            border: "1.5px solid #134279",
             borderRadius: 6,
-            color: "#1a1a1a",
+            color: "#134279",
             fontSize: 11.5,
             fontWeight: 600,
             padding: "4px 10px",
@@ -70,13 +86,14 @@ export function BetaBanner({ lang, onContact }: { lang: Lang; onContact: () => v
           type="button"
           onClick={() => {
             localStorage.setItem(STORAGE_KEY, "1");
+            document.documentElement.style.setProperty("--banner-h", "0px");
             setVisible(false);
           }}
           aria-label="Dismiss"
           style={{
             background: "none",
             border: "none",
-            color: "rgba(0,0,0,.45)",
+            color: "rgba(19,66,121,.5)",
             cursor: "pointer",
             fontSize: 18,
             lineHeight: 1,
