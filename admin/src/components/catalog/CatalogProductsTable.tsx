@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { getCategoryFallback } from "@/lib/categoryFallbackImages";
 
 const IMAGE_PLACEHOLDER =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='80' viewBox='0 0 120 80'%3E%3Crect width='120' height='80' fill='%23f3f4f6'/%3E%3Ctext x='60' y='44' font-size='10' text-anchor='middle' fill='%236b7280' font-family='Arial,sans-serif'%3ENo image%3C/text%3E%3C/svg%3E";
@@ -278,7 +279,11 @@ export function CatalogProductsTable({
                       width={54}
                       height={36}
                       style={{ objectFit: "cover", borderRadius: 6, border: "1px solid var(--bdr)" }}
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = IMAGE_PLACEHOLDER; }}
+                      onError={(e) => {
+                        const img = e.currentTarget as HTMLImageElement;
+                        img.onerror = null;
+                        img.src = getCategoryFallback(product.category);
+                      }}
                     />
                   </td>
                   <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>{product.title}</td>
@@ -387,7 +392,11 @@ export function CatalogProductsTable({
                       <input type="text" name="merchantName" defaultValue={product.merchantName} className="finput" style={{ padding: "6px 8px", fontSize: 11 }} placeholder="Merchant name" />
                       <input type="text" name="priceLabel" defaultValue={product.priceLabel ?? ""} className="finput" style={{ padding: "6px 8px", fontSize: 11 }} placeholder="Price label" />
                       <input type="url" name="productUrl" defaultValue={product.productUrl} className="finput" style={{ padding: "6px 8px", fontSize: 11 }} placeholder="Product URL" />
-                      <input type="url" name="imageUrl" defaultValue={product.imageUrl} className="finput" style={{ padding: "6px 8px", fontSize: 11 }} placeholder="Image URL" />
+                      <input type="url" name="imageUrl" defaultValue={product.imageUrl} className="finput" style={{ padding: "6px 8px", fontSize: 11 }} placeholder="Image URL (opciono ako uploaduješ fajl)" />
+                      <label style={{ fontSize: 10, color: "var(--ink3)", display: "flex", flexDirection: "column", gap: 3 }}>
+                        <span>ili upload slike:</span>
+                        <input type="file" name="imageFile" accept="image/*" className="finput" style={{ padding: "4px 6px", fontSize: 10 }} />
+                      </label>
                       <button
                         type="submit"
                         className="btn-p"

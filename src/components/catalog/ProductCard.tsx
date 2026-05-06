@@ -1,5 +1,6 @@
 import type { CatalogProduct, QualityTier } from "../../types/catalog";
 import type { Lang } from "../../translations";
+import { getCategoryFallback } from "../../lib/catalog/categoryFallbackImages";
 
 
 const tierLabel: Record<Lang, Record<NonNullable<QualityTier>, string>> = {
@@ -52,7 +53,7 @@ export function ProductCard({
         onError={(e) => {
           const img = e.currentTarget;
           img.onerror = null;
-          img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='140' viewBox='0 0 400 140'%3E%3Crect width='400' height='140' fill='%23F1F5F9'/%3E%3Ctext x='200' y='76' font-size='13' text-anchor='middle' fill='%2394A3B8' font-family='Arial,sans-serif'%3ENo image%3C/text%3E%3C/svg%3E";
+          img.src = getCategoryFallback(product.category);
         }}
       />
       <h4 style={{ margin: 0, fontSize: 14, color: "var(--ink)" }}>{product.title}</h4>

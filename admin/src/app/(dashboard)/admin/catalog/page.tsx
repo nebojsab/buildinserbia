@@ -3,6 +3,7 @@ import { plannerMappings } from "@shared/data/catalog/plannerMappings";
 import { products } from "@shared/data/catalog/products";
 import type { CatalogCategoryId, CatalogProduct } from "@shared/types/catalog";
 import { revalidatePath } from "next/cache";
+import { put } from "@vercel/blob";
 import {
   addCustomCatalogProduct,
   clearCatalogProductOverride,
@@ -68,11 +69,27 @@ async function saveInlineMetadataAction(formData: FormData) {
   const productUrlRaw = String(formData.get("productUrl") ?? "").trim();
   const imageUrlRaw = String(formData.get("imageUrl") ?? "").trim();
   const priceLabelRaw = String(formData.get("priceLabel") ?? "").trim();
+  const imageFile = formData.get("imageFile");
   const productUrl = productUrlRaw && isValidHttpUrl(productUrlRaw) ? productUrlRaw : undefined;
-  let imageUrl = imageUrlRaw && isValidHttpUrl(imageUrlRaw) ? imageUrlRaw : undefined;
+  let imageUrl: string | undefined;
 
-  if (imageUrl) {
-    try { imageUrl = await mirrorImageToBlob(imageUrl, productId); } catch { /* keep original url */ }
+  // Direct file upload — most reliable, bypasses all hotlink protection
+  if (imageFile instanceof File && imageFile.size > 0) {
+    const ext = imageFile.name.split(".").pop()?.toLowerCase() ?? "jpg";
+    const buf = await imageFile.arrayBuffer();
+    const blob = await put(`catalog-images/${productId}.${ext}`, buf, {
+      access: "public",
+      contentType: imageFile.type || "image/jpeg",
+      allowOverwrite: true,
+    });
+    imageUrl = blob.url;
+  } else if (imageUrlRaw && isValidHttpUrl(imageUrlRaw)) {
+    // Try to mirror external URL to blob; if blocked, keep original
+    try {
+      imageUrl = await mirrorImageToBlob(imageUrlRaw, productId);
+    } catch {
+      imageUrl = imageUrlRaw;
+    }
   }
 
   if (isCustom) {

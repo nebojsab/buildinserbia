@@ -194,7 +194,7 @@ sr:{
   trust:{
     eyebrow:"Važna napomena",title:"Za koga je ovaj alat",
     items:[
-      {icon:"🏠",t:"Lokalni vlasnici",d:"Srbi koji grade, renoviraju ili uređuju nekretninu."},
+      {icon:"🏠",t:"Lokalni vlasnici",d:"Drżavljani Srbije koji grade, renoviraju ili uređuju nekretninu."},
       {icon:"🌍",t:"Strani kupci",d:"Investitori i novodoseljeni koji planiraju gradnju u Srbiji."},
       {icon:"📋",t:"Šta alat radi",d:"Pomaže vam da razumete tok, troškove i korake. Orijentacioni je."},
       {icon:"⚠️",t:"Šta ne zamenjuje",d:"Ne zamenjuje arhitektu, inženjera ni pravnog savetnika."},
