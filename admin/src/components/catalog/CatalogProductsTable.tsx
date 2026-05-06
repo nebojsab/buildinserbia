@@ -282,7 +282,16 @@ export function CatalogProductsTable({
                       onError={(e) => {
                         const img = e.currentTarget as HTMLImageElement;
                         img.onerror = null;
+                        img.onload = null;
                         img.src = getCategoryFallback(product.category);
+                      }}
+                      onLoad={(e) => {
+                        const img = e.currentTarget as HTMLImageElement;
+                        if (img.naturalWidth === 0) {
+                          img.onerror = null;
+                          img.onload = null;
+                          img.src = getCategoryFallback(product.category);
+                        }
                       }}
                     />
                   </td>

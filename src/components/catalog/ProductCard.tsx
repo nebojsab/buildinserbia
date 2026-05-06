@@ -53,7 +53,16 @@ export function ProductCard({
         onError={(e) => {
           const img = e.currentTarget;
           img.onerror = null;
+          img.onload = null;
           img.src = getCategoryFallback(product.category);
+        }}
+        onLoad={(e) => {
+          const img = e.currentTarget;
+          if (img.naturalWidth === 0) {
+            img.onerror = null;
+            img.onload = null;
+            img.src = getCategoryFallback(product.category);
+          }
         }}
       />
       <h4 style={{ margin: 0, fontSize: 14, color: "var(--ink)" }}>{product.title}</h4>
