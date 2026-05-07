@@ -4,14 +4,14 @@ export const AFF: Record<
   { icon: string; image: string; href: string }
 > = {
   insulation: { icon: "🧱", image: "/catalog-categories/insulation.jpeg",        href: "https://roma.rs/fasadni-i-termoizolacioni-radovi/" },
-  windows:    { icon: "🪟", image: "/catalog-categories/windows.jpeg",           href: "https://uradi-sam.rs/pvc-prozori/" },
-  flooring:   { icon: "🪵", image: "/catalog-categories/parquet.jpeg",           href: "https://uradi-sam.rs/podne-zidne-obloge/" },
+  windows:    { icon: "🪟", image: "/catalog-categories/windows.jpeg",           href: "https://www.alumil.com/serbia/homeowners" },
+  flooring:   { icon: "🪵", image: "/catalog-categories/parquet.jpeg",           href: "https://galerijapodova.com/" },
   lighting:   { icon: "💡", image: "/catalog-categories/lighting.jpeg",          href: "https://www.ikea.com/rs/sr/cat/rasveta-li001/" },
   bathroom:   { icon: "🛁", image: "/catalog-categories/bathroom-furniture.jpeg", href: "https://www.enmongroup.com/" },
   kitchen:    { icon: "🍳", image: "/catalog-categories/kitchen.jpeg",           href: "https://www.ikea.com/rs/sr/cat/kuhinjski-sistemi-ka003/" },
   furniture:  { icon: "🛋️", image: "/catalog-categories/bathroom-furniture.jpeg", href: "https://www.ikea.com/rs/sr/cat/namestaj-fu001/" },
   tools:      { icon: "🔧", image: "/catalog-categories/tools.jpeg",             href: "https://www.prodavnicaalata.rs/" },
-  roofing:    { icon: "🏚️", image: "/catalog-categories/roofing.jpeg",           href: "https://uradi-sam.rs/krovni-pokrivaci/" },
+  roofing:    { icon: "🏚️", image: "/catalog-categories/roofing.jpeg",           href: "https://www.wienerberger.rs/krov.html" },
   garden:     { icon: "🌿", image: "/catalog-categories/lawn.jpeg",              href: "https://gardencentar.rs/" },
   solar:      { icon: "☀️", image: "/catalog-categories/electrical.jpeg",        href: "https://www.solarenverde.rs/" },
   heating:    { icon: "🔥", image: "/catalog-categories/heating.jpeg",           href: "https://toplipod.rs/" },
