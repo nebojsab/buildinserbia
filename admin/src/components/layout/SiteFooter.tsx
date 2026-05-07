@@ -1,6 +1,7 @@
 "use client";
 
 import { SiteLogo } from "@shared/components/SiteLogo";
+import { openContactDrawer } from "@/components/contact/SiteBanner";
 import { FooterLocalTime } from "@shared/components/FooterLocalTime";
 import { HR } from "@shared/components/ui";
 import { translations } from "@shared/translations";
@@ -83,12 +84,19 @@ export function SiteFooter({
             </p>
             <a
               href={`mailto:${t.footer.contact}`}
-              style={{ fontSize: 13.5, color: "var(--ink3)", fontFamily: "var(--sans)", transition: "color .15s", textDecoration: "none" }}
+              style={{ display: "block", fontSize: 13.5, color: "var(--ink3)", fontFamily: "var(--sans)", transition: "color .15s", textDecoration: "none" }}
               onMouseEnter={(e) => (e.currentTarget.style.color = "var(--acc)")}
               onMouseLeave={(e) => (e.currentTarget.style.color = "var(--ink3)")}
             >
               {t.footer.contact}
             </a>
+            <button
+              onClick={openContactDrawer}
+              className="btn-g"
+              style={{ marginTop: 12, fontSize: 12.5, padding: "7px 14px" }}
+            >
+              {lang === "sr" ? "Pišite nam →" : lang === "en" ? "Write to us →" : "Написать нам →"}
+            </button>
             <div style={{ marginTop: 18 }}>
               <p style={{ fontSize: 10.5, fontWeight: 700, color: "var(--ink3)", letterSpacing: ".09em", textTransform: "uppercase", marginBottom: 8, fontFamily: "var(--sans)" }}>
                 {langLabel}

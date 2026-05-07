@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { openContactDrawer } from "@/components/contact/SiteBanner";
 import type { CSSProperties, ReactNode } from "react";
 import type { ContentLocale } from "@shared/content/types";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -22,10 +23,10 @@ const navLinkActiveStyle: CSSProperties = {
   borderBottomColor: "var(--acc)",
 };
 
-const LANG_COPY: Record<ContentLocale, { home: string; documents: string; blog: string }> = {
-  sr: { home: "Pocetna", documents: "Dokumenti", blog: "Blog" },
-  en: { home: "Home", documents: "Documents", blog: "Blog" },
-  ru: { home: "Главная", documents: "Документы", blog: "Блог" },
+const LANG_COPY: Record<ContentLocale, { home: string; documents: string; blog: string; contact: string }> = {
+  sr: { home: "Pocetna", documents: "Dokumenti", blog: "Blog", contact: "Kontakt" },
+  en: { home: "Home", documents: "Documents", blog: "Blog", contact: "Contact" },
+  ru: { home: "Главная", documents: "Документы", blog: "Блог", contact: "Контакт" },
 };
 
 const LANG_OPTIONS: Array<{ id: ContentLocale; label: string }> = [
@@ -125,6 +126,9 @@ export function PublicSiteChrome({
                 {link.label}
               </Link>
             ))}
+            <button onClick={openContactDrawer} style={{ ...navLinkStyle, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+              {copy.contact}
+            </button>
           </nav>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -227,6 +231,12 @@ export function PublicSiteChrome({
                 {link.label}
               </Link>
             ))}
+            <button
+              onClick={() => { openContactDrawer(); setMobileMenuOpen(false); }}
+              style={{ display: "block", width: "100%", textAlign: "left", padding: "13px 24px", fontSize: 15, fontWeight: 500, color: "var(--ink2)", fontFamily: "var(--sans)", background: "none", border: "none", borderLeft: "3px solid transparent", cursor: "pointer" }}
+            >
+              {copy.contact}
+            </button>
           </div>
         )}
       </header>

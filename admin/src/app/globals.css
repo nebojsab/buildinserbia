@@ -170,6 +170,10 @@ button {
   .planner-sidebar {
     position: static
   }
+
+  .hide-xs {
+    display: none !important
+  }
 }
 
 @media(max-width:560px) {
@@ -1141,7 +1145,8 @@ button {
 }
 
 /* PublicSiteChrome mobile nav */
-@media (max-width: 560px) {
+.pc-hamburger { display: none !important; }
+@media (max-width: 900px) {
   .pc-nav-desktop { display: none !important; }
   .pc-hamburger { display: flex !important; }
 }

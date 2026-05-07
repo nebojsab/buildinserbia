@@ -18,6 +18,7 @@ import { ComingSoonScreen, MaintenanceScreen } from "@shared/components/SystemSt
 import { Ey, HR } from "@shared/components/ui";
 import { PlannerWizard } from "@/planner/wizard";
 import { WizardIcon } from "@/planner/wizard/WizardIcon";
+import { openContactDrawer } from "@/components/contact/SiteBanner";
 
 const HeroPlanVisual = dynamic(
   () => import("@shared/components/HeroPlanVisual").then((m) => ({ default: m.HeroPlanVisual })),
@@ -179,6 +180,9 @@ function HomePageContent() {
             ))}
             <a href={`/documents?lang=${lang}`} className="nav-lnk">{docsLabel}</a>
             <a href={`/blog?lang=${lang}`} className="nav-lnk">{blogLabel}</a>
+            <button className="nav-lnk" onClick={openContactDrawer}>
+              {lang === "sr" ? "Kontakt" : lang === "ru" ? "Контакт" : "Contact"}
+            </button>
           </nav>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
             <LangDropdown lang={lang} onChange={handleSetLang} />
@@ -211,6 +215,10 @@ function HomePageContent() {
               style={{ display: "block", padding: "13px 24px", fontSize: 15, fontWeight: 500, color: "var(--ink2)", fontFamily: "var(--sans)" }}>{docsLabel}</a>
             <a href={`/blog?lang=${lang}`} onClick={() => setMobileMenuOpen(false)}
               style={{ display: "block", padding: "13px 24px", fontSize: 15, fontWeight: 500, color: "var(--ink2)", fontFamily: "var(--sans)" }}>{blogLabel}</a>
+            <button onClick={() => { openContactDrawer(); setMobileMenuOpen(false); }}
+              style={{ display: "block", width: "100%", textAlign: "left", padding: "13px 24px", fontSize: 15, fontWeight: 500, color: "var(--ink2)", fontFamily: "var(--sans)", background: "none", border: "none", cursor: "pointer" }}>
+              {lang === "sr" ? "Kontakt" : lang === "ru" ? "Контакт" : "Contact"}
+            </button>
             <div style={{ padding: "8px 24px 0" }}>
               <button className="btn-p" onClick={() => { scrollTo("planner"); setMobileMenuOpen(false); }} style={{ width: "100%", fontSize: 14, padding: "11px 18px", justifyContent: "center" }}>{t.nav.cta}</button>
             </div>
@@ -238,6 +246,9 @@ function HomePageContent() {
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", marginBottom: 12 }}>
                 <button className="btn-p" onClick={() => scrollTo("planner")} style={{ fontSize: 15, padding: "13px 28px" }}>{t.hero.cta} →</button>
+                <button className="btn-g" onClick={openContactDrawer} style={{ fontSize: 15, padding: "13px 28px" }}>
+                  {lang === "sr" ? "Kontaktirajte nas" : lang === "ru" ? "Свяжитесь с нами" : "Contact us"}
+                </button>
               </div>
               <p style={{ fontSize: 12, color: "var(--ink4)", fontFamily: "var(--sans)", marginBottom: 24 }}>{t.hero.ctaNote}</p>
               <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
