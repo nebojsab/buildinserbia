@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Lang } from "../translations";
 import { HR } from "./ui";
+import { WizardIcon } from "./WizardIcon";
 
 const STEP_MS = 560;
 const TOAST_AFTER_MS = 420;
@@ -187,9 +188,9 @@ export function HeroPlanVisual({ lang }: { lang: Lang }) {
                   transition: "transform .35s ease,box-shadow .35s ease",
                 }}
               >
-                <span style={{ fontSize: 16, display: "block", marginBottom: 7 }}>
-                  💰
-                </span>
+                <div style={{ width: 32, height: 32, borderRadius: 7, background: "var(--accmid)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--acc)", marginBottom: 7 }}>
+                  <WizardIcon name="zap" size={16} />
+                </div>
                 <div
                   style={{
                     height: 6,
@@ -219,9 +220,9 @@ export function HeroPlanVisual({ lang }: { lang: Lang }) {
                   transition: "transform .35s ease,box-shadow .35s ease",
                 }}
               >
-                <span style={{ fontSize: 16, display: "block", marginBottom: 7 }}>
-                  ✅
-                </span>
+                <div style={{ width: 32, height: 32, borderRadius: 7, background: "var(--grnmid)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--grn)", marginBottom: 7 }}>
+                  <WizardIcon name="check" size={16} />
+                </div>
                 <div
                   style={{
                     height: 6,
@@ -273,7 +274,9 @@ export function HeroPlanVisual({ lang }: { lang: Lang }) {
               transition: "transform 0.2s ease-out",
             }}
           >
-            <span style={{ fontSize: 18 }}>✅</span>
+            <div style={{ width: 30, height: 30, borderRadius: 7, background: "var(--grnbg)", border: "1px solid var(--grnmid)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--grn)", flexShrink: 0 }}>
+              <WizardIcon name="check" size={15} />
+            </div>
             <div>
               <p
                 style={{

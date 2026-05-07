@@ -1,47 +1,23 @@
-function resolveAffiliateBase(): string {
-  // Vite: prefer VITE_AFFILIATE_BASE_URL when available
-  const viteBase =
-    typeof import.meta !== "undefined" && (import.meta as any).env?.VITE_AFFILIATE_BASE_URL
-      ? (import.meta as any).env.VITE_AFFILIATE_BASE_URL
-      : undefined;
-
-  // Next / Node: allow NEXT_PUBLIC_AFFILIATE_BASE_URL
-  const nextBase =
-    typeof process !== "undefined" && process.env?.NEXT_PUBLIC_AFFILIATE_BASE_URL
-      ? process.env.NEXT_PUBLIC_AFFILIATE_BASE_URL
-      : undefined;
-
-  return viteBase ?? nextBase ?? "https://example.com/affiliate";
-}
-
-const base = resolveAffiliateBase().replace(
-  /\/$/,
-  "",
-);
-
-function href(slug: string) {
-  return `${base}/${slug}`;
-}
 
 export const AFF: Record<
   string,
   { icon: string; image: string; href: string }
 > = {
-  insulation: { icon: "🧱", image: "/catalog-categories/insulation.jpeg",        href: href("insulation") },
-  windows:    { icon: "🪟", image: "/catalog-categories/windows.jpeg",           href: href("windows") },
-  flooring:   { icon: "🪵", image: "/catalog-categories/parquet.jpeg",           href: href("flooring") },
-  lighting:   { icon: "💡", image: "/catalog-categories/lighting.jpeg",          href: href("lighting") },
-  bathroom:   { icon: "🛁", image: "/catalog-categories/bathroom-furniture.jpeg", href: href("bathroom") },
-  kitchen:    { icon: "🍳", image: "/catalog-categories/kitchen.jpeg",           href: href("kitchen") },
-  furniture:  { icon: "🛋️", image: "/catalog-categories/bathroom-furniture.jpeg", href: href("furniture") },
-  tools:      { icon: "🔧", image: "/catalog-categories/tools.jpeg",             href: href("tools") },
-  roofing:    { icon: "🏚️", image: "/catalog-categories/roofing.jpeg",           href: href("roofing") },
-  garden:     { icon: "🌿", image: "/catalog-categories/lawn.jpeg",              href: href("garden") },
-  solar:      { icon: "☀️", image: "/catalog-categories/electrical.jpeg",        href: href("solar") },
-  heating:    { icon: "🔥", image: "/catalog-categories/heating.jpeg",           href: href("heating") },
-  septic:     { icon: "💧", image: "/catalog-categories/septic.jpeg",            href: href("septic") },
-  fence:      { icon: "🚧", image: "/catalog-categories/fence.jpeg",             href: href("fence") },
-  paint:      { icon: "🎨", image: "/catalog-categories/paint.jpeg",             href: href("paint") },
+  insulation: { icon: "🧱", image: "/catalog-categories/insulation.jpeg",        href: "https://roma.rs/fasadni-i-termoizolacioni-radovi/" },
+  windows:    { icon: "🪟", image: "/catalog-categories/windows.jpeg",           href: "https://uradi-sam.rs/pvc-prozori/" },
+  flooring:   { icon: "🪵", image: "/catalog-categories/parquet.jpeg",           href: "https://uradi-sam.rs/podne-zidne-obloge/" },
+  lighting:   { icon: "💡", image: "/catalog-categories/lighting.jpeg",          href: "https://www.ikea.com/rs/sr/cat/rasveta-li001/" },
+  bathroom:   { icon: "🛁", image: "/catalog-categories/bathroom-furniture.jpeg", href: "https://www.enmongroup.com/" },
+  kitchen:    { icon: "🍳", image: "/catalog-categories/kitchen.jpeg",           href: "https://www.ikea.com/rs/sr/cat/kuhinjski-sistemi-ka003/" },
+  furniture:  { icon: "🛋️", image: "/catalog-categories/bathroom-furniture.jpeg", href: "https://www.ikea.com/rs/sr/cat/namestaj-fu001/" },
+  tools:      { icon: "🔧", image: "/catalog-categories/tools.jpeg",             href: "https://www.prodavnicaalata.rs/" },
+  roofing:    { icon: "🏚️", image: "/catalog-categories/roofing.jpeg",           href: "https://uradi-sam.rs/krovni-pokrivaci/" },
+  garden:     { icon: "🌿", image: "/catalog-categories/lawn.jpeg",              href: "https://gardencentar.rs/" },
+  solar:      { icon: "☀️", image: "/catalog-categories/electrical.jpeg",        href: "https://www.solarenverde.rs/" },
+  heating:    { icon: "🔥", image: "/catalog-categories/heating.jpeg",           href: "https://toplipod.rs/" },
+  septic:     { icon: "💧", image: "/catalog-categories/septic.jpeg",            href: "https://prodock.rs/" },
+  fence:      { icon: "🚧", image: "/catalog-categories/fence.jpeg",             href: "https://example.com/affiliate/fence/" },
+  paint:      { icon: "🎨", image: "/catalog-categories/paint.jpeg",             href: "https://www.okov.rs/sr/boje-i-lakovi/boje-i-lakovi" },
 };
 
 /* Task→affiliate mapping */

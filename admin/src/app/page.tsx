@@ -17,11 +17,22 @@ import { SiteLogo } from "@shared/components/SiteLogo";
 import { ComingSoonScreen, MaintenanceScreen } from "@shared/components/SystemStateScreens";
 import { Ey, HR } from "@shared/components/ui";
 import { PlannerWizard } from "@/planner/wizard";
+import { WizardIcon } from "@/planner/wizard/WizardIcon";
 
 const HeroPlanVisual = dynamic(
   () => import("@shared/components/HeroPlanVisual").then((m) => ({ default: m.HeroPlanVisual })),
   { ssr: false }
 );
+
+const MISTAKE_ICONS: Array<{ name: string; color: string }> = [
+  { name: "triangle",   color: "#B45309" },
+  { name: "zap",        color: "#134279" },
+  { name: "layers",     color: "#166534" },
+  { name: "building",   color: "#134279" },
+  { name: "file-text",  color: "#6D28D9" },
+];
+
+const TRUST_ICONS = ["home", "sun", "file-text", "shield"] as const;
 
 const LANG_OPTIONS: { value: Lang; flag: string; label: string }[] = [
   { value: "sr", flag: "🇷🇸", label: "Srpski" },
@@ -220,7 +231,9 @@ function HomePageContent() {
               </h1>
               <p style={{ fontSize: 16, color: "var(--ink3)", lineHeight: 1.72, maxWidth: 490, marginBottom: 24, fontFamily: "var(--sans)" }}>{t.hero.sub}</p>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "var(--accbg)", border: "1px solid var(--accmid)", borderRadius: 8, padding: "8px 15px", marginBottom: 26 }}>
-                <span style={{ fontSize: 14 }}>💡</span>
+                <div style={{ width: 22, height: 22, borderRadius: 5, background: "var(--accmid)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--acc)", flexShrink: 0 }}>
+                  <WizardIcon name="zap" size={13} />
+                </div>
                 <span style={{ fontSize: 13, fontWeight: 500, color: "var(--acc)", fontFamily: "var(--sans)" }}>{t.hero.preview}</span>
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", marginBottom: 12 }}>
@@ -265,15 +278,20 @@ function HomePageContent() {
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
                 <p style={{ fontSize: 13.5, color: "var(--ink2)", fontFamily: "var(--sans)", lineHeight: 1.55, marginBottom: 14, fontWeight: 500 }}>{t.mistakes.listIntro}</p>
-                {t.mistakes.items.map((it, i) => (
+                {t.mistakes.items.map((it, i) => {
+                  const mi = MISTAKE_ICONS[i] ?? MISTAKE_ICONS[0];
+                  return (
                   <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start", padding: "16px 0", borderBottom: i < t.mistakes.items.length - 1 ? "1px solid var(--bdr)" : "none" }}>
-                    <span style={{ fontSize: 20, flexShrink: 0, marginTop: 1 }}>{it.icon}</span>
+                    <div style={{ width: 36, height: 36, flexShrink: 0, borderRadius: "var(--r)", background: `${mi.color}18`, display: "flex", alignItems: "center", justifyContent: "center", color: mi.color, marginTop: 1 }}>
+                      <WizardIcon name={mi.name} size={18} />
+                    </div>
                     <div>
                       <h3 style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)", marginBottom: 4, marginTop: 0, fontFamily: "var(--sans)" }}>{it.t}</h3>
                       <p style={{ fontSize: 13, color: "var(--ink3)", lineHeight: 1.65, fontFamily: "var(--sans)" }}>{it.d}</p>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
             <div style={{ marginTop: 36, padding: "20px 24px", background: "var(--accbg)", border: "1px solid var(--accmid)", borderRadius: "var(--r)", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
@@ -467,8 +485,8 @@ function HomePageContent() {
       <section style={{ padding: PY, background: "var(--ink)" }}>
         <div style={{ ...MX }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-            <div style={{ width: 22, height: 1.5, background: "rgba(19,66,121,.7)", borderRadius: 2 }} />
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "rgba(19,66,121,.85)", fontFamily: "var(--sans)" }}>{t.trust.eyebrow}</p>
+            <div style={{ width: 22, height: 1.5, background: "rgba(147,197,253,.5)", borderRadius: 2 }} />
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "#93C5FD", fontFamily: "var(--sans)" }}>{t.trust.eyebrow}</p>
           </div>
           <h2 style={{ fontFamily: "var(--heading)", fontSize: "clamp(22px,2.8vw,32px)", fontWeight: 500, color: "#FAFAF9", lineHeight: 1.3, letterSpacing: "-.01em", marginBottom: 40 }}>
             {t.trust.title}
@@ -476,7 +494,9 @@ function HomePageContent() {
           <div className="trust-g" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 18 }}>
             {t.trust.items.map((it, i) => (
               <div key={i} style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.07)", borderRadius: "var(--rl)", padding: "24px 20px" }}>
-                <span style={{ fontSize: 24, display: "block", marginBottom: 14 }}>{it.icon}</span>
+                <div style={{ width: 40, height: 40, borderRadius: "var(--r)", background: "rgba(255,255,255,.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(250,250,248,.8)", marginBottom: 14 }}>
+                  <WizardIcon name={TRUST_ICONS[i] ?? "shield"} size={20} />
+                </div>
                 <h3 style={{ fontFamily: "var(--heading)", fontSize: 16, fontWeight: 500, color: "#FAFAF8", marginBottom: 8, lineHeight: 1.35 }}>{it.t}</h3>
                 <p style={{ fontSize: 12.5, color: "rgba(250,250,248,.5)", lineHeight: 1.65, fontFamily: "var(--sans)" }}>{it.d}</p>
               </div>
