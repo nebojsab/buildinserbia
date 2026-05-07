@@ -215,6 +215,7 @@ export default async function CatalogAdminPage({ searchParams }: PageProps) {
   const filterStatus = readSearchParam(resolvedParams, "status") || "all";
   const filterTask = readSearchParam(resolvedParams, "task") || "all";
   const filterCategory = readSearchParam(resolvedParams, "category") || "all";
+  const filterSearch = readSearchParam(resolvedParams, "search") || "";
   const PAGE_SIZE = 50;
   const currentPage = Math.max(1, parseInt(readSearchParam(resolvedParams, "page") || "1", 10));
 
@@ -242,9 +243,11 @@ export default async function CatalogAdminPage({ searchParams }: PageProps) {
   const effectiveProducts: EffectiveCatalogProduct[] = [...customProducts, ...baseProducts];
   const visibleProducts = effectiveProducts.filter((product) => !product.isDeleted);
 
+  const searchLower = filterSearch.toLowerCase();
   const filteredProducts = (filterStatus === "removed" ? effectiveProducts : visibleProducts).filter((product) => {
     if (filterCategory !== "all" && product.category !== filterCategory) return false;
     if (filterTask !== "all" && !product.plannerMappings.includes(filterTask)) return false;
+    if (searchLower && !product.title.toLowerCase().includes(searchLower) && !product.merchantName?.toLowerCase().includes(searchLower)) return false;
     const stale = daysSince(product.lastCheckedAt) > 45;
     if (filterStatus === "removed" && !product.isDeleted) return false;
     if (filterStatus === "active" && !product.isActive) return false;
@@ -343,52 +346,6 @@ export default async function CatalogAdminPage({ searchParams }: PageProps) {
       </section>
 
       <section style={{ background: "var(--card)", border: "1px solid var(--bdr)", borderRadius: 10, padding: "12px 14px" }}>
-        <form method="get" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 10 }}>
-          <label style={{ fontSize: 12, color: "var(--ink3)" }}>
-            Status
-            <select name="status" defaultValue={filterStatus} className="fselect" style={{ marginTop: 4 }}>
-              <option value="all">Svi</option>
-              <option value="active">Aktivni</option>
-              <option value="inactive">Neaktivni</option>
-              <option value="featured">Featured</option>
-              <option value="stale">Stale &gt; 45d</option>
-              <option value="removed">Removed sa liste</option>
-            </select>
-          </label>
-          <label style={{ fontSize: 12, color: "var(--ink3)" }}>
-            Task
-            <select name="task" defaultValue={filterTask} className="fselect" style={{ marginTop: 4 }}>
-              <option value="all">Svi taskovi</option>
-              {knownTasks.map((task) => (
-                <option key={task} value={task}>
-                  {task}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label style={{ fontSize: 12, color: "var(--ink3)" }}>
-            Kategorija
-            <select name="category" defaultValue={filterCategory} className="fselect" style={{ marginTop: 4 }}>
-              <option value="all">Sve kategorije</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.id}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div style={{ display: "flex", alignItems: "end", gap: 8 }}>
-            <button type="submit" className="btn-p" style={{ padding: "9px 14px", fontSize: 12 }}>
-              Primeni filtere
-            </button>
-            <a href="/admin/catalog" className="btn-g" style={{ textDecoration: "none", padding: "9px 14px", fontSize: 12 }}>
-              Reset
-            </a>
-          </div>
-        </form>
-      </section>
-
-      <section style={{ background: "var(--card)", border: "1px solid var(--bdr)", borderRadius: 10, padding: "12px 14px" }}>
         <h3 style={{ margin: "0 0 10px", fontSize: 14, color: "var(--ink)" }}>Dodaj novi katalog item</h3>
         <form action={addCatalogItemAction} style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: 10 }}>
           <input name="title" className="finput" placeholder="Naziv proizvoda" required />
@@ -422,11 +379,15 @@ export default async function CatalogAdminPage({ searchParams }: PageProps) {
         </form>
       </section>
 
-      <section style={{ background: "var(--card)", border: "1px solid var(--bdr)", borderRadius: 10 }}>
-        <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--bdr)" }}>
-          <h3 style={{ margin: 0, fontSize: 14, color: "var(--ink)" }}>Planner mapiranja po tasku</h3>
-        </div>
-        <div style={{ overflowX: "auto" }}>
+      <details style={{ background: "var(--card)", border: "1px solid var(--bdr)", borderRadius: 10 }}>
+        <summary style={{ padding: "12px 14px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, listStyle: "none", userSelect: "none" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <h3 style={{ margin: 0, fontSize: 14, color: "var(--ink)" }}>Planner mapiranja po tasku</h3>
+            <span style={{ fontSize: 11, color: "var(--ink4)" }}>{plannerMappings.length} taskova</span>
+          </div>
+          <span style={{ fontSize: 11, color: "var(--ink4)", flexShrink: 0 }}>▼</span>
+        </summary>
+        <div style={{ borderTop: "1px solid var(--bdr)", overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
             <thead>
               <tr style={{ background: "var(--bgw)", color: "var(--ink3)" }}>
@@ -440,21 +401,15 @@ export default async function CatalogAdminPage({ searchParams }: PageProps) {
               {plannerMappings.map((mapping) => (
                 <tr key={mapping.taskId}>
                   <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>{mapping.taskId}</td>
-                  <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>
-                    {mapping.categoryIds.join(", ")}
-                  </td>
-                  <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>
-                    {(mapping.fallbackCategoryIds ?? []).join(", ") || "—"}
-                  </td>
-                  <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>
-                    {mapping.priority ?? 50}
-                  </td>
+                  <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>{mapping.categoryIds.join(", ")}</td>
+                  <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>{(mapping.fallbackCategoryIds ?? []).join(", ") || "—"}</td>
+                  <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr)" }}>{mapping.priority ?? 50}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </section>
+      </details>
 
       <details style={{ background: "var(--card)", border: "1px solid var(--bdr)", borderRadius: 10 }}>
         <summary style={{
@@ -504,6 +459,45 @@ export default async function CatalogAdminPage({ searchParams }: PageProps) {
         </div>
       </details>
 
+      <div style={{ background: "var(--card)", border: "1px solid var(--bdr)", borderRadius: 10, padding: "14px" }}>
+        <p style={{ margin: "0 0 10px", fontSize: 11, fontWeight: 700, color: "var(--ink3)", textTransform: "uppercase", letterSpacing: ".07em" }}>Filteri proizvoda</p>
+        <form method="get" style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "flex-end" }}>
+          <label style={{ fontSize: 12, color: "var(--ink3)", flex: "2 1 180px" }}>
+            Pretraga
+            <input name="search" className="finput" defaultValue={filterSearch} placeholder="Naziv, merchant..." style={{ display: "block", width: "100%", marginTop: 4 }} />
+          </label>
+          <label style={{ fontSize: 12, color: "var(--ink3)", flex: "1 1 110px" }}>
+            Status
+            <select name="status" defaultValue={filterStatus} className="fselect" style={{ display: "block", width: "100%", marginTop: 4 }}>
+              <option value="all">Svi</option>
+              <option value="active">Aktivni</option>
+              <option value="inactive">Neaktivni</option>
+              <option value="featured">Featured</option>
+              <option value="stale">Stale &gt; 45d</option>
+              <option value="removed">Removed</option>
+            </select>
+          </label>
+          <label style={{ fontSize: 12, color: "var(--ink3)", flex: "1 1 110px" }}>
+            Task
+            <select name="task" defaultValue={filterTask} className="fselect" style={{ display: "block", width: "100%", marginTop: 4 }}>
+              <option value="all">Svi taskovi</option>
+              {knownTasks.map((task) => <option key={task} value={task}>{task}</option>)}
+            </select>
+          </label>
+          <label style={{ fontSize: 12, color: "var(--ink3)", flex: "1 1 110px" }}>
+            Kategorija
+            <select name="category" defaultValue={filterCategory} className="fselect" style={{ display: "block", width: "100%", marginTop: 4 }}>
+              <option value="all">Sve kategorije</option>
+              {categories.map((c) => <option key={c.id} value={c.id}>{c.id}</option>)}
+            </select>
+          </label>
+          <div style={{ display: "flex", gap: 6, paddingBottom: 1 }}>
+            <button type="submit" className="btn-p" style={{ padding: "9px 14px", fontSize: 12 }}>Filtriraj</button>
+            <a href="/admin/catalog" className="btn-g" style={{ textDecoration: "none", padding: "9px 14px", fontSize: 12 }}>Reset</a>
+          </div>
+        </form>
+      </div>
+
       <section style={{ background: "var(--card)", border: "1px solid var(--bdr)", borderRadius: 10 }}>
         <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--bdr)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <h3 style={{ margin: 0, fontSize: 14, color: "var(--ink)" }}>
@@ -519,6 +513,7 @@ export default async function CatalogAdminPage({ searchParams }: PageProps) {
               filterStatus={filterStatus}
               filterTask={filterTask}
               filterCategory={filterCategory}
+              filterSearch={filterSearch}
             />
           )}
         </div>
@@ -558,6 +553,7 @@ export default async function CatalogAdminPage({ searchParams }: PageProps) {
               filterStatus={filterStatus}
               filterTask={filterTask}
               filterCategory={filterCategory}
+              filterSearch={filterSearch}
             />
           </div>
         )}
@@ -572,18 +568,21 @@ function PaginationControls({
   filterStatus,
   filterTask,
   filterCategory,
+  filterSearch,
 }: {
   currentPage: number;
   totalPages: number;
   filterStatus: string;
   filterTask: string;
   filterCategory: string;
+  filterSearch: string;
 }) {
   function pageUrl(page: number) {
     const p = new URLSearchParams();
     if (filterStatus !== "all") p.set("status", filterStatus);
     if (filterTask !== "all") p.set("task", filterTask);
     if (filterCategory !== "all") p.set("category", filterCategory);
+    if (filterSearch) p.set("search", filterSearch);
     if (page > 1) p.set("page", String(page));
     const qs = p.toString();
     return `/admin/catalog${qs ? `?${qs}` : ""}`;
