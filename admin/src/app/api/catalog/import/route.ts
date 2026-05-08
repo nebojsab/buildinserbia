@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import * as XLSX from "xlsx";
-import { bulkAddCustomCatalogProducts, getCatalogAdminState } from "@/lib/catalogAdminState";
+import { bulkAddCustomCatalogProducts, getCatalogAdminState, updateCatalogProductOverride, updateCustomCatalogProduct } from "@/lib/catalogAdminState";
 import { products as baseProducts } from "@shared/data/catalog/products";
 import type { CatalogProduct, CatalogCategoryId, QualityTier } from "@shared/types/catalog";
 
@@ -122,15 +122,18 @@ async function parseXlsx(blob: Blob): Promise<Record<string, string>[]> {
 
 type ImportResult = {
   imported: number;
+  updated: number;
   skipped: { row: number; reason: string }[];
 };
 
 export async function POST(req: Request): Promise<NextResponse> {
   let rows: Record<string, string>[];
   let parseMode = "unknown";
+  let upsertMode = false;
   try {
     const form = await req.formData();
     const file = form.get("file");
+    upsertMode = form.get("mode") === "upsert";
     if (!file || typeof file === "string") {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
@@ -158,14 +161,16 @@ export async function POST(req: Request): Promise<NextResponse> {
     return NextResponse.json({ error: `No data rows found (parsed as ${parseMode}). Check that the file has data below the header row and is not all example/comment rows.` }, { status: 400 });
   }
 
-  // Build set of all existing productUrls to prevent duplicates / overwriting
   const adminState = await getCatalogAdminState();
-  const existingUrls = new Set<string>([
-    ...baseProducts.map((p) => p.productUrl),
-    ...adminState.customProducts.map((p) => p.productUrl),
+
+  // Deduplication is title-based, not URL-based — multiple products can
+  // legitimately share the same product URL (e.g. a merchant category page).
+  const existingTitles = new Set<string>([
+    ...baseProducts.map((p) => p.title.toLowerCase()),
+    ...adminState.customProducts.map((p) => p.title.toLowerCase()),
   ]);
 
-  const result: ImportResult = { imported: 0, skipped: [] };
+  const result: ImportResult = { imported: 0, updated: 0, skipped: [] };
   const toAdd: CatalogProduct[] = [];
   const now = new Date().toISOString().slice(0, 10);
 
@@ -189,7 +194,26 @@ export async function POST(req: Request): Promise<NextResponse> {
     if (!merchantName)                   { result.skipped.push({ row: rowNum, reason: "Missing: merchant_name" }); continue; }
     if (!isUrl(productUrl))              { result.skipped.push({ row: rowNum, reason: `Invalid product_url: "${productUrl}"` }); continue; }
     if (!isUrl(imageUrl))                { result.skipped.push({ row: rowNum, reason: `Invalid image_url: "${imageUrl}"` }); continue; }
-    if (existingUrls.has(productUrl))    { result.skipped.push({ row: rowNum, reason: `Already exists: "${productUrl}"` }); continue; }
+
+    const titleKey = title.toLowerCase();
+    if (existingTitles.has(titleKey)) {
+      if (!upsertMode) {
+        result.skipped.push({ row: rowNum, reason: `Već postoji proizvod sa nazivom: "${title}"` });
+        continue;
+      }
+      // Upsert: find existing product by title and update its fields
+      const customProduct = adminState.customProducts.find((p) => p.title.toLowerCase() === titleKey);
+      if (customProduct) {
+        await updateCustomCatalogProduct(customProduct.id, { title, merchantName, productUrl, imageUrl, priceLabel: priceLabel || undefined });
+      } else {
+        const baseProduct = baseProducts.find((p) => p.title.toLowerCase() === titleKey);
+        if (baseProduct) {
+          await updateCatalogProductOverride(baseProduct.id, { title, merchantName, productUrl, imageUrl, priceLabel: priceLabel || undefined });
+        }
+      }
+      result.updated++;
+      continue;
+    }
 
     const qualityTier: QualityTier = VALID_TIERS.has(qualityTierRaw) ? (qualityTierRaw as QualityTier) : "mid";
     const isFeatured = isFeaturedRaw === "true" || isFeaturedRaw === "1" || isFeaturedRaw === "yes";
@@ -213,12 +237,14 @@ export async function POST(req: Request): Promise<NextResponse> {
       sourceType: "manual",
     });
 
-    existingUrls.add(productUrl);
+    existingTitles.add(titleKey);
     result.imported++;
   }
 
-  // Single read + write for the entire batch
-  await bulkAddCustomCatalogProducts(toAdd);
+  // Single bulk write for new products
+  if (toAdd.length > 0) {
+    await bulkAddCustomCatalogProducts(toAdd);
+  }
 
   revalidatePath("/admin/catalog");
   return NextResponse.json(result);

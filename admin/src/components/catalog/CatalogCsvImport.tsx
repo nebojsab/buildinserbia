@@ -3,13 +3,15 @@
 import { useRef, useState } from "react";
 
 type SkipEntry = { row: number; reason: string };
-type ImportResult = { imported: number; skipped: SkipEntry[] };
+type ImportResult = { imported: number; updated: number; skipped: SkipEntry[] };
 
 export function CatalogCsvImport({ onDone }: { onDone?: () => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [result, setResult] = useState<ImportResult | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
+
+  const [upsert, setUpsert] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -22,6 +24,7 @@ export function CatalogCsvImport({ onDone }: { onDone?: () => void }) {
 
     const form = new FormData();
     form.append("file", file);
+    form.append("mode", upsert ? "upsert" : "skip");
 
     try {
       const res = await fetch("/api/catalog/import", { method: "POST", body: form });
@@ -60,8 +63,16 @@ export function CatalogCsvImport({ onDone }: { onDone?: () => void }) {
           type="file"
           accept=".xlsx,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           required
-          style={{ flex: 1, fontSize: 12, color: "var(--ink2)" }}
+          style={{ flex: 1, minWidth: 180, fontSize: 12, color: "var(--ink2)" }}
         />
+        <label style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, color: "var(--ink2)", whiteSpace: "nowrap", cursor: "pointer" }}>
+          <input
+            type="checkbox"
+            checked={upsert}
+            onChange={(e) => setUpsert(e.target.checked)}
+          />
+          Ažuriraj duplikate
+        </label>
         <button
           type="submit"
           disabled={status === "loading"}
@@ -85,7 +96,8 @@ export function CatalogCsvImport({ onDone }: { onDone?: () => void }) {
       {status === "done" && result && (
         <div style={{ marginTop: 10 }}>
           <p style={{ margin: 0, fontSize: 12, color: "#16a34a", fontWeight: 600 }}>
-            ✓ Importovano: {result.imported} proizvoda
+            ✓ Importovano: {result.imported} novih
+            {result.updated > 0 && `, ažurirano: ${result.updated}`}
             {result.skipped.length > 0 && `, preskočeno: ${result.skipped.length}`}
           </p>
           {result.skipped.length > 0 && (
