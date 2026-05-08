@@ -24,7 +24,10 @@ type CatalogAdminState = {
 
 const STATE_FILE = path.join(process.cwd(), "catalog-admin-state.json");
 const STATE_BLOB_PATH = "catalog-admin-state.json";
-const STATE_BLOB_ACCESS = "public" as const;
+// Private blobs bypass Vercel CDN entirely (useCache: false fetches from origin).
+// Public blobs are cached at edge for up to 365 days, causing stale reads in
+// read-modify-write cycles even with cache-busting query params.
+const STATE_BLOB_ACCESS = "private" as const;
 const canUseBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
 
 function parseState(raw: string): CatalogAdminState {
@@ -49,22 +52,25 @@ function loadFromFile(): CatalogAdminState {
 }
 
 async function loadFromBlob(): Promise<CatalogAdminState> {
-  const result = await get(STATE_BLOB_PATH, { access: STATE_BLOB_ACCESS });
-  if (!result || result.statusCode !== 200) throw new Error("missing-blob");
-  // Fetch the blob URL directly with cache: 'no-store' to bypass both
-  // Next.js Data Cache and Vercel CDN edge cache after writes.
-  const blobUrl: string | undefined = (result as Record<string, unknown>).url as string | undefined;
-  if (blobUrl) {
-    // Append a timestamp to bust Vercel CDN edge cache — without this,
-    // public blobs can serve a stale version even after an overwrite,
-    // causing read-modify-write cycles to silently roll back recent changes.
-    const bustUrl = `${blobUrl}?t=${Date.now()}`;
-    const res = await fetch(bustUrl, { cache: "no-store" });
+  // Private blob + useCache:false → fetches from origin storage, never CDN.
+  // This is the only reliable way to avoid stale reads in read-modify-write cycles.
+  const result = await get(STATE_BLOB_PATH, { access: STATE_BLOB_ACCESS, useCache: false });
+  if (result && result.statusCode === 200) {
+    const stream = result.stream as ReadableStream<Uint8Array>;
+    return parseState(await new Response(stream).text());
+  }
+
+  // Migration path: private blob doesn't exist yet (first run after switching from
+  // public access). Try reading the legacy public blob so we don't lose data.
+  const legacy = await get(STATE_BLOB_PATH, { access: "public" });
+  if (!legacy || legacy.statusCode !== 200) throw new Error("missing-blob");
+  const legacyUrl = (legacy as Record<string, unknown>).url as string | undefined;
+  if (legacyUrl) {
+    const res = await fetch(`${legacyUrl}?t=${Date.now()}`, { cache: "no-store" });
     if (res.ok) return parseState(await res.text());
   }
-  const stream = result.stream as ReadableStream<Uint8Array>;
-  const text = await new Response(stream).text();
-  return parseState(text);
+  const stream = legacy.stream as ReadableStream<Uint8Array>;
+  return parseState(await new Response(stream).text());
 }
 
 function persistToFile(state: CatalogAdminState) {
