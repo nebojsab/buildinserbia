@@ -64,9 +64,12 @@ export function Step3Subcategories({
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
         {activeCats.map((cat) => {
           const subIds = cat.subcategories.map((s) => s.id);
+          const nonExclusiveIds = cat.subcategories.filter((s) => !s.exclusive).map((s) => s.id);
           const hasExclusive = cat.subcategories.some((s) => s.exclusive);
           const exclusiveSelected = cat.subcategories.some((s) => s.exclusive && selected.includes(s.id));
-          const groupAllSelected = subIds.every((id) => selected.includes(id));
+          // "Select all" targets only non-exclusive items (exclusive items are standalone options)
+          const selectableIds = hasExclusive ? nonExclusiveIds : subIds;
+          const groupAllSelected = selectableIds.length > 0 && selectableIds.every((id) => selected.includes(id));
 
           return (
             <div key={cat.id}>
@@ -77,10 +80,10 @@ export function Step3Subcategories({
                   </div>
                   {cat.label[l]}
                 </div>
-                {!hasExclusive && (
+                {selectableIds.length > 0 && (
                   <button
                     style={{ fontSize: 11, color: "var(--acc)", background: "none", border: "none", cursor: "pointer", padding: "2px 6px", fontWeight: 600 }}
-                    onClick={() => onChange(toggleGroup(selected, subIds))}
+                    onClick={() => onChange(toggleGroup(selected, selectableIds))}
                   >
                     {groupAllSelected ? i18n.deselectAll : i18n.selectAll}
                   </button>
