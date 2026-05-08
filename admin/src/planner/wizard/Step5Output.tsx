@@ -157,7 +157,22 @@ export function Step5Output({ lang, state, tree, i18n, onRestart }: Props) {
       if (!pr) continue;
 
       const vals = (fieldValues[sub.id] ?? {}) as Record<string, unknown>;
-      const qty = getQuantity(pr, vals);
+
+      // For room-based fields, pre-compute the total area across all rooms
+      // and inject it as a virtual key so getQuantity can use it.
+      const valsWithRooms = { ...vals };
+      for (const field of sub.fields) {
+        if (field.kind === "rooms" && Array.isArray(vals[field.key])) {
+          const rooms = vals[field.key] as Record<string, unknown>[];
+          const total = rooms.reduce((sum, r) => {
+            const a = r["povrsina"];
+            return sum + (typeof a === "number" && a > 0 ? a : 0);
+          }, 0);
+          if (total > 0) valsWithRooms["_rooms_povrsina"] = total;
+        }
+      }
+
+      const qty = getQuantity(pr, valsWithRooms);
 
       let low: number | null = null;
       let high: number | null = null;
@@ -196,6 +211,28 @@ export function Step5Output({ lang, state, tree, i18n, onRestart }: Props) {
           details.push(`${val}${field.unit ? ` ${field.unit}` : ""}`);
         } else if ((field.kind === "area" || field.kind === "number" || field.kind === "length") && val === "unknown") {
           details.push(l === "sr" ? "površina nepoznata" : l === "ru" ? "площадь неизвестна" : "area unknown");
+        } else if (field.kind === "rooms" && Array.isArray(val) && val.length > 0 && field.roomFields) {
+          const rooms = val as Record<string, unknown>[];
+          for (let ri = 0; ri < rooms.length; ri++) {
+            const room = rooms[ri];
+            const roomName = typeof room.naziv === "string" && room.naziv ? room.naziv : `${l === "sr" ? "Prostorija" : l === "ru" ? "Комната" : "Room"} ${ri + 1}`;
+            const parts: string[] = [];
+            for (const rf of field.roomFields) {
+              const rv = room[rf.key];
+              if (rv === undefined || rv === null || rv === "") continue;
+              if (rf.kind === "select" && rf.options) {
+                const opt = rf.options.find((o) => o.value === rv);
+                if (opt) parts.push(opt.label[l] ?? opt.label["sr"]);
+              } else if (rf.kind === "area" && typeof rv === "number" && rv > 0) {
+                parts.push(`${rv}${rf.unit ? ` ${rf.unit}` : ""}`);
+              } else if (rf.kind === "area" && rv === "unknown") {
+                parts.push(l === "sr" ? "nepoznata površina" : l === "ru" ? "площадь неизвестна" : "unknown area");
+              } else if (rf.kind === "toggle" && rv === true) {
+                parts.push(rf.label[l] ?? rf.label["sr"]);
+              }
+            }
+            details.push(`${roomName}: ${parts.join(", ")}`);
+          }
         }
       }
 
@@ -311,9 +348,13 @@ export function Step5Output({ lang, state, tree, i18n, onRestart }: Props) {
                       <div>
                         <span style={{ fontSize: "0.8125rem", color: "var(--ink2)" }}>{row.label}</span>
                         {row.details.length > 0 && (
-                          <p style={{ margin: "2px 0 0", fontSize: "0.7rem", color: "var(--ink4)", lineHeight: 1.4 }}>
-                            {row.details.join(" · ")}
-                          </p>
+                          <div style={{ margin: "3px 0 0", fontSize: "0.7rem", color: "var(--ink4)", lineHeight: 1.5 }}>
+                            {row.details.length === 1
+                              ? row.details[0]
+                              : row.details.every((d) => d.includes(": "))
+                                ? row.details.map((d, di) => <div key={di}>{d}</div>)
+                                : row.details.join(" · ")}
+                          </div>
                         )}
                       </div>
                       <span style={{ fontSize: "0.75rem", color: "var(--ink4)", whiteSpace: "nowrap" as const }}>

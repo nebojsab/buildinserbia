@@ -90,14 +90,8 @@ export const subPriceRanges: Record<string, PriceRange> = {
   kupatilo_instalacije:         { low: 80,   high: 180,   unit: "m2",   quantityField: "povrsina" },
 
   // ─── RENOVACIJA: Podovi ──────────────────────────────────────────────────────
-  // podovi_raspored — planning step, no labour cost
-  podovi_parket:                { low: 15,   high: 35,    unit: "m2",   quantityField: "povrsina" },
-  podovi_laminat:               { low: 8,    high: 18,    unit: "m2",   quantityField: "povrsina" },
-  podovi_keramika:              { low: 15,   high: 30,    unit: "m2",   quantityField: "povrsina" },
-  podovi_mikrocement:           { low: 35,   high: 70,    unit: "m2",   quantityField: "povrsina" },
-  podovi_brodski:               { low: 12,   high: 25,    unit: "m2",   quantityField: "povrsina" },
-  podovi_epoxy:                 { low: 20,   high: 45,    unit: "m2",   quantityField: "povrsina" },
-  podovi_vinil:                 { low: 8,    high: 18,    unit: "m2",   quantityField: "povrsina" },
+  // Room-by-room entry; total area summed from all rooms in Step5Output
+  podovi_po_prostorijama:       { low: 10,   high: 35,    unit: "m2",   quantityField: "_rooms_povrsina" },
 
   // ─── RENOVACIJA: Zidovi i plafoni ────────────────────────────────────────────
   zidovi_krecenje:              { low: 4,    high: 14,    unit: "m2",   quantityField: "povrsina_zidova" },
