@@ -1,47 +1,45 @@
 /**
- * One-time migration endpoint: reads the legacy public blob and saves it
- * as a private blob so future reads bypass CDN entirely.
+ * One-time migration helper: reads the legacy fixed-path public blob and
+ * re-saves it using the new versioned path strategy so future reads are CDN-safe.
  *
- * GET  → shows what's currently in the public blob (for verification)
- * POST → migrates public → private blob and returns the migrated JSON
+ * GET  → shows what's currently in the legacy blob (verification only, no write)
+ * POST → migrates legacy blob → new versioned path, returns summary
  */
-import { get, put } from "@vercel/blob";
+import { get, list, put } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-const BLOB_PATH = "catalog-admin-state.json";
+const LEGACY_PATH = "catalog-admin-state.json";
+const VERSIONED_PREFIX = "catalog-admin-state/";
 
-async function readPublicBlobDirect(): Promise<string> {
-  // Read via authenticated get() — this goes to origin storage with the
-  // BLOB_READ_WRITE_TOKEN, which on Vercel's own infrastructure typically
-  // bypasses the public CDN cache (same datacenter routing).
-  // We intentionally do NOT fetch the CDN blobUrl again; we only use the stream
-  // returned by get() which comes from the origin-facing response.
-  // Note: useCache: false causes 400 for public blobs — omit it.
-  // The stream from get() with the BLOB_READ_WRITE_TOKEN auth header routes
-  // through Vercel's internal network and should return origin-fresh data.
-  const result = await get(BLOB_PATH, { access: "public" });
-
-  if (!result || result.statusCode !== 200) {
-    throw new Error(`Public blob not found or unavailable (status ${result?.statusCode ?? "null"})`);
+async function readLegacyBlob(): Promise<string> {
+  // Try versioned blobs first (in case migration already ran)
+  const { blobs } = await list({ prefix: VERSIONED_PREFIX });
+  if (blobs.length > 0) {
+    blobs.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
+    const res = await fetch(blobs[0].url, { cache: "no-store" });
+    if (res.ok) return res.text();
   }
 
+  // Fall back to legacy fixed-path blob
+  const result = await get(LEGACY_PATH, { access: "public" });
+  if (!result || result.statusCode !== 200) {
+    throw new Error(`Legacy blob not found (status ${result?.statusCode ?? "null"})`);
+  }
   const stream = result.stream as ReadableStream<Uint8Array>;
   return new Response(stream).text();
 }
 
 export async function GET() {
   await requireAuth();
-
   try {
-    const text = await readPublicBlobDirect();
+    const text = await readLegacyBlob();
     return new NextResponse(text, {
       headers: {
         "content-type": "application/json; charset=utf-8",
         "cache-control": "no-store",
-        "x-blob-source": "public-origin-stream",
       },
     });
   } catch (err) {
@@ -51,22 +49,23 @@ export async function GET() {
 
 export async function POST() {
   await requireAuth();
-
   try {
-    const text = await readPublicBlobDirect();
+    const text = await readLegacyBlob();
+    const parsed = JSON.parse(text) as {
+      customProducts?: unknown[];
+      productOverrides?: Record<string, unknown>;
+    };
 
-    // Validate it's real JSON before saving
-    JSON.parse(text);
+    // Write using the new versioned strategy — brand-new URL = CDN-safe read
+    const version = Date.now();
+    await put(`${VERSIONED_PREFIX}${version}.json`, text, { access: "public" });
 
-    await put(BLOB_PATH, text, {
-      access: "private",
-      allowOverwrite: true,
-    });
+    const customCount = Array.isArray(parsed.customProducts) ? parsed.customProducts.length : 0;
+    const overrideCount = Object.keys(parsed.productOverrides ?? {}).length;
 
     return NextResponse.json({
       ok: true,
-      message: "Migrated public → private blob. All future reads will use the private blob.",
-      preview: text.slice(0, 500),
+      message: `Migracija uspešna — ${customCount} custom proizvoda, ${overrideCount} override-a sačuvano u verzionisani blob.`,
     });
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 });

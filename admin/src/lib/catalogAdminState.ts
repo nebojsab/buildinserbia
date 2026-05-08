@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { get, put } from "@vercel/blob";
+import { del, get, list, put } from "@vercel/blob";
 import { unstable_noStore as noStore } from "next/cache";
 import type { CatalogProduct } from "@shared/types/catalog";
 
@@ -23,11 +23,16 @@ type CatalogAdminState = {
 };
 
 const STATE_FILE = path.join(process.cwd(), "catalog-admin-state.json");
-const STATE_BLOB_PATH = "catalog-admin-state.json";
-// Private blobs bypass Vercel CDN entirely (useCache: false fetches from origin).
-// Public blobs are cached at edge for up to 365 days, causing stale reads in
-// read-modify-write cycles even with cache-busting query params.
-const STATE_BLOB_ACCESS = "private" as const;
+
+// Versioned prefix: each write creates catalog-admin-state/{timestamp}.json
+// CDN caches per URL — a brand-new URL has never been fetched, so the first
+// GET always goes to origin (no stale cache possible).
+// list() hits the Blob API directly (not CDN), so it always returns fresh metadata.
+const STATE_BLOB_PREFIX = "catalog-admin-state/";
+
+// Legacy single-file path (pre-versioning). Kept for one-time migration reads.
+const STATE_BLOB_LEGACY_PATH = "catalog-admin-state.json";
+
 const canUseBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
 
 function parseState(raw: string): CatalogAdminState {
@@ -52,24 +57,27 @@ function loadFromFile(): CatalogAdminState {
 }
 
 async function loadFromBlob(): Promise<CatalogAdminState> {
-  // Private blob + useCache:false → fetches from origin storage, never CDN.
-  // This is the only reliable way to avoid stale reads in read-modify-write cycles.
-  const result = await get(STATE_BLOB_PATH, { access: STATE_BLOB_ACCESS, useCache: false });
-  if (result && result.statusCode === 200) {
-    const stream = result.stream as ReadableStream<Uint8Array>;
+  // list() calls the Vercel Blob API (not CDN) — always returns fresh metadata.
+  const { blobs } = await list({ prefix: STATE_BLOB_PREFIX });
+
+  if (blobs.length > 0) {
+    // Sort descending by upload time; take the most recent version.
+    blobs.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
+    const latest = blobs[0];
+    // This URL was never requested before (unique per write) — CDN has no cache
+    // entry for it, so the GET goes directly to origin storage. Always fresh.
+    const res = await fetch(latest.url, { cache: "no-store" });
+    if (res.ok) return parseState(await res.text());
+  }
+
+  // Migration: no versioned blobs yet — try the legacy fixed-path blob.
+  const legacy = await get(STATE_BLOB_LEGACY_PATH, { access: "public" });
+  if (legacy && legacy.statusCode === 200) {
+    const stream = legacy.stream as ReadableStream<Uint8Array>;
     return parseState(await new Response(stream).text());
   }
 
-  // Migration path: private blob doesn't exist yet (first run after switching from
-  // public access). Read the legacy public blob using ONLY result.stream — the
-  // authenticated get() call routes through Vercel's internal network which
-  // bypasses the public CDN cache, giving us origin-fresh data.
-  // We deliberately do NOT re-fetch the CDN blobUrl here.
-  // Note: useCache: false causes 400 for public blobs — omit it.
-  const legacy = await get(STATE_BLOB_PATH, { access: "public" });
-  if (!legacy || legacy.statusCode !== 200) throw new Error("missing-blob");
-  const stream = legacy.stream as ReadableStream<Uint8Array>;
-  return parseState(await new Response(stream).text());
+  throw new Error("missing-blob");
 }
 
 function persistToFile(state: CatalogAdminState) {
@@ -82,10 +90,25 @@ function persistToFile(state: CatalogAdminState) {
 
 async function saveState(state: CatalogAdminState): Promise<void> {
   if (canUseBlob) {
-    await put(STATE_BLOB_PATH, JSON.stringify(state), {
-      access: STATE_BLOB_ACCESS,
-      allowOverwrite: true,
+    // Write to a new unique path each time. This guarantees the next read
+    // fetches a URL the CDN has never seen → always fresh origin data.
+    const version = Date.now();
+    await put(`${STATE_BLOB_PREFIX}${version}.json`, JSON.stringify(state), {
+      access: "public",
     });
+
+    // Clean up old versions — keep only the 5 most recent to prevent accumulation.
+    try {
+      const { blobs } = await list({ prefix: STATE_BLOB_PREFIX });
+      blobs.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
+      const toDelete = blobs.slice(5);
+      if (toDelete.length > 0) {
+        await del(toDelete.map((b) => b.url));
+      }
+    } catch {
+      // Cleanup failure is non-fatal — stale blobs cost pennies and will be
+      // cleaned on the next successful write.
+    }
     return;
   }
   persistToFile(state);
