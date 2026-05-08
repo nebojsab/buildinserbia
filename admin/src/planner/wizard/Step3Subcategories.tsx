@@ -82,8 +82,18 @@ export function Step3Subcategories({
                 </div>
                 {selectableIds.length > 0 && (
                   <button
-                    style={{ fontSize: 11, color: "var(--acc)", background: "none", border: "none", cursor: "pointer", padding: "2px 6px", fontWeight: 600 }}
-                    onClick={() => onChange(toggleGroup(selected, selectableIds))}
+                    disabled={exclusiveSelected}
+                    style={{
+                      fontSize: 11,
+                      color: exclusiveSelected ? "var(--ink4)" : "var(--acc)",
+                      background: "none",
+                      border: "none",
+                      cursor: exclusiveSelected ? "not-allowed" : "pointer",
+                      padding: "2px 6px",
+                      fontWeight: 600,
+                      opacity: exclusiveSelected ? 0.45 : 1,
+                    }}
+                    onClick={() => !exclusiveSelected && onChange(toggleGroup(selected, selectableIds))}
                   >
                     {groupAllSelected ? i18n.deselectAll : i18n.selectAll}
                   </button>
