@@ -55,7 +55,11 @@ async function loadFromBlob(): Promise<CatalogAdminState> {
   // Next.js Data Cache and Vercel CDN edge cache after writes.
   const blobUrl: string | undefined = (result as Record<string, unknown>).url as string | undefined;
   if (blobUrl) {
-    const res = await fetch(blobUrl, { cache: "no-store" });
+    // Append a timestamp to bust Vercel CDN edge cache — without this,
+    // public blobs can serve a stale version even after an overwrite,
+    // causing read-modify-write cycles to silently roll back recent changes.
+    const bustUrl = `${blobUrl}?t=${Date.now()}`;
+    const res = await fetch(bustUrl, { cache: "no-store" });
     if (res.ok) return parseState(await res.text());
   }
   const stream = result.stream as ReadableStream<Uint8Array>;
