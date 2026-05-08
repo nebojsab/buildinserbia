@@ -8,7 +8,19 @@ export type FieldKind =
   | "select"     // single choice from list
   | "chips"      // multi-select chips
   | "area"       // shorthand: number + m² unit
-  | "length";    // shorthand: number + m unit
+  | "length"     // shorthand: number + m unit
+  | "rooms";     // dynamic room-by-room list (count → N room blocks)
+
+export type RoomField = {
+  key: string;
+  kind: "select" | "area" | "toggle" | "text";
+  label: LocalizedText;
+  importance: FieldImportance;
+  options?: FieldOption[];
+  unit?: string;
+  predefined?: number[];
+  unknownAllowed?: boolean;
+};
 
 export type FieldImportance = "required" | "optional" | "niceToHave";
 
@@ -29,6 +41,8 @@ export type WizardField = {
   help?: LocalizedText;
   placeholder?: LocalizedText;
   showWhen?: Record<string, string | boolean>; // conditional visibility within subcategory
+  roomFields?: RoomField[];     // for kind:"rooms" — defines per-room sub-fields
+  maxRooms?: number;            // for kind:"rooms" — upper limit (default 10)
 };
 
 export type PriceRange = {

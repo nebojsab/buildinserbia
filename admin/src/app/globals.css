@@ -1176,3 +1176,45 @@ button {
     align-items: flex-start;
   }
 }
+
+/* ── Wizard toggle buttons (Da / Ne) ─────────────────────────────────────── */
+.wizard-toggle-group {
+  display: flex;
+  gap: 6px;
+}
+
+.wizard-toggle-btn {
+  padding: 7px 20px;
+  border-radius: 100px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s;
+  border: 1.5px solid var(--bdr);
+  background: var(--card);
+  color: var(--ink2);
+}
+
+.wizard-toggle-yes {
+  border-color: var(--grn);
+  background: var(--grn);
+  color: #fff;
+}
+
+.wizard-toggle-no {
+  border-color: var(--bdr2);
+  background: var(--bdr2);
+  color: var(--ink);
+}
+
+@media (max-width: 560px) {
+  .wizard-toggle-group {
+    width: 100%;
+  }
+
+  .wizard-toggle-btn {
+    flex: 1;
+    text-align: center;
+    padding: 10px 16px;
+  }
+}

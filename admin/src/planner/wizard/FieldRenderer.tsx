@@ -1,5 +1,6 @@
 import type { WizardField } from "../wizardTree/types";
 import type { WizardI18n } from "./wizardI18n";
+import { RoomListField, type RoomData } from "./RoomListField";
 
 type Props = {
   field: WizardField;
@@ -126,6 +127,16 @@ export function FieldRenderer({ field, value, allValues, lang, i18n, onChange }:
           onChange={(v) => onChange(field.key, v)}
         />
       )}
+
+      {field.kind === "rooms" && field.roomFields && (
+        <RoomListField
+          roomFields={field.roomFields}
+          maxRooms={field.maxRooms ?? 10}
+          value={Array.isArray(value) ? (value as RoomData[]) : []}
+          lang={l}
+          onChange={(v) => onChange(field.key, v)}
+        />
+      )}
     </div>
   );
 }
@@ -231,7 +242,7 @@ type ToggleFieldProps = {
 
 function ToggleField({ value, i18n, onChange }: ToggleFieldProps) {
   return (
-    <div style={{ display: "flex", gap: 6 }}>
+    <div className="wizard-toggle-group">
       {[true, false].map((bool) => {
         const active = value === bool;
         const isYes = bool === true;
@@ -239,25 +250,7 @@ function ToggleField({ value, i18n, onChange }: ToggleFieldProps) {
           <button
             key={String(bool)}
             onClick={() => onChange(active ? undefined : bool)}
-            style={{
-              padding: "7px 20px",
-              borderRadius: 100,
-              fontSize: "0.875rem",
-              fontWeight: 500,
-              cursor: "pointer",
-              transition: "all .12s",
-              border: active
-                ? isYes
-                  ? "1.5px solid var(--grn)"
-                  : "1.5px solid var(--bdr2)"
-                : "1.5px solid var(--bdr)",
-              background: active
-                ? isYes
-                  ? "var(--grn)"
-                  : "var(--bdr2)"
-                : "var(--card)",
-              color: active ? (isYes ? "#fff" : "var(--ink)") : "var(--ink2)",
-            }}
+            className={`wizard-toggle-btn${active ? (isYes ? " wizard-toggle-yes" : " wizard-toggle-no") : ""}`}
           >
             {isYes ? i18n.yes : i18n.no}
           </button>
