@@ -19,12 +19,10 @@ async function readPublicBlobDirect(): Promise<string> {
   // bypasses the public CDN cache (same datacenter routing).
   // We intentionally do NOT fetch the CDN blobUrl again; we only use the stream
   // returned by get() which comes from the origin-facing response.
-  const result = await get(BLOB_PATH, {
-    access: "public",
-    // useCache: false adds ?cache=0 — Vercel may or may not honour it for
-    // public blobs, but it costs nothing to try.
-    useCache: false,
-  });
+  // Note: useCache: false causes 400 for public blobs — omit it.
+  // The stream from get() with the BLOB_READ_WRITE_TOKEN auth header routes
+  // through Vercel's internal network and should return origin-fresh data.
+  const result = await get(BLOB_PATH, { access: "public" });
 
   if (!result || result.statusCode !== 200) {
     throw new Error(`Public blob not found or unavailable (status ${result?.statusCode ?? "null"})`);
