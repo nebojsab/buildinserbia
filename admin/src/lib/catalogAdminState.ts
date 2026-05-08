@@ -61,14 +61,12 @@ async function loadFromBlob(): Promise<CatalogAdminState> {
   }
 
   // Migration path: private blob doesn't exist yet (first run after switching from
-  // public access). Try reading the legacy public blob so we don't lose data.
-  const legacy = await get(STATE_BLOB_PATH, { access: "public" });
+  // public access). Read the legacy public blob using ONLY result.stream — the
+  // authenticated get() call routes through Vercel's internal network which
+  // bypasses the public CDN cache, giving us origin-fresh data.
+  // We deliberately do NOT re-fetch the CDN blobUrl here.
+  const legacy = await get(STATE_BLOB_PATH, { access: "public", useCache: false });
   if (!legacy || legacy.statusCode !== 200) throw new Error("missing-blob");
-  const legacyUrl = (legacy as Record<string, unknown>).url as string | undefined;
-  if (legacyUrl) {
-    const res = await fetch(`${legacyUrl}?t=${Date.now()}`, { cache: "no-store" });
-    if (res.ok) return parseState(await res.text());
-  }
   const stream = legacy.stream as ReadableStream<Uint8Array>;
   return parseState(await new Response(stream).text());
 }

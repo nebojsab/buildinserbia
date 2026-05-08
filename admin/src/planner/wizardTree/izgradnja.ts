@@ -446,6 +446,7 @@ export const izgradnjaTree: WizardProjectTree = {
       subcategories: [
         {
           id: "fasada_etics",
+          exclusive: true,
           label: { sr: "Stiropor fasada (ETICS)", en: "EPS external wall insulation (ETICS)", ru: "Утепление фасада пенопластом (ETICS)" },
           fields: [
             {
@@ -486,6 +487,7 @@ export const izgradnjaTree: WizardProjectTree = {
         },
         {
           id: "fasada_malterisanje",
+          exclusive: true,
           label: { sr: "Spoljašnje malterisanje (bez izolacije)", en: "External rendering (without insulation)", ru: "Внешняя штукатурка (без утепления)" },
           fields: [
             {

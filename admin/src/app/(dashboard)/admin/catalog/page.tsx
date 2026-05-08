@@ -15,6 +15,7 @@ import {
 import { mirrorImageToBlob } from "@/lib/mirrorImageToBlob";
 import { CatalogProductsTable, type TableProduct } from "@/components/catalog/CatalogProductsTable";
 import { CatalogCsvImport } from "@/components/catalog/CatalogCsvImport";
+import { BlobMigrateButton } from "@/components/catalog/BlobMigrateButton";
 
 function daysSince(dateIso: string): number {
   const now = Date.now();
@@ -305,6 +306,8 @@ export default async function CatalogAdminPage({ searchParams }: PageProps) {
       </div>
 
       <CatalogCsvImport />
+
+      <BlobMigrateButton />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: 12 }}>
         {[

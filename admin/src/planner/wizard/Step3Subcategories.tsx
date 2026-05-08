@@ -66,6 +66,8 @@ export function Step3Subcategories({
           const subIds = cat.subcategories.map((s) => s.id);
           const nonExclusiveIds = cat.subcategories.filter((s) => !s.exclusive).map((s) => s.id);
           const hasExclusive = cat.subcategories.some((s) => s.exclusive);
+          // All exclusive = radio group: pick exactly one, no "KOMPLETAN" badge or block message
+          const allExclusive = cat.subcategories.length > 0 && cat.subcategories.every((s) => s.exclusive);
           const exclusiveSelected = cat.subcategories.some((s) => s.exclusive && selected.includes(s.id));
           // "Select all" targets only non-exclusive items (exclusive items are standalone options)
           const selectableIds = hasExclusive ? nonExclusiveIds : subIds;
@@ -131,7 +133,7 @@ export function Step3Subcategories({
                     >
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--ink)", lineHeight: 1.3, marginBottom: sub.description ? 3 : 0 }}>
-                          {sub.exclusive && (
+                          {sub.exclusive && !allExclusive && (
                             <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--acc)", background: "var(--accbg)", border: "1px solid var(--accmid)", borderRadius: 4, padding: "1px 6px", marginRight: 7, verticalAlign: "middle" }}>
                               {l === "sr" ? "kompletan" : "full scope"}
                             </span>
@@ -158,11 +160,20 @@ export function Step3Subcategories({
                 })}
               </div>
 
-              {exclusiveSelected && (
+              {exclusiveSelected && !allExclusive && (
                 <p style={{ marginTop: 8, fontSize: "0.75rem", color: "var(--ink4)", fontStyle: "italic" }}>
                   {l === "sr"
                     ? "Odabran kompletan radovi — ostale opcije nisu dostupne."
                     : "Full scope selected — other options are unavailable."}
+                </p>
+              )}
+              {allExclusive && exclusiveSelected && (
+                <p style={{ marginTop: 8, fontSize: "0.75rem", color: "var(--ink4)", fontStyle: "italic" }}>
+                  {l === "sr"
+                    ? "Izaberite jednu od ponuđenih opcija."
+                    : l === "ru"
+                      ? "Выберите один из предложенных вариантов."
+                      : "Select one of the available options."}
                 </p>
               )}
             </div>
