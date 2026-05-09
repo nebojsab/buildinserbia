@@ -8,16 +8,15 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 function makeTransporter() {
+  const host = process.env.SMTP_HOST ?? "";
   const port = parseInt(process.env.SMTP_PORT ?? "465", 10);
+  const user = process.env.SMTP_USER ?? "";
+  const pass = process.env.SMTP_PASS ?? "";
   return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
+    host,
     port,
     secure: port === 465,
-    auth: {
-      type: "LOGIN",
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
+    auth: { type: "LOGIN" as const, user, pass },
     tls: { rejectUnauthorized: false },
   });
 }
