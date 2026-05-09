@@ -80,15 +80,17 @@ export function Step4Details({
             (v) => v !== undefined && v !== null && v !== "" && !(Array.isArray(v) && v.length === 0)
           ).length;
           const requiredCount = sub.fields.filter((f) => f.importance === "required").length;
+          const isDone = requiredCount > 0 && filledCount >= requiredCount;
 
           return (
             <div
               key={sub.id}
               style={{
-                border: "1.5px solid var(--bdr)",
+                border: isDone ? "1.5px solid var(--grn)" : "1.5px solid var(--bdr)",
                 borderRadius: "var(--rl)",
                 overflow: "hidden",
                 background: "var(--card)",
+                transition: "border-color .2s",
               }}
             >
               <button
@@ -112,27 +114,30 @@ export function Step4Details({
                       width: 22,
                       height: 22,
                       borderRadius: "50%",
-                      background: "var(--bgw)",
-                      border: "1px solid var(--bdr)",
+                      background: isDone ? "var(--grn)" : "transparent",
+                      border: isDone ? "2px solid var(--grn)" : "2px solid var(--bdr2)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      fontSize: 10,
+                      fontSize: 11,
                       fontWeight: 700,
-                      color: "var(--ink3)",
+                      color: isDone ? "#fff" : "var(--ink4)",
                       flexShrink: 0,
+                      transition: "all .2s",
                     }}
                   >
-                    {idx + 1}
+                    {isDone ? "✓" : ""}
                   </span>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: "0.9375rem", fontWeight: 600, color: "var(--ink)" }}>
                       {sub.label[l]}
                     </div>
-                    <div style={{ fontSize: "0.75rem", color: filledCount >= requiredCount && requiredCount > 0 ? "var(--grn)" : "var(--ink4)", marginTop: 1 }}>
-                      {filledCount > 0
-                        ? (l === "sr" ? `${filledCount} popunjeno` : `${filledCount} filled`)
-                        : (l === "sr" ? `${requiredCount} obaveznih polja` : `${requiredCount} required fields`)}
+                    <div style={{ fontSize: "0.75rem", color: isDone ? "var(--grn)" : "var(--ink4)", marginTop: 1 }}>
+                      {isDone
+                        ? (l === "sr" ? "Popunjeno" : l === "ru" ? "Заполнено" : "Done")
+                        : filledCount > 0
+                          ? (l === "sr" ? `${filledCount} uneseno` : l === "ru" ? `${filledCount} внесено` : `${filledCount} entered`)
+                          : ""}
                     </div>
                   </div>
                 </div>

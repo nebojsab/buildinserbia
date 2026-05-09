@@ -187,7 +187,7 @@ export const izgradnjaTree: WizardProjectTree = {
             {
               key: "tip_temelja",
               kind: "chips",
-              label: { sr: "Tip temelja (može više)", en: "Foundation type (multi-select)", ru: "Тип фундамента (можно несколько)" },
+              label: { sr: "Tip temelja", en: "Foundation type", ru: "Тип фундамента" },
               importance: "required",
               options: [
                 { value: "temeljne_trake", label: { sr: "Temeljne trake (AB)", en: "Strip foundations (RC)", ru: "Ленточный фундамент (ЖБ)" } },
@@ -296,22 +296,14 @@ export const izgradnjaTree: WizardProjectTree = {
               ],
             },
             {
-              key: "povrsina_ploce",
+              key: "ukupna_povrsina_ploca",
               kind: "area",
-              label: { sr: "Površina ploče (po etaži)", en: "Slab area (per floor)", ru: "Площадь плиты (на этаж)" },
+              label: { sr: "Ukupna površina međuspratnih ploča", en: "Total area of intermediate slabs", ru: "Общая площадь межэтажных плит" },
+              help: { sr: "npr. kuća P+1 sa tlocrtom 80 m² = 80 m². Za P+2 = 160 m².", en: "e.g. P+1 house with 80 m² footprint = 80 m². For P+2 = 160 m².", ru: "напр. дом P+1 с площадью 80 м² = 80 м². Для P+2 = 160 м²." },
               importance: "required",
               unit: "m²",
-              predefined: [50, 80, 100, 120, 150, 200],
+              predefined: [50, 80, 100, 120, 160, 200],
               unknownAllowed: true,
-            },
-            {
-              key: "broj_ploca",
-              kind: "number",
-              label: { sr: "Broj međuspratnih ploča", en: "Number of intermediate slabs", ru: "Количество межэтажных плит" },
-              importance: "required",
-              unit: "kom",
-              predefined: [1, 2, 3],
-              unknownAllowed: false,
             },
           ],
         },
@@ -879,7 +871,7 @@ export const izgradnjaTree: WizardProjectTree = {
             {
               key: "povrsina",
               kind: "area",
-              label: { sr: "BRP objekta", en: "Gross floor area", ru: "Общая площадь здания" },
+              label: { sr: "Površina koja se ventilira", en: "Ventilated floor area", ru: "Вентилируемая площадь" },
               importance: "required",
               unit: "m²",
               predefined: [80, 120, 150, 200, 250],
@@ -892,7 +884,7 @@ export const izgradnjaTree: WizardProjectTree = {
               importance: "optional",
               options: [
                 { value: "centralni", label: { sr: "Centralni (jedan uređaj, kanali)", en: "Central (one unit, ductwork)", ru: "Центральная (один блок, воздуховоды)" } },
-                { value: "decentralizovani", label: { sr: "Decentralizovani (po sobama)", en: "Decentralised (room units)", ru: "Децентрализованная (поккомнатно)" } },
+                { value: "decentralizovani", label: { sr: "Decentralizovani (po sobama)", en: "Decentralised (room units)", ru: "Децентрализованная (покомнатно)" } },
               ],
             },
           ],

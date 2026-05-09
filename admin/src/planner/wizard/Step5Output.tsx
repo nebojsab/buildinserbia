@@ -90,6 +90,28 @@ export function Step5Output({ lang, state, tree, i18n, onRestart }: Props) {
   const [previewDocId, setPreviewDocId] = useState<string | null>(null);
   const [docxLoading, setDocxLoading] = useState<string | null>(null);
 
+  // Email share
+  const [showEmailPanel, setShowEmailPanel] = useState(false);
+  const [emailInput, setEmailInput] = useState("");
+  const [emailStatus, setEmailStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  async function handleSendPlan() {
+    if (!emailInput.trim() || emailStatus === "sending") return;
+    setEmailStatus("sending");
+    try {
+      const res = await fetch("/api/send-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emails: emailInput, state, lang }),
+      });
+      if (!res.ok) throw new Error("send failed");
+      setEmailStatus("sent");
+      setEmailInput("");
+    } catch {
+      setEmailStatus("error");
+    }
+  }
+
   const docs: ProjectDocument[] = useMemo(
     () => (state.selectedSubcategories.length > 0 ? generateWizardDocuments(state, tree, lang) : []),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -396,11 +418,30 @@ export function Step5Output({ lang, state, tree, i18n, onRestart }: Props) {
             </div>
           )}
 
+          {/* Trust strip */}
+          <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+            {[
+              { icon: "✓", text: l === "sr" ? "Troškovi radne snage uključeni" : l === "ru" ? "Стоимость труда включена" : "Labour costs included", positive: true },
+              { icon: "✗", text: l === "sr" ? "Materijal nije uključen" : l === "ru" ? "Материал не включён" : "Materials not included", positive: false },
+              { icon: "✗", text: l === "sr" ? "PDV i takse nisu uključeni" : l === "ru" ? "НДС и сборы не включены" : "VAT & fees not included", positive: false },
+              { icon: "ℹ", text: l === "sr" ? "Ažurirano: 2026. godina" : l === "ru" ? "Обновлено: 2026 г." : "Updated: 2026", positive: null },
+            ].map((item, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 10px", borderRadius: "var(--r)", background: "var(--bgw)", border: "1px solid var(--bdr)" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, flexShrink: 0, color: item.positive === true ? "var(--grn)" : item.positive === false ? "var(--ink4)" : "var(--acc)" }}>
+                  {item.icon}
+                </span>
+                <span style={{ fontSize: "0.7rem", color: "var(--ink4)", lineHeight: 1.3 }}>{item.text}</span>
+              </div>
+            ))}
+          </div>
+
           {/* Disclaimer */}
-          <div style={{ marginTop: 12, padding: "10px 14px", background: "var(--bgw)", border: "1px solid var(--bdr)", borderRadius: "var(--r)", fontSize: "0.75rem", color: "var(--ink4)", lineHeight: 1.5 }}>
+          <div style={{ marginTop: 8, padding: "10px 14px", background: "var(--bgw)", border: "1px solid var(--bdr)", borderRadius: "var(--r)", fontSize: "0.72rem", color: "var(--ink4)", lineHeight: 1.55 }}>
             {l === "sr"
-              ? "Procena se odnosi na troškove radne snage. Nisu uključeni: materijal, sanitarije, armature, keramika, stolarija ni naknada za projektovanje. Stvarna cena zavisi od specifičnosti projekta i izabranog izvođača."
-              : "Estimate covers labour costs only. Not included: materials, fixtures, tiles, joinery, or design fees. Actual cost depends on project specifics and chosen contractor."}
+              ? "Procena je informativna i zasniva se na prosečnim cenama rada u Srbiji. Stvarna cena zavisi od izvođača, pristupačnosti objekta i specifičnosti projekta. Uvek pribavite bar tri ponude."
+              : l === "ru"
+              ? "Оценка носит информационный характер и основана на средних ценах в Сербии. Реальная стоимость зависит от подрядчика и специфики проекта. Всегда получайте не менее трёх предложений."
+              : "This estimate is indicative and based on average Serbian labour rates. Actual cost depends on contractor, site access and project specifics. Always obtain at least three quotes."}
           </div>
         </div>
       )}
@@ -423,9 +464,9 @@ export function Step5Output({ lang, state, tree, i18n, onRestart }: Props) {
       </div>
 
       {/* CTA — directly after cost estimate */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, flexWrap: "wrap" as const, marginBottom: 28 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, flexWrap: "wrap" as const, marginBottom: 16 }}>
         <button
-          className="btn-g"
+          className="btn-g plan-pdf-btn"
           style={{ display: "flex", alignItems: "center", gap: 7, fontWeight: 700 }}
           onClick={() => {
             const html = buildPlanHtml(state, tree, lang);
@@ -436,7 +477,24 @@ export function Step5Output({ lang, state, tree, i18n, onRestart }: Props) {
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
           </svg>
-          {l === "sr" ? "Skini plan (PDF)" : "Download plan (PDF)"}
+          {l === "sr" ? "Skini plan (PDF)" : l === "ru" ? "Скачать план (PDF)" : "Download plan (PDF)"}
+        </button>
+        <button
+          onClick={() => { setShowEmailPanel((v) => !v); setEmailStatus("idle"); }}
+          style={{
+            display: "flex", alignItems: "center", gap: 7,
+            padding: "9px 18px", borderRadius: "var(--r)",
+            border: showEmailPanel ? "1.5px solid var(--acc)" : "1.5px solid var(--bdr2)",
+            background: showEmailPanel ? "var(--accbg)" : "var(--card)",
+            color: showEmailPanel ? "var(--acc)" : "var(--ink2)",
+            fontSize: "0.875rem", fontWeight: 600, cursor: "pointer",
+            transition: "all .15s",
+          }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+          </svg>
+          {l === "sr" ? "Pošalji na email" : l === "ru" ? "Отправить на email" : "Send by email"}
         </button>
         <button
           onClick={onRestart}
@@ -445,6 +503,60 @@ export function Step5Output({ lang, state, tree, i18n, onRestart }: Props) {
           {i18n.restart}
         </button>
       </div>
+
+      {/* Email share panel — inline expandable */}
+      <div style={{
+        maxHeight: showEmailPanel ? "220px" : "0",
+        overflow: "hidden",
+        transition: "max-height .3s ease, opacity .25s ease",
+        opacity: showEmailPanel ? 1 : 0,
+        marginBottom: showEmailPanel ? 20 : 0,
+      }}>
+        <div style={{
+          padding: "18px 20px",
+          background: "var(--bgw)",
+          border: "1px solid var(--bdr)",
+          borderRadius: "var(--rl)",
+        }}>
+          <p style={{ margin: "0 0 4px", fontSize: "0.875rem", fontWeight: 600, color: "var(--ink)" }}>
+            {l === "sr" ? "Pošaljite plan sebi ili timu" : l === "ru" ? "Отправьте план себе или команде" : "Send the plan to yourself or your team"}
+          </p>
+          <p style={{ margin: "0 0 12px", fontSize: "0.8125rem", color: "var(--ink3)" }}>
+            {l === "sr" ? "Unesite jednu ili više adresa odvojenih zarezom." : l === "ru" ? "Введите один или несколько адресов через запятую." : "Enter one or more addresses separated by commas."}
+          </p>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const }}>
+            <input
+              className="finput"
+              type="email"
+              placeholder={l === "sr" ? "vas@email.com, kolega@email.com" : l === "ru" ? "vas@email.com, kolega@email.com" : "you@email.com, colleague@email.com"}
+              value={emailInput}
+              onChange={(e) => { setEmailInput(e.target.value); setEmailStatus("idle"); }}
+              onKeyDown={(e) => { if (e.key === "Enter") void handleSendPlan(); }}
+              style={{ flex: 1, minWidth: 200 }}
+              disabled={emailStatus === "sending" || emailStatus === "sent"}
+            />
+            <button
+              className="btn-g"
+              style={{ whiteSpace: "nowrap" as const, fontWeight: 700, opacity: emailStatus === "sending" ? 0.6 : 1 }}
+              disabled={emailStatus === "sending" || emailStatus === "sent" || !emailInput.trim()}
+              onClick={() => void handleSendPlan()}
+            >
+              {emailStatus === "sending"
+                ? (l === "sr" ? "Šalje se..." : l === "ru" ? "Отправка..." : "Sending...")
+                : emailStatus === "sent"
+                  ? (l === "sr" ? "✓ Poslato!" : l === "ru" ? "✓ Отправлено!" : "✓ Sent!")
+                  : (l === "sr" ? "Pošalji →" : l === "ru" ? "Отправить →" : "Send →")}
+            </button>
+          </div>
+          {emailStatus === "error" && (
+            <p style={{ margin: "8px 0 0", fontSize: "0.8125rem", color: "var(--red, #dc2626)" }}>
+              {l === "sr" ? "Greška pri slanju. Proverite adrese i pokušajte ponovo." : l === "ru" ? "Ошибка отправки. Проверьте адреса и повторите." : "Send failed. Check the addresses and try again."}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 12 }} />
 
       {/* Generated documents */}
       {docs.length > 0 && (
@@ -595,6 +707,24 @@ export function Step5Output({ lang, state, tree, i18n, onRestart }: Props) {
           </div>
         </div>
       )}
+
+      {/* Sticky PDF bar — mobile only (via CSS class) */}
+      <div className="plan-sticky-pdf">
+        <button
+          className="btn-g"
+          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontWeight: 700, fontSize: "0.9375rem", padding: "13px 20px" }}
+          onClick={() => {
+            const html = buildPlanHtml(state, tree, lang);
+            const w = window.open("", "_blank");
+            if (w) { w.document.write(html); w.document.close(); }
+          }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          {l === "sr" ? "Skini plan (PDF)" : l === "ru" ? "Скачать план (PDF)" : "Download plan (PDF)"}
+        </button>
+      </div>
 
     </div>
   );

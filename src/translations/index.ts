@@ -5,9 +5,9 @@ sr:{
   nav:{logo:"BuildInSerbia",links:["Kako funkcioniše","Planer","Resursi","FAQ","Dokumenti"],cta:"Kreiraj plan",backToTop:"Na vrh"},
   hero:{
     eyebrow:"Besplatan alat za planiranje gradnje u Srbiji",
-    title:"Znajte tačno šta radite pre nego što potrošite",
+    title:"Znajte tačno šta vas čeka pre nego što potrošite",
     accent:"€50.000 ili više.",
-    sub:"Dobijte konkretan plan, procenu troškova i listu grešaka koje treba izbegavati — pre nego što angažujete bilo koga ili kupite ijedan materijal.",
+    sub:"Procena troškova radova, redosled radova i relevantna dokumentacija — za 3 minuta, pre prvog poziva izvođaču.",
     cta:"Kreiraj plan",ctaNote:"Besplatno · Bez registracije · Bez obaveza",
     trustBar:{
       label:"Koriste:",
@@ -241,9 +241,9 @@ en:{
   nav:{logo:"BuildInSerbia",links:["How it works","Planner","Resources","FAQ","Documents"],cta:"Generate plan",backToTop:"Back to top"},
   hero:{
     eyebrow:"Free planning tool for building in Serbia",
-    title:"Know exactly what you're doing before you spend",
+    title:"Know exactly what you're in for before you spend",
     accent:"€50,000 or more.",
-    sub:"Get a concrete plan, cost estimate, and a list of mistakes to avoid — before you hire anyone or buy a single material.",
+    sub:"Labour cost estimate, work sequence and relevant documents — in 3 minutes, before your first contractor call.",
     cta:"Generate plan",ctaNote:"Free · No registration · No commitment",
     trustBar:{
       label:"Used by:",
@@ -484,9 +484,9 @@ ru:{
   nav:{logo:"BuildInSerbia",links:["Как это работает","Планировщик","Ресурсы","FAQ","Документы"],cta:"Создать план",backToTop:"Наверх"},
   hero:{
     eyebrow:"Бесплатный инструмент планирования строительства в Сербии",
-    title:"Знайте точно, что делаете, прежде чем потратить",
+    title:"Знайте точно, что вас ждёт, прежде чем потратить",
     accent:"€50 000 и больше.",
-    sub:"Получите конкретный план, оценку расходов и список ошибок, которых следует избегать — до того как нанять подрядчика или купить первый материал.",
+    sub:"Оценка стоимости работ, порядок работ и документы — за 3 минуты, до первого звонка подрядчику.",
     cta:"Создать план",ctaNote:"Бесплатно · Без регистрации · Без обязательств",
     trustBar:{
       label:"Используют:",

@@ -207,10 +207,11 @@ function NumberField({ field, value, lang, i18n, placeholder, onChange }: Number
         </div>
       )}
 
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
         <input
           className="finput"
           type="number"
+          inputMode="decimal"
           min={0}
           step={field.kind === "area" || field.kind === "length" ? 0.5 : 1}
           placeholder={placeholder ?? (lang === "sr" ? "Unesi vrednost..." : "Enter value...")}
@@ -226,6 +227,26 @@ function NumberField({ field, value, lang, i18n, placeholder, onChange }: Number
           <span style={{ fontSize: "0.875rem", color: "var(--ink3)", fontWeight: 500 }}>
             {field.unit}
           </span>
+        )}
+        {/* Show inline Ne znam when:
+            a) field has no unknownAllowed (original text-link fallback), OR
+            b) field has unknownAllowed but no predefined chips (so the chip area never rendered) */}
+        {((!field.unknownAllowed) || (field.unknownAllowed && (!field.predefined || field.predefined.length === 0))) && (
+          isUnknown ? (
+            <button
+              onClick={() => onChange(undefined)}
+              style={{ fontSize: "0.75rem", color: "var(--acc)", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "var(--sans)", textDecoration: "underline" }}
+            >
+              {lang === "sr" ? "← Unesite vrednost" : lang === "ru" ? "← Ввести значение" : "← Enter value"}
+            </button>
+          ) : (
+            <button
+              onClick={() => onChange("unknown")}
+              style={{ fontSize: "0.75rem", color: "var(--ink4)", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "var(--sans)", textDecoration: "underline" }}
+            >
+              {lang === "sr" ? "Ne znam" : lang === "ru" ? "Не знаю" : "Don't know"}
+            </button>
+          )
         )}
       </div>
     </div>

@@ -22,7 +22,7 @@ export const subPriceRanges: Record<string, PriceRange> = {
   // ─── IZGRADNJA: Konstruktivni sistem ─────────────────────────────────────────
   // quantityFields covers izgradnja ("povrsina_objekta") and dogradnja ("povrsina")
   konstrukcija_zidanje:         { low: 25,   high: 55,    unit: "m2",   quantityFields: ["povrsina_objekta", "povrsina"] },
-  konstrukcija_ploce:           { low: 35,   high: 75,    unit: "m2",   quantityField: "povrsina_ploce" },
+  konstrukcija_ploce:           { low: 35,   high: 75,    unit: "m2",   quantityField: "ukupna_povrsina_ploca" },
   // konstrukcija_stepenice — pausal, zavisi od tipa i broja etaža
   konstrukcija_stepenice:       { low: 1500, high: 6000,  unit: "pausal" },
 

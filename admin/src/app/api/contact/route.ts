@@ -48,7 +48,8 @@ async function sendNotification(s: ContactSubmission): Promise<void> {
     host,
     port,
     secure: port === 465,
-    auth: { user, pass },
+    auth: { type: "LOGIN", user, pass },
+    tls: { rejectUnauthorized: false },
   });
 
   const date = new Date(s.submittedAt).toLocaleString("sr-Latn-RS", {

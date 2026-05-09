@@ -145,12 +145,6 @@ export function Step3Subcategories({
                             {sub.description[l]}
                           </div>
                         )}
-                        <div style={{ fontSize: "0.75rem", color: "var(--ink4)", marginTop: 4 }}>
-                          {sub.fields.length}{" "}
-                          {l === "sr"
-                            ? sub.fields.length === 1 ? "pitanje" : "pitanja"
-                            : sub.fields.length === 1 ? "field" : "fields"}
-                        </div>
                       </div>
                       <div style={{ width: 18, height: 18, borderRadius: 4, border: isSelected ? "2px solid var(--acc)" : "2px solid var(--bdr2)", background: isSelected ? "var(--acc)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 11, color: "#fff", marginTop: 2 }}>
                         {isSelected && "✓"}

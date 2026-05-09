@@ -4,13 +4,14 @@ import type { WizardI18n } from "./wizardI18n";
 type Props = {
   step: number;
   i18n: WizardI18n;
+  summary?: string;
 };
 
-export function WizardProgress({ step, i18n }: Props) {
+export function WizardProgress({ step, i18n, summary }: Props) {
   const totalSteps = i18n.steps.length;
 
   return (
-    <div style={{ marginBottom: 32 }}>
+    <div style={{ marginBottom: 32, display: "flex", flexDirection: "column", gap: 10 }}>
       <div style={{ display: "flex", alignItems: "flex-start", width: "100%" }}>
         {i18n.steps.map((label, idx) => {
           const done = idx < step;
@@ -69,6 +70,20 @@ export function WizardProgress({ step, i18n }: Props) {
           );
         })}
       </div>
+
+      {summary && (
+        <div style={{
+          fontSize: "0.75rem",
+          color: "var(--ink4)",
+          fontWeight: 500,
+          letterSpacing: "0.01em",
+          paddingLeft: 2,
+          minHeight: "1em",
+          transition: "opacity .3s",
+        }}>
+          {summary}
+        </div>
+      )}
     </div>
   );
 }

@@ -246,19 +246,67 @@ function HomePageContent() {
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", marginBottom: 12 }}>
                 <button className="btn-p" onClick={() => scrollTo("planner")} style={{ fontSize: 15, padding: "13px 28px" }}>{t.hero.cta} →</button>
-                <button className="btn-g" onClick={openContactDrawer} style={{ fontSize: 15, padding: "13px 28px" }}>
-                  {lang === "sr" ? "Kontaktirajte nas" : lang === "ru" ? "Свяжитесь с нами" : "Contact us"}
-                </button>
+                <a
+                  href={`/api/sample-plan?lang=${lang}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-g"
+                  style={{ fontSize: 15, padding: "13px 28px", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7 }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                  {lang === "sr" ? "Pogledaj primer plana" : lang === "ru" ? "Пример плана" : "See sample plan"}
+                </a>
               </div>
-              <p style={{ fontSize: 12, color: "var(--ink4)", fontFamily: "var(--sans)", marginBottom: 24 }}>{t.hero.ctaNote}</p>
-              <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--ink3)", fontFamily: "var(--sans)" }}>{t.hero.trustBar.label}</span>
-                {t.hero.trustBar.items.map((item, i) => (
-                  <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 500, color: "var(--ink2)", background: "var(--bgw)", border: "1px solid var(--bdr)", borderRadius: 20, padding: "3px 11px", fontFamily: "var(--sans)" }}>
-                    <span style={{ color: "var(--grn)", fontSize: 10 }}>●</span> {item}
-                  </span>
+              <p style={{ fontSize: 12, color: "var(--ink4)", fontFamily: "var(--sans)", marginBottom: 16 }}>{t.hero.ctaNote}</p>
+
+              {/* Project type quick links */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 24 }}>
+                {([
+                  { href: "/renovacija", sr: "Renovacija", en: "Renovation", ru: "Ремонт" },
+                  { href: "/izgradnja",  sr: "Izgradnja",  en: "New build",  ru: "Строительство" },
+                  { href: "/dogradnja", sr: "Dogradnja",  en: "Extension",  ru: "Пристройка" },
+                  { href: "/dvoriste",  sr: "Dvorište",   en: "Garden",     ru: "Двор" },
+                ] as const).map((item) => (
+                  <a
+                    key={item.href}
+                    href={`${item.href}?lang=${lang}`}
+                    style={{
+                      fontSize: 12.5,
+                      fontWeight: 600,
+                      color: "var(--ink3)",
+                      textDecoration: "none",
+                      padding: "4px 11px",
+                      borderRadius: 100,
+                      border: "1px solid var(--bdr2)",
+                      background: "var(--card)",
+                      fontFamily: "var(--sans)",
+                      transition: "border-color .15s, color .15s",
+                    }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--acc)"; (e.currentTarget as HTMLAnchorElement).style.color = "var(--acc)"; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--bdr2)"; (e.currentTarget as HTMLAnchorElement).style.color = "var(--ink3)"; }}
+                  >
+                    {lang === "en" ? item.en : lang === "ru" ? item.ru : item.sr} →
+                  </a>
                 ))}
               </div>
+
+              {/* What you get — compact checklist, visible in hero on mobile */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 24 }}>
+                {[
+                  lang === "sr" ? "Okvirna procena troškova radova" : lang === "ru" ? "Приблизительная оценка стоимости работ" : "Rough labour cost estimate",
+                  lang === "sr" ? "Preporučeni redosled radova" : lang === "ru" ? "Рекомендуемый порядок работ" : "Recommended order of works",
+                  lang === "sr" ? "Relevantna dokumentacija i linkovi" : lang === "ru" ? "Актуальная документация и ссылки" : "Relevant documents and links",
+                  lang === "sr" ? "Preuzmi plan kao PDF — besplatno" : lang === "ru" ? "Скачать план в PDF — бесплатно" : "Download plan as PDF — free",
+                ].map((item, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 9, fontFamily: "var(--sans)" }}>
+                    <span style={{ width: 18, height: 18, borderRadius: "50%", background: "var(--grnbg)", border: "1px solid var(--grnmid)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--grn)", fontSize: 10, fontWeight: 700 }}>✓</span>
+                    <span style={{ fontSize: 13.5, color: "var(--ink2)", fontWeight: 500 }}>{item}</span>
+                  </div>
+                ))}
+              </div>
+
             </div>
             <HeroPlanVisual lang={lang} />
           </div>
