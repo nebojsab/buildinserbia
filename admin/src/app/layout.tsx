@@ -28,6 +28,9 @@ export const metadata: Metadata = {
   icons: {
     icon: "/ico.svg",
   },
+  verification: {
+    google: "h5pznLanTE4PLGbIoYIT_Y9LYqYKCoUmvGrgqdgQcfA",
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
